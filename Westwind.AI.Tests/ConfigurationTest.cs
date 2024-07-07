@@ -1,4 +1,5 @@
 using Westwind.AI.Chat.Configuration;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Tests
 {
@@ -6,47 +7,56 @@ namespace Westwind.AI.Tests
     public class ConfigurationTest
     {
         [TestMethod]
-        public void LoadConfigurationTest()
+        public void LoadAndEncryptConfigurationTest()
         {             
             // load configuration from default file
-            var config = AiAuthenticationConfiguration.Load();
+            var config = OpenAiConnectionConfiguration.Load();
+            config.Save(); // write back out with encrypted keys
+
+            // Opens in JSON editor and lets you copy the encrypted api keys/file into project
+            ShellUtils.ShellExecute(Path.GetFullPath("_AiAuthenticationConfiguration.json"));
+
             Assert.IsNotNull(config);
-            Assert.IsTrue(config.AiCredentials.Count > 0);
+            Assert.IsTrue(config.Connections.Count > 0);
         }
 
+
+        /// <summary>
+        /// Example that allows you to create a configuration file
+        /// </summary>
         [TestMethod]
         public void CreateConfigurationTest()
         {
-            var config = new AiAuthenticationConfiguration();
+            var config = new OpenAiConnectionConfiguration();
             
-            config.AiCredentials.AddRange([
+            config.Connections.AddRange([
 
-                new OpenAiCredentials()
+                new OpenAiConnection()
                 {
                     Name = "OpenAI",
                     ApiKey = "sk-....",
-                    AuthenticationMode = AiAuthenticationModes.OpenAi
+                    ConnectionMode = AiConnectionModes.OpenAi
                 },
 
-                new AzureOpenAiCredentials()
+                new AzureOpenAiConnection()
                 {
                     Name = "OpenAI",
                     Endpoint = "https://yourazuresite.openai.azure.com/",
                     ModelId = "Gpt35",
                     ApiKey = "123....",
-                    AuthenticationMode = AiAuthenticationModes.AzureOpenAi
+                    ConnectionMode = AiConnectionModes.AzureOpenAi
                 },
-                new OpenAiCredentials()
+                new OpenAiConnection()
                 {
                     Name = "Ollama llama3",
                     ModelId = "llama3",                    
-                    AuthenticationMode = AiAuthenticationModes.OpenAi
+                    ConnectionMode = AiConnectionModes.OpenAi
                 },
-                new OpenAiCredentials()
+                new OpenAiConnection()
                 {
                     Name = "Ollama Phi3",
                     ModelId = "phi3",                    
-                    AuthenticationMode = AiAuthenticationModes.OpenAi
+                    ConnectionMode = AiConnectionModes.OpenAi
                 },
             ]);
 

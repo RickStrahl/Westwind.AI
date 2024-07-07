@@ -5,19 +5,19 @@ namespace Westwind.AI.Chat
 {
     public class AiBase
     {
-        public IAiCredentials Credentials { get; set; }
+        public IOpenAiConnection Connection { get; set; }
 
-        public AiBase(AiAuthenticationConfiguration aiAuthConfig)
+        public AiBase(OpenAiConnectionConfiguration openAiAuthConfig)
         {
-            Credentials = aiAuthConfig.ActiveCredential;            
-            if (Credentials == null)
+            Connection = openAiAuthConfig.ActiveConnection;            
+            if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
         }
 
-        public AiBase(IAiCredentials credentials)
+        public AiBase(IOpenAiConnection connection)
         {
-            Credentials = credentials;
-            if (Credentials == null)
+            Connection = connection;
+            if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
         }
 

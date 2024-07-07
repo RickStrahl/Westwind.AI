@@ -1,9 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0</TargetFrameworks>    
+    <TargetFrameworks>net8.0</TargetFrameworks>
+
+
+	  <PackageCopyright>Rick Strahl, West Wind Technologies 2007-2024</PackageCopyright>
+	  <PackageTags>Westwind ApplicationConfiguration StringUtils ReflectionUtils DataUtils FileUtils TimeUtils SerializationUtils ImageUtils Logging DAL Sql ADO.NET</PackageTags>
+	  <PackageReleaseNotes></PackageReleaseNotes>
+	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.utilities</PackageProjectUrl>
+
+	  <PackageIcon>icon.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE.MD</PackageLicenseFile>
+
   </PropertyGroup>
 
+	
   <ItemGroup>
     <PackageReference Include="Westwind.Utilities" Version="5.0.4" />
   </ItemGroup>

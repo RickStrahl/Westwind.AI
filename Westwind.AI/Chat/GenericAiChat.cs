@@ -12,14 +12,14 @@ public class GenericAiChat : AiBase
     /// </summary>
     public OpenAiHttpClient ChatHttpClient { get; set; } 
 
-    public GenericAiChat(AiAuthenticationConfiguration aiAuthConfig) : base(aiAuthConfig) 
+    public GenericAiChat(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
     {
-        ChatHttpClient = new OpenAiHttpClient(aiAuthConfig.ActiveCredential);
+        ChatHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
     }
 
-    public GenericAiChat(IAiCredentials credentials) : base(credentials) 
+    public GenericAiChat(IOpenAiConnection connection) : base(connection) 
     { 
-        ChatHttpClient = new OpenAiHttpClient(credentials);
+        ChatHttpClient = new OpenAiHttpClient(connection);
     }
 
     public async Task<string> Complete(string prompt, string systemPrompt = null)
@@ -48,4 +48,5 @@ public class GenericAiChat : AiBase
 
         return result;
     }
+
 }

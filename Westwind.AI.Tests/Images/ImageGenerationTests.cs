@@ -1,4 +1,4 @@
-using Westwind.AI.Chat.Configuration;
+﻿using Westwind.AI.Chat.Configuration;
 using Westwind.Ai.Images;
 using Westwind.Utilities;
 
@@ -9,12 +9,16 @@ public class ImageGenerationTests
 {
     public ImageGenerationTests()
     {
-        Configurations = AiAuthenticationConfiguration.Load();                
-        Configuration = Configurations.AiCredentials
-                        .FirstOrDefault(c => c.ModelId.Contains("dall-e-3", StringComparison.OrdinalIgnoreCase));
+        // Load confingurations from disk
+        Configurations = OpenAiConnectionConfiguration.Load();
 
-        //Configuration = Configurations.AiCredentials
-        //    .FirstOrDefault(c =>  c.Name.Contains("Azure OpenAi Dall-E"));
+        // Pick a Dall-E specific configuration
+        //Configuration = Configurations.Connections
+        //                .FirstOrDefault(c => c.Name.StartsWith("OpenAI Dall-E", StringComparison.OrdinalIgnoreCase));
+
+        // Note: for Azure you need a separate deployment for Dall-E-3 specific models
+        Configuration = Configurations.Connections
+            .FirstOrDefault(c => c.Name.Contains("Azure OpenAi Dall-E"));
 
         if (Configuration == null)
             throw new InvalidOperationException("No Dall-e-3 configuration found.");
@@ -22,12 +26,21 @@ public class ImageGenerationTests
         ImagePrompt.DefaultImageStoragePath = Path.GetFullPath("images/GeneratedImages");
     }
 
-    public BaseAiCredentials Configuration { get; set; }
-    public AiAuthenticationConfiguration Configurations { get; set; }
+    public BaseOpenAiConnection Configuration { get; set; }
+    public OpenAiConnectionConfiguration Configurations { get; set; }
 
     [TestMethod]
     public async Task ImageGenerationToUrlTest()
     {
+        // Pick a Dall-E specific configuration
+        //Configuration = Configurations.Connections
+        //                .FirstOrDefault(c => c.Name.StartsWith("OpenAI Dall-E", StringComparison.OrdinalIgnoreCase));
+
+        // Note: for Azure you need a separate deployment for Dall-E-3 specific models
+        Configuration = Configurations.Connections
+            .FirstOrDefault(c => c.Name.Contains("Azure OpenAi Dall-E"));
+
+
         var generator = new OpenAiImageGeneration(Configuration);
 
         var imagePrompt = new ImagePrompt()

@@ -1,7 +1,16 @@
 ﻿
+using System.Collections.Generic;
+
 namespace Westwind.AI.Chat
 {
-    public class OpenAiChatResponse
+    public class OpenAiChatRequest
+    {
+        public string model { get; set; }
+
+        public List<OpenAiChatMessage> messages { get; set; } = new List<OpenAiChatMessage> { };
+    }
+
+    public class OpenAiChatMessages
     {
         public string id { get; set; }
         public string _object { get; set; }

@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <None Update="_AiAuthenticationConfiguration.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

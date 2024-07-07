@@ -17,7 +17,7 @@ namespace Westwind.AI
 
     public class OpenAiHttpClient
     {
-        public IAiCredentials Configuration { get; set; }
+        public IOpenAiConnection Configuration { get; set; }
 
         /// <summary>
         /// Keep track of the chat history for passing context
@@ -25,9 +25,9 @@ namespace Westwind.AI
         /// </summary>
         public List<OpenAiChatMessage> ChatHistory { get; set; } = new List<OpenAiChatMessage>();
 
-        public OpenAiHttpClient(IAiCredentials credentials)
+        public OpenAiHttpClient(IOpenAiConnection connection)
         {
-            Configuration = credentials;
+            Configuration = connection;
         }
 
 
@@ -36,10 +36,17 @@ namespace Westwind.AI
         /// </summary>
         public WebProxy Proxy { get; set; }
 
+        /// <summary>
+        /// Determine whether you want to capture request data in LastRequest and Response Json props
+        /// </summary>
         public bool CaptureRequestData { get; set; }
 
+        /// <summary>
+        /// Captures the last request body, plus the Url, Model Id and start of API key
+        /// </summary>
         public string LastRequestJson { get; set; }
 
+        
         public string LastResponseJson { get; set; }
 
 
@@ -114,7 +121,7 @@ namespace Westwind.AI
             if (string.IsNullOrEmpty(resultJson))
                 return default;            
 
-            var chatResponse = JsonSerializationUtils.Deserialize<OpenAiChatResponse>(resultJson);
+            var chatResponse = JsonSerializationUtils.Deserialize<OpenAiChatMessages>(resultJson);
             if (chatResponse == null)
             {
                 SetError("Invalid response from AI service.");
@@ -154,8 +161,9 @@ namespace Westwind.AI
 
             if(CaptureRequestData)
                 LastRequestJson = jsonPayload + "\n\n" +
+                    "---\n\n" +
                     endpointUrl +"\n" + 
-                    Configuration.ModelId + " " +  StringUtils.GetMaxCharacters(Configuration.ApiKey,5) + "..." ;                      
+                    Configuration.ModelId + " " + Configuration.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
 
             var json = " {}";   // invalid json
 
@@ -232,7 +240,7 @@ namespace Westwind.AI
             var endpoint = Configuration.Endpoint.TrimEnd('/');
 
 
-            if (Configuration.AuthenticationMode == AiAuthenticationModes.AzureOpenAi)
+            if (Configuration.ConnectionMode == AiConnectionModes.AzureOpenAi)
             {
                 var template = Configuration.EndpointTemplate;
                 if (string.IsNullOrEmpty(Configuration.ApiVersion))
@@ -265,10 +273,10 @@ namespace Westwind.AI
             var client = new HttpClient(handler);
 
             client.DefaultRequestHeaders.Clear();
-            if (Configuration.AuthenticationMode == AiAuthenticationModes.AzureOpenAi)
-                client.DefaultRequestHeaders.Add("api-key", Configuration.ApiKey);
+            if (Configuration.ConnectionMode == AiConnectionModes.AzureOpenAi)
+                client.DefaultRequestHeaders.Add("api-key", Configuration.DecryptedApiKey);
             else
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Configuration.ApiKey);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Configuration.DecryptedApiKey);
 
             return client;
         }

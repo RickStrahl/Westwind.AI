@@ -23,14 +23,14 @@ namespace Westwind.Ai.Images
 
         protected OpenAiHttpClient ChatHttpClient { get; set; }
 
-        public OpenAiImageGeneration(AiAuthenticationConfiguration aiAuthConfig) : base(aiAuthConfig)
+        public OpenAiImageGeneration(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig)
         {
-            ChatHttpClient = new OpenAiHttpClient(aiAuthConfig.ActiveCredential);
+            ChatHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
         }
 
-        public OpenAiImageGeneration(IAiCredentials credentials) : base(credentials)
+        public OpenAiImageGeneration(IOpenAiConnection connection) : base(connection)
         {
-            ChatHttpClient = new OpenAiHttpClient(credentials);
+            ChatHttpClient = new OpenAiHttpClient(connection);
         }
 
 

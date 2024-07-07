@@ -1,13 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Chat.Configuration
 {
-    public interface IAiCredentials
+
+    /// <summary>
+    /// Interface that defines an OpenAI connection on what's
+    /// needed to connect to the API including endpoint, model, and API key.
+    /// </summary>
+    public interface IOpenAiConnection
     {
         /// <summary>
         /// Name to identify 
@@ -18,6 +21,8 @@ namespace Westwind.AI.Chat.Configuration
         /// The API Key for the service
         /// </summary>
         string ApiKey { get; set; }
+
+        string DecryptedApiKey { get; }
 
         /// <summary>
         /// The Endpoint for the service
@@ -36,7 +41,9 @@ namespace Westwind.AI.Chat.Configuration
 
         string ApiVersion { get; set; }
 
-        AiAuthenticationModes AuthenticationMode { get; set; }
+        AiOperationModes OperationMode { get; set;  }    
+
+        AiConnectionModes ConnectionMode { get; set; }
 
         bool IsEmpty { get; }
     }
@@ -46,7 +53,7 @@ namespace Westwind.AI.Chat.Configuration
     /// Base class that can be used to access OpenAI and Azure OpenAI
     /// or any other OpenAI based service like local Ollama interface.
     /// </summary>
-    public class BaseAiCredentials : IAiCredentials
+    public class BaseOpenAiConnection : IOpenAiConnection
     {
         /// <summary>
         /// 
@@ -54,9 +61,44 @@ namespace Westwind.AI.Chat.Configuration
         public string Name { get; set; }
 
         /// <summary>
-        /// The API Key for the service
+        /// The Encrypted API Key for the service
         /// </summary>
-        public string ApiKey { get; set; }
+        public string ApiKey { 
+            
+            set 
+            {
+                if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(value))
+                {
+                    _apiKey = value;
+                    return;
+                }    
+                
+                // Already encrypted?
+                if (value.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
+                    _apiKey = value;
+                else 
+                    _apiKey = Encryption.EncryptString(value, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;                
+            }
+            get
+            {
+                return _apiKey;
+            }
+        }
+        private string _apiKey;
+
+        [JsonIgnore]
+        public string DecryptedApiKey
+        {
+            get
+            {
+                if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(_apiKey))
+                    return _apiKey;
+
+                var encrypted = _apiKey.Replace(OpenAiConnectionConfiguration.EncryptionPostFix, string.Empty);
+                var decrypted = Encryption.DecryptString(encrypted, OpenAiConnectionConfiguration.EncryptionKey, useBinHex:true);
+                return decrypted;
+            }
+        }
 
         /// <summary>
         /// The Endpoint for the service
@@ -81,13 +123,23 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         public string ApiVersion { get; set; }
 
-        public AiAuthenticationModes AuthenticationMode { get; set; } = AiAuthenticationModes.OpenAi;
+        /// <summary>
+        /// Determines whether this is an OpenAI or Azure connection
+        /// </summary>
+        public AiConnectionModes ConnectionMode { get; set; } = AiConnectionModes.OpenAi;
+
+        /// <summary>
+        /// Determines whether we're using completions or image generation 
+        /// </summary>
+        public AiOperationModes OperationMode { get; set; } = AiOperationModes.Completions;
+                
 
         /// <summary>
         /// Determines whether the credentials are empty    
         /// </summary>
         [JsonIgnore]
-        public bool IsEmpty => string.IsNullOrEmpty(ApiKey) || string.IsNullOrEmpty(Endpoint);
+        public bool IsEmpty =>  string.IsNullOrEmpty(Endpoint);
+
 
         public override string ToString()
         {
@@ -96,32 +148,39 @@ namespace Westwind.AI.Chat.Configuration
     }
 
 
-    public class OpenAiCredentials : BaseAiCredentials
+    public class OpenAiConnection : BaseOpenAiConnection
     {
-        public OpenAiCredentials()
+        public OpenAiConnection()
         {
             ModelId = "gpt-3.5-turbo";
             Endpoint = "https://api.openai.com/v1/";
-            AuthenticationMode = AiAuthenticationModes.OpenAi;
+            ConnectionMode = AiConnectionModes.OpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
         }
     }
 
-    public class AzureOpenAiCredentials : BaseAiCredentials
+    public class AzureOpenAiConnection : BaseOpenAiConnection
     {
-        public AzureOpenAiCredentials()
+        public AzureOpenAiConnection()
         {
-            AuthenticationMode = AiAuthenticationModes.AzureOpenAi;
+            ConnectionMode = AiConnectionModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
             ApiVersion = "2024-02-15-preview";
         }
     }
 
 
-    public enum AiAuthenticationModes
+
+    public enum AiConnectionModes
     {
         OpenAi,
         AzureOpenAi
+    }
+
+    public enum AiOperationModes
+    {
+        Completions,
+        ImageGeneration
     }
 
     public static class OpenAiEndPointTemplates

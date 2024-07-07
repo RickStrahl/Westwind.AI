@@ -21,11 +21,16 @@ namespace Westwind.AI.Tests
         [TestMethod]
         public async Task TranslationTest()
         {
-            
+
             var translator = new AiTranslator(Configuration);
+            translator.ChatHttpClient.CaptureRequestData = true;
+
             Console.WriteLine("Using: " + Configuration.Name);
 
             string result = await translator.TranslateText("The sky is below, the ground is above", "en", "de");
+
+            Console.WriteLine(translator.ChatHttpClient.LastRequestJson);
+            Console.WriteLine("\n\n" + translator.ChatHttpClient.LastResponseJson);
 
             Assert.IsNotNull(result, translator.ErrorMessage);
             Console.WriteLine(result);

@@ -6,7 +6,11 @@ namespace Westwind.AI.Chat;
 
 public class GenericAiChat : AiBase
 {
-    protected OpenAiHttpClient ChatHttpClient { get; set; } 
+    /// <summary>
+    /// Instance of the internally used Http client. It holds the chat history
+    /// and also can capture request and response data.
+    /// </summary>
+    public OpenAiHttpClient ChatHttpClient { get; set; } 
 
     public GenericAiChat(AiAuthenticationConfiguration aiAuthConfig) : base(aiAuthConfig) 
     {
@@ -20,7 +24,7 @@ public class GenericAiChat : AiBase
 
     public async Task<string> Complete(string prompt, string systemPrompt = null)
     {         
-        var result = await ChatHttpClient.GetChatResponse(prompt, systemPrompt);
+        var result = await ChatHttpClient.GetAiResponse(prompt, systemPrompt);
         if (result == null)
         {
             SetError(ChatHttpClient.ErrorMessage);
@@ -36,7 +40,7 @@ public class GenericAiChat : AiBase
     /// <returns></returns>
     public async Task<string> Complete( IEnumerable<OpenAiChatMessage> prompts,  bool includeHistory = false)
     {
-        var result = await ChatHttpClient.GetChatResponse(prompts, includeHistory);
+        var result = await ChatHttpClient.GetAiResponse(prompts, includeHistory);
         if (result == null)
         {
             SetError(ChatHttpClient.ErrorMessage);

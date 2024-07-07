@@ -10,7 +10,7 @@ namespace Westwind.AI.Chat
     {
         public string model { get; set; }
 
-        public List<OpenAiChatMessage> messages { get; set; } = new List<OpenAiChatMessage> { new OpenAiChatMessage() };
+        public List<OpenAiChatMessage> messages { get; set; } = new List<OpenAiChatMessage> {  };
     }
 }
 

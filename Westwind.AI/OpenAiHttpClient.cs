@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -27,8 +28,19 @@ namespace Westwind.AI
         public OpenAiHttpClient(IAiCredentials credentials)
         {
             Configuration = credentials;
-
         }
+
+
+        /// <summary>
+        /// Optional Proxy
+        /// </summary>
+        public WebProxy Proxy { get; set; }
+
+        public bool CaptureRequestData { get; set; }
+
+        public string LastRequestJson { get; set; }
+
+        public string LastResponseJson { get; set; }
 
 
         /// <summary>
@@ -40,7 +52,7 @@ namespace Westwind.AI
         /// You can use a persona, job description or give descriptive instructions.
         /// </param>
         /// <returns></returns>
-        public Task<string> GetChatResponse(string prompt, string systemPrompt = null)
+        public Task<string> GetAiResponse(string prompt, string systemPrompt = null)
         {
             var request = new OpenAiChatRequest()
             {
@@ -63,7 +75,7 @@ namespace Westwind.AI
                 content = prompt
             });
 
-            return GetChatResponse(messages);
+            return GetAiResponse(messages);
         }
 
         /// <summary>
@@ -74,7 +86,7 @@ namespace Westwind.AI
         /// <param name="includeHistory"></param>
         /// <returns></returns>
 
-        public async Task<string> GetChatResponse(IEnumerable<OpenAiChatMessage> messages, bool includeHistory = false)
+        public async Task<string> GetAiResponse(IEnumerable<OpenAiChatMessage> messages, bool includeHistory = false)
         {
             SetError();
 
@@ -83,8 +95,8 @@ namespace Westwind.AI
                 model = Configuration.ModelId,
             };
 
-            // Add request to history
-            
+            // Add request to history            
+
             if(includeHistory)
             {
                 foreach(var msg in ChatHistory)
@@ -100,7 +112,7 @@ namespace Westwind.AI
             var resultJson = await SendJsonHttpRequest(json, "chat/completions");
 
             if (string.IsNullOrEmpty(resultJson))
-                return default;
+                return default;            
 
             var chatResponse = JsonSerializationUtils.Deserialize<OpenAiChatResponse>(resultJson);
             if (chatResponse == null)
@@ -140,6 +152,11 @@ namespace Westwind.AI
             var endpointUrl = GetEndpointUrl(operationSegment);
             var http = GetHttpClient();
 
+            if(CaptureRequestData)
+                LastRequestJson = jsonPayload + "\n\n" +
+                    endpointUrl +"\n" + 
+                    Configuration.ModelId + " " +  StringUtils.GetMaxCharacters(Configuration.ApiKey,5) + "..." ;                      
+
             var json = " {}";   // invalid json
 
             HttpResponseMessage message;
@@ -156,20 +173,20 @@ namespace Westwind.AI
             if (message.IsSuccessStatusCode)
             {
                 var jsonContent = await message.Content.ReadAsStringAsync();
+                LastResponseJson = jsonContent;
                 return jsonContent;
             }
 
             // should always fail
             if (!message.IsSuccessStatusCode)
             {
-
                 string errorMessage = null;
                 if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
                 {
                     json = await message.Content.ReadAsStringAsync();
+                    LastResponseJson = json;
                     var error = JsonConvert.DeserializeObject<dynamic>(json);
                     errorMessage = error.error?.message;
-
                 }
                 if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
@@ -240,7 +257,10 @@ namespace Westwind.AI
         /// <returns>Configured HttpClient instance</returns>
         public HttpClient GetHttpClient(HttpClientHandler handler = null)
         {
-            handler = handler ?? new HttpClientHandler();
+            handler = handler ?? new HttpClientHandler()
+            {
+                Proxy = Proxy
+            };
 
             var client = new HttpClient(handler);
 

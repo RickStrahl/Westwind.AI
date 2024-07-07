@@ -34,11 +34,6 @@ namespace Westwind.Ai.Images
         }
 
 
-        /// <summary>
-        /// Optional Proxy
-        /// </summary>
-        public WebProxy Proxy { get; set; }
-
 
 
         #region Image Generation API Calls

@@ -21,7 +21,7 @@ namespace Westwind.AI.Chat
             string system = "You are a grammar checker. Return only the corrected text in the output.";
             string message = text;
 
-            string result = await ChatHttpClient.GetChatResponse(message, system);
+            string result = await ChatHttpClient.GetAiResponse(message, system);
 
             if (result == null)
             {
@@ -42,7 +42,7 @@ namespace Westwind.AI.Chat
             string system = "You are a grammar checker that corrects input text into grammatically correct grammar. Return only the corrected text in the output. Return the output in .diff format";
             string message = text;
 
-            string result = await ChatHttpClient.GetChatResponse(message, system);
+            string result = await ChatHttpClient.GetAiResponse(message, system);
 
             if (result == null)
             {

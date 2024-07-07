@@ -13,6 +13,9 @@ public class ImageGenerationTests
         Configuration = Configurations.AiCredentials
                         .FirstOrDefault(c => c.ModelId.Contains("dall-e-3", StringComparison.OrdinalIgnoreCase));
 
+        //Configuration = Configurations.AiCredentials
+        //    .FirstOrDefault(c =>  c.Name.Contains("Azure OpenAi Dall-E"));
+
         if (Configuration == null)
             throw new InvalidOperationException("No Dall-e-3 configuration found.");
 
@@ -25,8 +28,6 @@ public class ImageGenerationTests
     [TestMethod]
     public async Task ImageGenerationToUrlTest()
     {
-        
-
         var generator = new OpenAiImageGeneration(Configuration);
 
         var imagePrompt = new ImagePrompt()
@@ -94,7 +95,7 @@ public class ImageGenerationTests
     }
 
     /// <summary>
-    /// Not supported via Azure OpenAI
+    /// Not supported via Azure OpenAI!
     /// This only works with Dall-e-2 today and produces pretty horrid results.
     /// Try again when dall-e-3 is available for variations.
     /// </summary>
@@ -112,7 +113,7 @@ public class ImageGenerationTests
             ImageSize = "1024x1024",
             ImageQuality = "standard",
             ImageStyle = "vivid",
-            Model = "dall-e-3" // no effect - it uses Dall-E-2
+            Model = "dall-e-2" // no effect - it uses Dall-E-2
         };
 
         // Generate and set properties on `imagePrompt` instance
@@ -136,49 +137,4 @@ public class ImageGenerationTests
     }
 
 
-    /// <summary>
-    /// This example generated using The Azure OpenAI configuration
-    /// Currently Dall-e-3 only works with Sweden Central Azure Region
-    /// and requires a custom preview url.
-    /// </summary>
-    /// <returns></returns>
-    [TestMethod]
-    public async Task AzureImageGenerationToUrlTest()
-    {        
-
-        var generator = new OpenAiImageGeneration(Configuration);
-
-        var imagePrompt = new ImagePrompt()
-        {
-            Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
-            ImageSize = "1024x1024",
-            ImageQuality = "standard",
-            ImageStyle = "vivid",
-            Model = "dall-e-3"
-        };
-
-        // Generate and set properties on `imagePrompt` instance
-        Assert.IsTrue(await generator.Generate(imagePrompt), generator.ErrorMessage);
-
-        // prompt returns an array of images, but for Dall-e-3 it's always one
-        // so FirstImage returns the first image and FirstImageUrl returns the url.
-        var imageUrl = imagePrompt.FirstImageUrl;
-        Console.WriteLine(imageUrl);
-
-        // Display the image as a Url
-        ShellUtils.GoUrl(imageUrl);
-
-        // Typically the AI **fixes up the prompt**
-        Console.WriteLine(imagePrompt.RevisedPrompt);
-
-        // You can download the image from the captured URL to a local file
-        // Default folder is %temp%\openai-images\images or specify `ImageFolderPath`
-        // imagePrompt.ImageFolderPath = "c:\\temp\\openai-images\\"; 
-        Assert.IsTrue(await imagePrompt.DownloadImageToFile(), "Image saving failed: " + generator.ErrorMessage);
-
-        string imageFile = imagePrompt.ImageFilePath;
-        Console.WriteLine(imageFile);
-
-        Console.WriteLine(JsonSerializationUtils.Serialize(imagePrompt, formatJsonOutput: true));
-    }
 }

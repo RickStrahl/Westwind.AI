@@ -17,7 +17,7 @@ namespace Westwind.AI.Chat
             string systemMessage = "You are a translator that translates from one language to another. Be precise and return only the translated text.";
             string query = $"Translate the following text from {sourceLang} to {targetLang}:\n{text}";
             
-            string result = await ChatHttpClient.GetChatResponse(query, systemMessage);
+            string result = await ChatHttpClient.GetAiResponse(query, systemMessage);
 
             if (result == null)
             {

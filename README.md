@@ -16,20 +16,20 @@ This library supports:
 You can use manual configuration like this for connecting to the OpenAI API:
 
 ```cs
-var config = new OpenAiConnection() {
+var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "dall-e-3"
 };
 ```
 
-> Note this is the simplest use case for OpenAI. Depending on what provider you connect to you may have to provide additional connection information like an endpoint url. [More info below](#configuration-and-authorization).
+> Note this is the simplest use case for OpenAI. Depending on what provider you connect to you may have to provide additional connection information like an endpoint url [More info below](#configuration-and-authorization).
 
-or use configuration holding multiple connections loaded from a configuration file (or configuration):
+Alternately you can use Configuration manager that can hold multiple connections so you can quickly rotate switch between different providers and models:
 
 ```cs
 Configurations = OpenAiConnectionConfiguration.Load();
-var config = Configuration.ActiveConnection;  // based on index
-config = Configurations.Connections.FirstOrDefault(c=> c.Name == "Azure OpenAI")
+var connection = Configuration.ActiveConnection;  // based on index
+connection = Configurations.Connections.FirstOrDefault(c=> c.Name == "Azure OpenAI")
 ```
 
 ### Image Generation
@@ -188,7 +188,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
       "Name": "Azure OpenAi Dall-E",
-      "ApiKey": "626e3a82b70f49a681ce5cd45499ab3a",
+      "ApiKey": "62...",
       "Endpoint": "https://rasopenaisample.openai.azure.com/",
       "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
       "ModelId": "ImageGenerations",

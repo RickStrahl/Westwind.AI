@@ -21,7 +21,7 @@ namespace Westwind.AI.Tests.TextCompletions
         public async Task GenericCompletionTest()
         {
             var completion = new GenericAiChat(Connection);
-            completion.ChatHttpClient.CaptureRequestData = true;
+            completion.HttpClient.CaptureRequestData = true;
 
             Console.WriteLine("Using: " + Connection.Name);
 
@@ -30,8 +30,8 @@ namespace Westwind.AI.Tests.TextCompletions
                 "You are a translator that translates between languages. Return only the translated text.");
 
             // optionally captured request and response data
-            Console.WriteLine(completion.ChatHttpClient.LastRequestJson);
-            Console.WriteLine("\n\n" + completion.ChatHttpClient.LastResponseJson);
+            Console.WriteLine(completion.HttpClient.LastRequestJson);
+            Console.WriteLine("\n\n" + completion.HttpClient.LastResponseJson);
 
             Assert.IsNotNull(result, completion.ErrorMessage);
             Console.WriteLine(result);
@@ -76,7 +76,7 @@ namespace Westwind.AI.Tests.TextCompletions
         public async Task TranslationTest()
         {
             var translator = new AiTextOperations(Connection);
-            translator.ChatHttpClient.CaptureRequestData = true;
+            translator.HttpClient.CaptureRequestData = true;
 
             Console.WriteLine("Using: " + Connection.Name);
 

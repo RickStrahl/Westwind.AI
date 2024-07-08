@@ -2,7 +2,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
-using System.Net;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -21,16 +20,16 @@ namespace Westwind.Ai.Images
     public class OpenAiImageGeneration : AiBase
     {
 
-        protected OpenAiHttpClient ChatHttpClient { get; set; }
+        protected OpenAiHttpClient HttpClient { get; set; }
 
         public OpenAiImageGeneration(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig)
         {
-            ChatHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
+            HttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
         }
 
         public OpenAiImageGeneration(IOpenAiConnection connection) : base(connection)
         {
-            ChatHttpClient = new OpenAiHttpClient(connection);
+            HttpClient = new OpenAiHttpClient(connection);
         }
 
 
@@ -65,15 +64,20 @@ namespace Westwind.Ai.Images
             ImageResults response;
 
 
-            using (var client = ChatHttpClient.GetHttpClient())
+            using (var client = HttpClient.GetHttpClient())
             {
                 var json = JsonConvert.SerializeObject(requiredImage);
-                string endPointUrl = ChatHttpClient.GetEndpointUrl("images/generations");
+                string endPointUrl = HttpClient.GetEndpointUrl("images/generations");
+                
+                HttpClient.LastRequestJson = json;
+                
                 var message = await client.PostAsync(endPointUrl, new StringContent(json, Encoding.UTF8, "application/json"));
 
                 if (message.IsSuccessStatusCode)
                 {
                     var content = await message.Content.ReadAsStringAsync();
+                    HttpClient.LastResponseJson = content;
+
                     response = JsonConvert.DeserializeObject<ImageResults>(content);
 
                     foreach (var url in response.data)
@@ -154,7 +158,7 @@ namespace Westwind.Ai.Images
             var ext = Path.GetExtension(imageFile).ToLower();
             var filename = Path.GetFileName(imageFile);
 
-            using (var client = ChatHttpClient.GetHttpClient())
+            using (var client = HttpClient.GetHttpClient())
             {
                 var formContent = new MultipartFormDataContent();
                 HttpResponseMessage message;
@@ -170,7 +174,7 @@ namespace Westwind.Ai.Images
 
                     formContent.Add(new StringContent(outputFormat == ImageGenerationOutputFormats.Url ? "url" : "b64_json"), "response_format");
 
-                    var endPointUrl = ChatHttpClient.GetEndpointUrl("images/variations");
+                    var endPointUrl = HttpClient.GetEndpointUrl("images/variations");
                     message = await client.PostAsync(endPointUrl, formContent);
                 }
 
@@ -230,13 +234,13 @@ namespace Westwind.Ai.Images
                 return false;
 
 
-            using var client = ChatHttpClient.GetHttpClient();
+            using var client = HttpClient.GetHttpClient();
             client.Timeout = TimeSpan.FromSeconds(3);
             client.DefaultRequestHeaders.Clear();
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", key);
 
-            var endPointUrl = ChatHttpClient.GetEndpointUrl("models");
+            var endPointUrl = HttpClient.GetEndpointUrl("models");
             HttpResponseMessage response;
             try
             {

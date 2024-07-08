@@ -10,24 +10,24 @@ public class GenericAiChat : AiBase
     /// Instance of the internally used Http client. It holds the chat history
     /// and also can capture request and response data.
     /// </summary>
-    public OpenAiHttpClient ChatHttpClient { get; set; } 
+    public OpenAiHttpClient HttpClient { get; set; } 
 
     public GenericAiChat(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
     {
-        ChatHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
+        HttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
     }
 
     public GenericAiChat(IOpenAiConnection connection) : base(connection) 
     { 
-        ChatHttpClient = new OpenAiHttpClient(connection);
+        HttpClient = new OpenAiHttpClient(connection);
     }
 
     public async Task<string> Complete(string prompt, string systemPrompt = null)
     {         
-        var result = await ChatHttpClient.GetAiResponse(prompt, systemPrompt);
+        var result = await HttpClient.GetAiResponse(prompt, systemPrompt);
         if (result == null)
         {
-            SetError(ChatHttpClient.ErrorMessage);
+            SetError(HttpClient.ErrorMessage);
         }
 
         return result;
@@ -40,10 +40,10 @@ public class GenericAiChat : AiBase
     /// <returns></returns>
     public async Task<string> Complete( IEnumerable<OpenAiChatMessage> prompts,  bool includeHistory = false)
     {
-        var result = await ChatHttpClient.GetAiResponse(prompts, includeHistory);
+        var result = await HttpClient.GetAiResponse(prompts, includeHistory);
         if (result == null)
         {
-            SetError(ChatHttpClient.ErrorMessage);
+            SetError(HttpClient.ErrorMessage);
         }
 
         return result;

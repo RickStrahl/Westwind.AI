@@ -42,6 +42,7 @@ public class ImageGenerationTests
 
 
         var generator = new OpenAiImageGeneration(Configuration);
+        generator.HttpClient.CaptureRequestData = true;
 
         var imagePrompt = new ImagePrompt()
         {

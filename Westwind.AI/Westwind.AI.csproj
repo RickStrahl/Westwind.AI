@@ -2,21 +2,43 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
-
-
+	  <Version>0.2</Version>
+	  <Authors>Rick Strahl</Authors>
 	  <PackageCopyright>Rick Strahl, West Wind Technologies 2007-2024</PackageCopyright>
 	  <PackageTags>Westwind ApplicationConfiguration StringUtils ReflectionUtils DataUtils FileUtils TimeUtils SerializationUtils ImageUtils Logging DAL Sql ADO.NET</PackageTags>
 	  <PackageReleaseNotes></PackageReleaseNotes>
-	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.utilities</PackageProjectUrl>
+	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>
+
+	  <PackageCopyright>Rick Strahl, West Wind Technologies 2023-2024</PackageCopyright>
+	  <PackageTags>Westwind OpenAI AI</PackageTags>
+	  <PackageReleaseNotes></PackageReleaseNotes>
+	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>
+
 
 	  <PackageIcon>icon.png</PackageIcon>
 	  <PackageLicenseFile>LICENSE.MD</PackageLicenseFile>
-
+	  <Copyright>Rick Strahl, West Wind Technologies, 2010-2024</Copyright>
+	  <Company>West Wind Technologies</Company>
   </PropertyGroup>
 
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+	<DebugType>embedded</DebugType>
+	<NoWarn>$(NoWarn);CS1591;CS1572;CS1573</NoWarn>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<PackageOutputPath>./nupkg</PackageOutputPath>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<DefineConstants>RELEASE</DefineConstants>
+	</PropertyGroup>
 	
   <ItemGroup>
     <PackageReference Include="Westwind.Utilities" Version="5.0.4" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="../icon.png" Pack="true" PackagePath="" />
+		<None Include="../LICENSE.MD" Pack="true" PackagePath="" />
+		<None Include="../README.MD" Pack="true" PackagePath="" />
+	</ItemGroup>
 
 </Project>

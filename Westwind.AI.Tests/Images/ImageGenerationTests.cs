@@ -11,37 +11,24 @@ public class ImageGenerationTests
     {
         // Load confingurations from disk
         Configurations = OpenAiConnectionConfiguration.Load();
-
-        // Pick a Dall-E specific configuration
-        //Configuration = Configurations.Connections
-        //                .FirstOrDefault(c => c.Name.StartsWith("OpenAI Dall-E", StringComparison.OrdinalIgnoreCase));
-
+        
         // Note: for Azure you need a separate deployment for Dall-E-3 specific models
-        Configuration = Configurations.Connections
-            .FirstOrDefault(c => c.Name.Contains("Azure OpenAi Dall-E"));
+        Connection = Configurations["Azure OpenAi Dall-E"];
+        // Connection = Configurations["OpenAI Dall-E"];
 
-        if (Configuration == null)
-            throw new InvalidOperationException("No Dall-e-3 configuration found.");
+        if (Connection == null)
+            throw new InvalidOperationException("No Dall-E-3 configuration found.");
 
         ImagePrompt.DefaultImageStoragePath = Path.GetFullPath("images/GeneratedImages");
     }
 
-    public BaseOpenAiConnection Configuration { get; set; }
+    public BaseOpenAiConnection Connection { get; set; }
     public OpenAiConnectionConfiguration Configurations { get; set; }
 
     [TestMethod]
     public async Task ImageGenerationToUrlTest()
-    {
-        // Pick a Dall-E specific configuration
-        //Configuration = Configurations.Connections
-        //                .FirstOrDefault(c => c.Name.StartsWith("OpenAI Dall-E", StringComparison.OrdinalIgnoreCase));
-
-        // Note: for Azure you need a separate deployment for Dall-E-3 specific models
-        Configuration = Configurations.Connections
-            .FirstOrDefault(c => c.Name.Contains("Azure OpenAi Dall-E"));
-
-
-        var generator = new OpenAiImageGeneration(Configuration);
+    {       
+        var generator = new OpenAiImageGeneration(Connection);
         generator.HttpClient.CaptureRequestData = true;
 
         var imagePrompt = new ImagePrompt()
@@ -80,7 +67,7 @@ public class ImageGenerationTests
     [TestMethod]
     public async Task ImageGenerationToBase64Test()
     {
-        var generator = new OpenAiImageGeneration(Configuration);        
+        var generator = new OpenAiImageGeneration(Connection);        
 
         var imagePrompt = new ImagePrompt()
         {
@@ -119,7 +106,7 @@ public class ImageGenerationTests
     {
         var sourceImage= Path.GetFullPath("Images/PreviouslyGeneratedImage.png");
 
-        var generator = new OpenAiImageGeneration(Configuration);
+        var generator = new OpenAiImageGeneration(Connection);
         
         var imagePrompt = new ImagePrompt()
         {

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Westwind.Utilities;
 
@@ -27,7 +29,7 @@ namespace Westwind.AI.Chat.Configuration
                     ActiveConnectionIndex = 0;
                     if (Connections.Count < 1)
                         return null;
-                }             
+                }
 
                 return Connections[ActiveConnectionIndex];
             }
@@ -43,7 +45,27 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         public List<BaseOpenAiConnection> Connections { get; set; } = new List<BaseOpenAiConnection>();
 
-        
+
+        /// <summary>
+        /// Key indexer that return a named connection value or null if not found.
+        /// </summary>
+        /// <param name="key">Name of the connection to return</param>
+        /// <returns></returns>
+        public BaseOpenAiConnection this[string key] => Connections.FirstOrDefault(c => c.Name.Equals(key, System.StringComparison.OrdinalIgnoreCase));
+
+        /// <summary>
+        /// Key indexer that return a connection by its index.
+        /// </summary>
+        /// <param name="index">Index into the connections available</param>
+        /// <returns></returns>
+        public BaseOpenAiConnection this[int index] {
+            get {
+                if (index < 0 || index >= Connections.Count)
+                    return null;
+                return Connections[index];
+            }            
+        }
+
         /// <summary>
         /// Loads configuration from a file on disk
         /// </summary>

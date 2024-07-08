@@ -58,8 +58,9 @@ namespace Westwind.AI
         /// Instructions for the AI on how to process the prompt.
         /// You can use a persona, job description or give descriptive instructions.
         /// </param>
+        /// <param name="includeHistory"> If true includes previous requests and responses</param>
         /// <returns></returns>
-        public Task<string> GetAiResponse(string prompt, string systemPrompt = null)
+        public Task<string> GetAiResponse(string prompt, string systemPrompt = null, bool includeHistory = false)
         {
             var request = new OpenAiChatRequest()
             {
@@ -82,7 +83,7 @@ namespace Westwind.AI
                 content = prompt
             });
 
-            return GetAiResponse(messages);
+            return GetAiResponse(messages, includeHistory);
         }
 
         /// <summary>
@@ -90,9 +91,8 @@ namespace Westwind.AI
         /// that include the current prompt history.
         /// </summary>
         /// <param name="messages"></param>
-        /// <param name="includeHistory"></param>
+        /// <param name="includeHistory">If true includes previous requests and responses</param>
         /// <returns></returns>
-
         public async Task<string> GetAiResponse(IEnumerable<OpenAiChatMessage> messages, bool includeHistory = false)
         {
             SetError();

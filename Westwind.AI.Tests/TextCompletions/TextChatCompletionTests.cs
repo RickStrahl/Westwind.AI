@@ -5,6 +5,15 @@ using Westwind.Utilities;
 
 namespace Westwind.AI.Tests.TextCompletions
 {
+
+    /// <summary>
+    /// Most of these tests use the configuration in _AiAuthenticationConfiguration.json
+    /// and the ActiveConnectionIndex to determine which connection is used. To use a different model
+    /// adjust that file.
+    /// 
+    /// Note the file can be encrypted run ConfigurationTests to encrypt the file then paste it into
+    /// _AiAuthenticationConfiguration.json in your project. This file will not be checked into source control.    
+    /// </summary>
     [TestClass]
     public class TextChatCompletionTests
     {
@@ -20,11 +29,11 @@ namespace Westwind.AI.Tests.TextCompletions
         [TestMethod]
         public async Task GenericCompletionTest()
         {
+            ConnectionMessage();
+
             var completion = new GenericAiChat(Connection);
             completion.HttpClient.CaptureRequestData = true;
-
-            Console.WriteLine("Using: " + Connection.Name);
-
+                      
             string result = await completion.Complete(
                 "Translate the following from English to German:\nThe sky is below, the ground is above",
                 "You are a translator that translates between languages. Return only the translated text.");
@@ -40,10 +49,9 @@ namespace Westwind.AI.Tests.TextCompletions
         [TestMethod]
         public async Task SummarizeCompletionTest()
         {
-            var completion = new AiTextOperations(Connection);
+            ConnectionMessage();
 
-            Console.WriteLine("Using: " + Connection.Name);
-
+            var completion = new AiTextOperations(Connection);            
             string result = await completion.Summarize(
                 textToSummarize, 3);
 
@@ -54,9 +62,9 @@ namespace Westwind.AI.Tests.TextCompletions
         [TestMethod]
         public async Task SummarizeFromUrlCompletionTest()
         {
-            var completion = new AiTextOperations(Connection);
+            ConnectionMessage();
 
-            Console.WriteLine("Using: " + Connection.Name);
+            var completion = new AiTextOperations(Connection);
 
             string html = await HttpClientUtils.DownloadStringAsync("https://weblog.west-wind.com/posts/2024/Feb/20/Reading-Raw-ASPNET-RequestBody-Multiple-Times");
 
@@ -121,6 +129,80 @@ namespace Westwind.AI.Tests.TextCompletions
             Console.WriteLine(result);
         }
 
+
+        [TestMethod]
+        public async Task MultipleMessagesTest()
+        {
+            ConnectionMessage();
+
+            string bornDate = DateTime.Now.AddYears(-30).ToString("MMMM yyyy");
+            string currentDate = DateTime.Now.ToString("MMMM yyyy");
+
+            Console.WriteLine("Born on: "  + bornDate);
+
+            var completion = new GenericAiChat(Connection);
+
+            string result = await completion.Complete( [
+                 new OpenAiChatMessage { content = $"You are a helpful assistant that answers generic everyday questions precisely. " +
+                                                   $"Today is {DateTime.Now.Date:d}", role = "system"   },
+                 new OpenAiChatMessage { content = "Hello what is your name?", role = "assistant"   },
+                 new OpenAiChatMessage { content = "My name is Rick", role = "user"   },
+                 new OpenAiChatMessage { content = "When were you born?", role = "assistant"   },
+                 new OpenAiChatMessage { content = bornDate, role = "user"   },      
+                 new OpenAiChatMessage { content = $"How old am I today?", role = "user"   }
+             ]) ;
+
+            Assert.IsNotNull(result, completion.ErrorMessage);
+            Console.WriteLine(result);
+        }
+
+
+
+        /// <summary>
+        /// Demonstrates using the built-in ChatHistory in an instance chat client 
+        /// to maintain context across multiple completion requests (or if you want to 
+        /// build an interactive chat client).
+        /// (completion.HttpClient.ChatHistory) 
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task ChatHistoryTest()
+        {
+            ConnectionMessage();
+
+            string bornDate = DateTime.Now.AddYears(-30).ToString("MMMM yyyy");
+            string currentDate = DateTime.Now.ToString("MMMM yyyy");
+
+            Console.WriteLine("Born on: " + bornDate);
+
+            var completion = new GenericAiChat(Connection);
+            completion.HttpClient.CaptureRequestData = true;
+
+            string result = await completion.Complete([               
+                new OpenAiChatMessage { content = "You are a helpful assistant that answers generic everyday questions precisely", role = "system"   },
+                new OpenAiChatMessage { content = "My name is Rick and I was born in 1966 in Berlin, Germany.\nHow old am I on " + currentDate, role = "user"   },
+            ]);
+
+            Assert.IsNotNull(result, completion.ErrorMessage);
+            Console.WriteLine(result);
+
+            // continue conversion with the previous in chat history (uses completion.HttpClient.ChatHistory)
+            result = await completion.Complete("Tell me about my birth city.", includeHistory: true);
+
+            Assert.IsNotNull(result, completion.ErrorMessage);
+            Console.WriteLine(result);
+
+            Console.WriteLine("---\n" +completion.HttpClient.LastRequestJson);
+        }
+    
+        void ConnectionMessage()
+        {
+            Console.WriteLine("Using " + Connection.Name + " (" + Connection.ModelId + ")");
+        }
+
+
+        // This will get rejected by OpenAI/AzureOpenAi for safety viloations! Bah!
+        // Works with local Ollama models
         string textToSummarize = """
             For money, for honor
             No one even knows 

@@ -22,9 +22,9 @@ public class GenericAiChat : AiBase
         HttpClient = new OpenAiHttpClient(connection);
     }
 
-    public async Task<string> Complete(string prompt, string systemPrompt = null)
+    public async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
     {         
-        var result = await HttpClient.GetAiResponse(prompt, systemPrompt);
+        var result = await HttpClient.GetAiResponse(prompt, systemPrompt, includeHistory);
         if (result == null)
         {
             SetError(HttpClient.ErrorMessage);

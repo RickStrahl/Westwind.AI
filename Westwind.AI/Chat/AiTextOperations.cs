@@ -87,7 +87,7 @@ namespace Westwind.AI.Specialized
         /// <returns></returns>
         public async Task<string> CheckGrammarAsDiff(string text)
         {
-            string system = "You are a grammar checker that corrects input text into grammatically correct grammar. Return only the corrected text in the output. Return the output in .diff format";
+            string system = "You are a grammar checker that corrects input text into grammatically correct grammar. Return only the corrected text in the output. Return the output as a PATCH in .diff format";
             string message = text;
 
             string result = await HttpClient.GetAiResponse(message, system);

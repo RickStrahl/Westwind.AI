@@ -1,0 +1,1 @@
+Long story short, one of the use cases that usually made me reach for the Newtonsoft library was dynamic parsing. However, I'm glad to see that at some point, at least minimal support for dynamic parsing was added to the `System.Text.Json.JsonSerializer` class.

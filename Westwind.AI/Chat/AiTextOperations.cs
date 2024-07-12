@@ -46,8 +46,7 @@ namespace Westwind.AI.Specialized
         /// <returns></returns>
         public async Task<string> TranslateText(string text, string sourceLang, string targetLang)
         {
-
-            string systemMessage = "You are a translator that translates from one language to another. Be precise and return only the translated text.";
+            string systemMessage = "You are a translator that translates from one language to another. Do not translate text or comments inside of code blocks. Be precise and return only the translated text in the result.";
             string query = $"Translate the following text from {sourceLang} to {targetLang}:\n{text}";
 
             string result = await HttpClient.GetAiResponse(query, systemMessage);

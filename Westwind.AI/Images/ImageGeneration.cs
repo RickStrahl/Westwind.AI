@@ -63,7 +63,7 @@ namespace Westwind.Ai.Images
             var imageResults = new List<ImageResult>();
             ImageResults response;
 
-
+            // Use Http Client, but send custom message since this is not a Chat Completion request
             using (var client = HttpClient.GetHttpClient())
             {
                 var json = JsonConvert.SerializeObject(requiredImage);

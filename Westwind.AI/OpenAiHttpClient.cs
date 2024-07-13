@@ -46,8 +46,15 @@ namespace Westwind.AI
         /// </summary>
         public string LastRequestJson { get; set; }
 
-        
+        /// <summary>
+        /// Returns the raw JSON response from the last request
+        /// </summary>
         public string LastResponseJson { get; set; }
+
+        /// <summary>
+        /// Returns last success response
+        /// </summary>
+        public OpenAiChatMessages LastChatResponse { get; set;  }
 
 
         /// <summary>
@@ -121,12 +128,15 @@ namespace Westwind.AI
             if (string.IsNullOrEmpty(resultJson))
                 return default;            
 
-            var chatResponse = JsonSerializationUtils.Deserialize<OpenAiChatMessages>(resultJson);
+            var chatResponse = JsonSerializationUtils.Deserialize<OpenAiChatMessages>(resultJson); // fails silently with null
             if (chatResponse == null)
             {
                 SetError("Invalid response from AI service.");
                 return default;
             }
+
+            if (CaptureRequestData)
+                LastChatResponse = chatResponse;
 
             var choice = chatResponse?.choices?.FirstOrDefault();
             if (choice == null)
@@ -134,6 +144,8 @@ namespace Westwind.AI
                 SetError("Invalid response from AI service.");
                 return default;
             }
+
+
 
             ChatHistory.Add(choice.message);
 
@@ -157,25 +169,28 @@ namespace Westwind.AI
             }
 
             var endpointUrl = GetEndpointUrl(operationSegment);
-            var http = GetHttpClient();
-
-            if(CaptureRequestData)
-                LastRequestJson = jsonPayload + "\n\n" +
-                    "---\n\n" +
-                    endpointUrl +"\n" + 
-                    Configuration.ModelId + " " + Configuration.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
-
-            var json = " {}";   // invalid json
+            string json;   // invalid json
 
             HttpResponseMessage message;
-            try
+            using (var http = GetHttpClient())
             {
-                message = await http.PostAsync(endpointUrl, new StringContent(jsonPayload, Encoding.UTF8, "application/json"));
-            }
-            catch
-            {
-                // request hard failed
-                return null;
+                if(CaptureRequestData)
+                    LastRequestJson = jsonPayload + "\n\n" +
+                                      "---\n\n" +
+                                      endpointUrl +"\n" + 
+                                      Configuration.ModelId + " " + Configuration.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
+
+                json = " {}";
+
+                try
+                {
+                    message = await http.PostAsync(endpointUrl, new StringContent(jsonPayload, Encoding.UTF8, "application/json"));
+                }
+                catch
+                {
+                    // request hard failed
+                    return null;
+                }
             }
 
             if (message.IsSuccessStatusCode)

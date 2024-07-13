@@ -18,7 +18,7 @@ public class GenericAiChat : AiBase
     }
 
     public GenericAiChat(IOpenAiConnection connection) : base(connection) 
-    { 
+    {             
         HttpClient = new OpenAiHttpClient(connection);
     }
 

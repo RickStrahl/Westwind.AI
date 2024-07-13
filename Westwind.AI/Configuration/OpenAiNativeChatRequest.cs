@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Westwind.AI.Chat
 {
+    /// <summary>
+    /// OpenAI formatted messages for Chat Requests and Responses
+    /// </summary>
     public class OpenAiChatRequest
     {
         public string model { get; set; }

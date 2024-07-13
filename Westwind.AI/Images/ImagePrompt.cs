@@ -448,7 +448,7 @@ namespace Westwind.Ai.Images
 
             var imageBytes = FirstImage.GetBytesFromBase64();
             if (imageBytes == null) return null;
-
+            
             if (string.IsNullOrEmpty(filename))
             {
                 // create a new file and store it on the image prompt
@@ -456,6 +456,9 @@ namespace Westwind.Ai.Images
                 return ImageFilePath;
             }
 
+            // write to a specific location
+            if (!Directory.Exists(Path.GetDirectoryName(filename)))
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
             await File.WriteAllBytesAsync(filename, imageBytes);
             return filename;
         }
@@ -543,7 +546,11 @@ namespace Westwind.Ai.Images
             }
 
             try
-            {
+            {                
+                var folder = Path.GetDirectoryName(Path.GetFullPath(filename));
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
                 File.WriteAllBytes(filename, bytes);
             }
             catch

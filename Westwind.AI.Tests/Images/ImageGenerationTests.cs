@@ -11,9 +11,9 @@ public class ImageGenerationTests
     {
         // Load confingurations from disk
         Configurations = OpenAiConnectionConfiguration.Load();
-        
+
         // Note: for Azure you need a separate deployment for Dall-E-3 specific models
-        Connection = Configurations["Azure OpenAi Dall-E"];
+        Connection = Configurations.ActiveImageConnection; // Configurations["Azure OpenAi Dall-E"];
         // Connection = Configurations["OpenAI Dall-E"];
 
         if (Connection == null)
@@ -95,10 +95,44 @@ public class ImageGenerationTests
         ShellUtils.GoUrl(file);
     }
 
+    [TestMethod]
+    public async Task ImageGenerationErrorTest()
+    {
+        var generator = new OpenAiImageGeneration(Connection);
+
+        var imagePrompt = new ImagePrompt()
+        {
+            Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
+            ImageSize = "1024x10241", // invalid dimensions
+            ImageQuality = "standard",
+            ImageStyle = "vivid"
+        };
+
+        bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.Url);
+
+        // Generate and set properties on `imagePrompt` instance
+        Assert.IsTrue(result, generator.ErrorMessage);
+
+        // prompt returns an array of images, but for Dall-e-3 it's always one
+        // so FirstImage returns the first image.
+        byte[] bytes = imagePrompt.GetBytesFromBase64();
+        Assert.IsNotNull(bytes);
+
+        string file = await imagePrompt.SaveImageFromBase64();
+        Assert.IsTrue(File.Exists(file));
+
+        // show image in OS viewer
+        Console.WriteLine("File generated: " + file);
+        ShellUtils.GoUrl(file);
+    }
+
     /// <summary>
     /// Not supported via Azure OpenAI!
+    /// 
     /// This only works with Dall-e-2 today and produces pretty horrid results.
     /// Try again when dall-e-3 is available for variations.
+    /// 
+    /// Don't use unless it gets updated for Dall-e-3. Current state is useless.
     /// </summary>
     /// <returns></returns>
     [TestMethod]
@@ -114,7 +148,7 @@ public class ImageGenerationTests
             ImageSize = "1024x1024",
             ImageQuality = "standard",
             ImageStyle = "vivid",
-            Model = "dall-e-2" // no effect - it uses Dall-E-2
+            Model = "dall-e-3" // no effect - it uses Dall-E-2
         };
 
         // Generate and set properties on `imagePrompt` instance

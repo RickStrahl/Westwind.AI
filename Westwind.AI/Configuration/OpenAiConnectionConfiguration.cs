@@ -40,6 +40,32 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         public int ActiveConnectionIndex { get; set; } = 0;
 
+
+        /// <summary>
+        /// The active connection based on the ActiveConnectionIndex    
+        /// </summary>
+        [JsonIgnore]
+        public BaseOpenAiConnection ActiveImageConnection
+        {
+            get
+            {
+                if (ActiveImageConnectionIndex < 0 || ActiveImageConnectionIndex >= Connections.Count)
+                {
+                    ActiveImageConnectionIndex = 0;
+                    if (Connections.Count < 1)
+                        return null;
+                }
+
+                return Connections[ActiveImageConnectionIndex];
+            }
+        }
+
+        /// <summary>
+        /// The index that determines which connection is the active one
+        /// </summary>
+        public int ActiveImageConnectionIndex { get; set; } = 0;
+
+
         /// <summary>
         /// A collection of connections. The active connection is determined by the ActiveConnectionIndex
         /// </summary>

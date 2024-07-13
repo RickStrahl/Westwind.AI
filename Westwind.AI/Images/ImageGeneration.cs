@@ -32,9 +32,6 @@ namespace Westwind.Ai.Images
             HttpClient = new OpenAiHttpClient(connection);
         }
 
-
-
-
         #region Image Generation API Calls
 
         /// <summary>
@@ -63,62 +60,48 @@ namespace Westwind.Ai.Images
             var imageResults = new List<ImageResult>();
             ImageResults response;
 
-            // Use Http Client, but send custom message since this is not a Chat Completion request
-            using (var client = HttpClient.GetHttpClient())
+            var json = JsonConvert.SerializeObject(requiredImage);
+            var result = await HttpClient.SendJsonHttpRequest(json, "images/generations");
+
+            if (!string.IsNullOrEmpty(result))
             {
-                var json = JsonConvert.SerializeObject(requiredImage);
-                string endPointUrl = HttpClient.GetEndpointUrl("images/generations");
-                
-                HttpClient.LastRequestJson = json;
-                
-                var message = await client.PostAsync(endPointUrl, new StringContent(json, Encoding.UTF8, "application/json"));
+                HttpClient.LastResponseJson = result;
+                response = JsonConvert.DeserializeObject<ImageResults>(result);
 
-                if (message.IsSuccessStatusCode)
+                foreach (var url in response.data)
                 {
-                    var content = await message.Content.ReadAsStringAsync();
-                    HttpClient.LastResponseJson = content;
-
-                    response = JsonConvert.DeserializeObject<ImageResults>(content);
-
-                    foreach (var url in response.data)
+                    var res = new ImageResult()
                     {
-                        var res = new ImageResult()
-                        {
-                            Url = url.url,
-                            Base64Data = url.b64_json,
-                            RevisedPrompt = url.revised_prompt
-                        };
-                        imageResults.Add(res);
-                    }
-                    prompt.ImageUrls = imageResults.ToArray();
-
-                    if (createImageFile)
-                    {
-                        try
-                        {
-                            await prompt.DownloadImageToFile();
-                        }
-                        catch (Exception ex)
-                        {
-                            SetError("Download failed: " + ex.Message);
-                            return false;
-                        }
-                    }
-                    return true;
+                        Url = url.url,
+                        Base64Data = url.b64_json,
+                        RevisedPrompt = url.revised_prompt
+                    };
+                    imageResults.Add(res);
                 }
+                prompt.ImageUrls = imageResults.ToArray();
 
-
-                if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType?.ToString() == "application/json")
+                if (createImageFile)
                 {
-                    json = await message.Content.ReadAsStringAsync();
-                    var error = JsonConvert.DeserializeObject<dynamic>(json);
-                    string msg = error.error?.message;
-                    SetError($"Image generation failed: {msg}");
+                    try
+                    {
+                        await prompt.DownloadImageToFile();
+                    }
+                    catch (Exception ex)
+                    {
+                        SetError("Download failed: " + ex.Message);
+                        return false;
+                    }
                 }
-
-                return false;
+                return true;
             }
 
+            // error
+            string msg = HttpClient.ErrorMessage;
+            SetError($"Image generation failed: {msg}");
+
+            return false;
+        }
+           
             //	curl https://api.openai.com/v1/images/generations \
             //  -H "Content-Type: application/json" \
             //  -H "Authorization: Bearer $OPENAI_API_KEY" \
@@ -132,12 +115,13 @@ namespace Westwind.Ai.Images
             //    "quality": "standard"       
             //  }
 
-        }
+       // }
 
 
 
         /// <summary>
-        /// Currently doesn't work with Dall-E-3
+        /// Currently doesn't work with Dall-E-3 - only Dall-e-2 - Not supported on Azure
+        /// Currently pretty much worthless - don't use
         /// </summary>
         /// <param name="prompt"></param>
         /// <param name="createImageFile"></param>

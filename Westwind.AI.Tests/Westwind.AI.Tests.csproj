@@ -26,8 +26,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Images\PreviouslyGeneratedImage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
     <None Update="_AiAuthenticationConfiguration.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

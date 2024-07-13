@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Newtonsoft.Json;
 using Westwind.Utilities;
@@ -53,12 +56,21 @@ namespace Westwind.AI.Chat.Configuration
     /// Base class that can be used to access OpenAI and Azure OpenAI
     /// or any other OpenAI based service like local Ollama interface.
     /// </summary>
-    public class BaseOpenAiConnection : IOpenAiConnection
+    public class BaseOpenAiConnection : IOpenAiConnection, INotifyPropertyChanged
     {
         /// <summary>
         /// 
         /// </summary>
-        public string Name { get; set; }
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (value == _name) return;
+                _name = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// The Encrypted API Key for the service
@@ -70,6 +82,7 @@ namespace Westwind.AI.Chat.Configuration
                 if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(value))
                 {
                     _apiKey = value;
+                    OnPropertyChanged();
                     return;
                 }    
                 
@@ -77,7 +90,9 @@ namespace Westwind.AI.Chat.Configuration
                 if (value.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
                     _apiKey = value;
                 else 
-                    _apiKey = Encryption.EncryptString(value, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;                
+                    _apiKey = Encryption.EncryptString(value, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;
+
+                OnPropertyChanged();
             }
             get
             {
@@ -85,12 +100,20 @@ namespace Westwind.AI.Chat.Configuration
             }
         }
         private string _apiKey;
+        private string _name;
+        private string _endpoint;
+        private string _endpointTemplate = "{0}/{1}";
+        private string _modelId;
+        private string _apiVersion;
+        private AiConnectionModes _connectionMode = AiConnectionModes.OpenAi;
+        private AiOperationModes _operationMode = AiOperationModes.Completions;
 
         [JsonIgnore]
         public string DecryptedApiKey
         {
             get
             {
+                OnPropertyChanged();
                 if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(_apiKey))
                     return _apiKey;
 
@@ -103,7 +126,17 @@ namespace Westwind.AI.Chat.Configuration
         /// <summary>
         /// The Endpoint for the service
         /// </summary>
-        public string Endpoint { get; set; }
+        public string Endpoint
+        {
+            get => _endpoint;
+            set
+            {
+                if (value == _endpoint) return;
+                _endpoint = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsEmpty));
+            }
+        }
 
         /// <summary>
         /// Endpoint URL template that configures the endpoint format.
@@ -111,28 +144,73 @@ namespace Westwind.AI.Chat.Configuration
         /// {1}  - Model Id (Azure)
         /// {2}  - API Version  (Azure)
         /// </summary>
-        public string EndpointTemplate { get; set; } = "{0}/{1}";
+        public string EndpointTemplate
+        {
+            get => _endpointTemplate;
+            set
+            {
+                if (value == _endpointTemplate) return;
+                _endpointTemplate = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Model Id used for Azure OpenAI
         /// </summary>
-        public string ModelId { get; set; }
+        public string ModelId
+        {
+            get => _modelId;
+            set
+            {
+                if (value == _modelId) return;
+                _modelId = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// An optional API version (used for Azure)
         /// </summary>
-        public string ApiVersion { get; set; }
+        public string ApiVersion
+        {
+            get => _apiVersion;
+            set
+            {
+                if (value == _apiVersion) return;
+                _apiVersion = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Determines whether this is an OpenAI or Azure connection
         /// </summary>
-        public AiConnectionModes ConnectionMode { get; set; } = AiConnectionModes.OpenAi;
+        public AiConnectionModes ConnectionMode
+        {
+            get => _connectionMode;
+            set
+            {
+                if (value == _connectionMode) return;
+                _connectionMode = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Determines whether we're using completions or image generation 
         /// </summary>
-        public AiOperationModes OperationMode { get; set; } = AiOperationModes.Completions;
-                
+        public AiOperationModes OperationMode
+        {
+            get => _operationMode;
+            set
+            {
+                if (value == _operationMode) return;
+                _operationMode = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         /// <summary>
         /// Determines whether the credentials are empty    
@@ -144,6 +222,21 @@ namespace Westwind.AI.Chat.Configuration
         public override string ToString()
         {
             return Name ?? Endpoint;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
         }
     }
 
@@ -174,7 +267,9 @@ namespace Westwind.AI.Chat.Configuration
     public enum AiConnectionModes
     {
         OpenAi,
-        AzureOpenAi
+        AzureOpenAi,
+        Ollama,
+        Other
     }
 
     public enum AiOperationModes

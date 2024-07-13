@@ -67,7 +67,7 @@ namespace Westwind.AI
         /// </param>
         /// <param name="includeHistory"> If true includes previous requests and responses</param>
         /// <returns></returns>
-        public Task<string> GetAiResponse(string prompt, string systemPrompt = null, bool includeHistory = false)
+        public Task<string> GetChatAiResponse(string prompt, string systemPrompt = null, bool includeHistory = false)
         {
             var request = new OpenAiChatRequest()
             {
@@ -90,7 +90,7 @@ namespace Westwind.AI
                 content = prompt
             });
 
-            return GetAiResponse(messages, includeHistory);
+            return GetChatAiResponse(messages, includeHistory);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Westwind.AI
         /// <param name="messages"></param>
         /// <param name="includeHistory">If true includes previous requests and responses</param>
         /// <returns></returns>
-        public async Task<string> GetAiResponse(IEnumerable<OpenAiChatMessage> messages, bool includeHistory = false)
+        public async Task<string> GetChatAiResponse(IEnumerable<OpenAiChatMessage> messages, bool includeHistory = false)
         {
             SetError();
 
@@ -155,12 +155,12 @@ namespace Westwind.AI
 
 
         /// <summary>
-        /// 
+        /// Low level, generic routine that sends an HTTP request to the OpenAI server. This method
+        /// works to send any type - chat, image, variation etc. - to the server.
         /// </summary>
-        /// <param name="operationSegment">The Open AI Command operation. Segment off the baseUrl</param>
-        /// <param name="jsonPayload"></param>
-        /// 
-        /// <returns></returns>
+        /// <param name="operationSegment">The Open AI Command operation. Segment(s) off the baseUrl. ie `chat/completions` or `image/generation`</param>
+        /// <param name="jsonPayload">Raw JSON to send to the server</param>         
+        /// <returns>JSON response or null</returns>
         public async Task<string> SendJsonHttpRequest(string jsonPayload, string operationSegment = "chat/completions")
         {
             if (Configuration == null || Configuration.IsEmpty)

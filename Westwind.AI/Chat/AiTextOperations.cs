@@ -27,7 +27,7 @@ namespace Westwind.AI.Specialized
             string systemMessage = "You are an editor writes summaries of text for end of document summaries. Return only the summarized text.";
             string query = $"Summarize the following text in {numberOfSentences} sentences:\n{text}";
 
-            string result = await HttpClient.GetAiResponse(query, systemMessage);
+            string result = await HttpClient.GetChatAiResponse(query, systemMessage);
 
             if (result == null)
             {
@@ -49,7 +49,7 @@ namespace Westwind.AI.Specialized
             string systemMessage = "You are a translator that translates from one language to another. Do not translate text or comments inside of code blocks. Be precise and return only the translated text in the result.";
             string query = $"Translate the following text from {sourceLang} to {targetLang}:\n{text}";
 
-            string result = await HttpClient.GetAiResponse(query, systemMessage);
+            string result = await HttpClient.GetChatAiResponse(query, systemMessage);
 
             if (result == null)
             {
@@ -68,7 +68,7 @@ namespace Westwind.AI.Specialized
             string system = "You are a grammar checker that corrects grammar on the input text. Return only the corrected text in the output.";
             string message = text;
 
-            string result = await HttpClient.GetAiResponse(message, system);
+            string result = await HttpClient.GetChatAiResponse(message, system);
 
             if (result == null)
             {
@@ -89,7 +89,7 @@ namespace Westwind.AI.Specialized
             string system = "You are a grammar checker that corrects input text into grammatically correct grammar. Return only the corrected text in the output. Return the output as a PATCH in .diff format";
             string message = text;
 
-            string result = await HttpClient.GetAiResponse(message, system);
+            string result = await HttpClient.GetChatAiResponse(message, system);
 
             if (result == null)
             {

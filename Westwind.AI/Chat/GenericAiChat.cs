@@ -24,7 +24,7 @@ public class GenericAiChat : AiBase
 
     public async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
     {         
-        var result = await HttpClient.GetAiResponse(prompt, systemPrompt, includeHistory);
+        var result = await HttpClient.GetChatAiResponse(prompt, systemPrompt, includeHistory);
         if (result == null)
         {
             SetError(HttpClient.ErrorMessage);
@@ -40,7 +40,7 @@ public class GenericAiChat : AiBase
     /// <returns></returns>
     public async Task<string> Complete( IEnumerable<OpenAiChatMessage> prompts,  bool includeHistory = false)
     {
-        var result = await HttpClient.GetAiResponse(prompts, includeHistory);
+        var result = await HttpClient.GetChatAiResponse(prompts, includeHistory);
         if (result == null)
         {
             SetError(HttpClient.ErrorMessage);

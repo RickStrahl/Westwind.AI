@@ -139,19 +139,21 @@ This class can be used as a container for multiple connections that you can easi
 ```json
 {
   "ActiveConnectionIndex": 0,
+  "ActiveImageConnectionIndex": 4,
   "Connections": [
     {
       "Name": "OpenAI",
-      "ApiKey": "sk-wp...",
+      "ApiKey": "18064FE1...12E@|-|@",
       "Endpoint": "https://api.openai.com/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "gpt-3.5-turbo",
+      "ApiVersion": null,
       "ConnectionMode": "OpenAi",
       "OperationMode": "Completions"
     },
     {
       "Name": "Azure OpenAi",
-      "ApiKey": "a26e3...",
+      "ApiKey": "01BA5CC...442@|-|@",
       "Endpoint": "https://rasopenaisample.openai.azure.com/",
       "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
       "ModelId": "Gpt35",
@@ -165,6 +167,7 @@ This class can be used as a container for multiple connections that you can easi
       "Endpoint": "http://127.0.0.1:11434/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "llama3",
+      "ApiVersion": null,
       "ConnectionMode": "OpenAi",
       "OperationMode": "Completions"
     },
@@ -174,21 +177,23 @@ This class can be used as a container for multiple connections that you can easi
       "Endpoint": "http://127.0.0.1:11434/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "phi3",
+      "ApiVersion": null,
       "ConnectionMode": "OpenAi",
       "OperationMode": "Completions"
     },
     {
       "Name": "OpenAI Dall-E",
-      "ApiKey": "sk-wpDP...",
+      "ApiKey": "1806416...2ACE@|-|@",
       "Endpoint": "https://api.openai.com/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "dall-e-3",
+      "ApiVersion": null,
       "ConnectionMode": "OpenAi",
       "OperationMode": "ImageGeneration"
     },
     {
       "Name": "Azure OpenAi Dall-E",
-      "ApiKey": "62...",
+      "ApiKey": "01B2C29E...E9EA@|-|@",
       "Endpoint": "https://rasopenaisample.openai.azure.com/",
       "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
       "ModelId": "ImageGenerations",
@@ -197,6 +202,7 @@ This class can be used as a container for multiple connections that you can easi
       "OperationMode": "ImageGeneration"
     }
   ]
+}
 ```
 
 The values used depend on whether you're accessing OpenAI or an openAI compatible API or Azure OpenAi. Azure uses a deployments to manage models and uses non-standard Api key referencing.

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Westwind.Utilities;
 
@@ -42,7 +41,7 @@ namespace Westwind.AI.Chat.Configuration
 
 
         /// <summary>
-        /// The active connection based on the ActiveConnectionIndex    
+        /// The active connection based on the ActiveImageConnectionIndex    
         /// </summary>
         [JsonIgnore]
         public BaseOpenAiConnection ActiveImageConnection
@@ -61,7 +60,7 @@ namespace Westwind.AI.Chat.Configuration
         }
 
         /// <summary>
-        /// The index that determines which connection is the active one
+        /// The index that determines which image generation connection is the active one
         /// </summary>
         public int ActiveImageConnectionIndex { get; set; } = 0;
 
@@ -119,8 +118,30 @@ namespace Westwind.AI.Chat.Configuration
 
         #region Global Encryption Configuration
 
+        /// <summary>
+        /// Determines whether encryption is used. On by default.
+        /// Note that you can add unencrypted keys to the configuration file,
+        /// and values will auto-encrypt. If you explicitly save your configuration
+        /// file, values will then save encrypted.
+        /// 
+        /// This allows max flexibility to use encrypted keys but still allow you to
+        /// manually add keys unencrypted and saved them encrypted as long as you explicitly
+        /// save the configuration to file.
+        /// </summary>
         public static bool UseEncryption { get; set; } = true;
+
+        /// <summary>
+        /// Encryption key used for the apikey in the configuration file.
+        /// 
+        /// You can override this for your own application on application startup
+        /// and use an application specific or application+machine specific key.
+        /// </summary>
         public static byte[] EncryptionKey { get; set; } = new byte[] { 55, 233, 33, 44, 55, 100, 99, 21, 222, 55, 99, 122, 10, 43, 37, 53, 73, 99 };
+
+        /// <summary>
+        /// Encrypted keys are postfixed so it can be identified as encrypted. Unencrypted key values
+        /// are automatically encrypted when accessed.
+        /// </summary>
         public static string EncryptionPostFix { get; set; } = "@|-|@";
 
         #endregion

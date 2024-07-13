@@ -15,9 +15,24 @@ using Westwind.Utilities;
 namespace Westwind.AI
 {
 
+    /// <summary>
+    /// This is the low level API client that provides access to the OpenAI API with
+    /// high level methods for specific operations like chat, image generation etc.
+    /// 
+    /// It provides the ability to use connections which can be optionally stored in
+    /// configuration files and loaded from disk with encryption.
+    /// 
+    /// This class is used by the higher level GenericAiChat and ImageGenerations classes.
+    /// </summary>
     public class OpenAiHttpClient
     {
-        public IOpenAiConnection Configuration { get; set; }
+        /// <summary>
+        /// The connection that is used to connect to the service.
+        /// This single connection type supports multiple models and providers through
+        /// a single interface which is accessed by GetHttpClient() and GetEndpointUrl()
+        /// to retrieve the correct configuration for the current connection.
+        /// </summary>
+        public IOpenAiConnection Connection { get; set; }
 
         /// <summary>
         /// Keep track of the chat history for passing context
@@ -27,7 +42,7 @@ namespace Westwind.AI
 
         public OpenAiHttpClient(IOpenAiConnection connection)
         {
-            Configuration = connection;
+            Connection = connection;
         }
 
 
@@ -71,7 +86,7 @@ namespace Westwind.AI
         {
             var request = new OpenAiChatRequest()
             {
-                model = Configuration.ModelId,
+                model = Connection.ModelId,
             };
 
             var messages = new List<OpenAiChatMessage>();
@@ -106,7 +121,7 @@ namespace Westwind.AI
 
             var request = new OpenAiChatRequest()
             {
-                model = Configuration.ModelId,
+                model = Connection.ModelId,
             };
 
             // Add request to history            
@@ -163,7 +178,7 @@ namespace Westwind.AI
         /// <returns>JSON response or null</returns>
         public async Task<string> SendJsonHttpRequest(string jsonPayload, string operationSegment = "chat/completions")
         {
-            if (Configuration == null || Configuration.IsEmpty)
+            if (Connection == null || Connection.IsEmpty)
             {
                 SetError("No configuration provided.");
             }
@@ -178,7 +193,7 @@ namespace Westwind.AI
                     LastRequestJson = jsonPayload + "\n\n" +
                                       "---\n\n" +
                                       endpointUrl +"\n" + 
-                                      Configuration.ModelId + " " + Configuration.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
+                                      Connection.ModelId + " " + Connection.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
 
                 json = " {}";
 
@@ -252,24 +267,24 @@ namespace Westwind.AI
         /// <returns></returns>
         public string GetEndpointUrl(string operationSegment)
         {
-            var endpoint = Configuration.Endpoint.TrimEnd('/');
+            var endpoint = Connection.Endpoint.TrimEnd('/');
 
 
-            if (Configuration.ConnectionMode == AiConnectionModes.AzureOpenAi)
+            if (Connection.ConnectionMode == AiConnectionModes.AzureOpenAi)
             {
-                var template = Configuration.EndpointTemplate;
-                if (string.IsNullOrEmpty(Configuration.ApiVersion))
+                var template = Connection.EndpointTemplate;
+                if (string.IsNullOrEmpty(Connection.ApiVersion))
                     template = template.Replace("?api-version={3}", string.Empty);
 
                 return string.Format(template,
                     endpoint,
                     operationSegment,
-                    Configuration.ModelId,
-                    Configuration.ApiVersion);
+                    Connection.ModelId,
+                    Connection.ApiVersion);
             }
 
             // OpenAi
-            return string.Format(Configuration.EndpointTemplate, endpoint, operationSegment);
+            return string.Format(Connection.EndpointTemplate, endpoint, operationSegment);
         }
 
 
@@ -288,10 +303,10 @@ namespace Westwind.AI
             var client = new HttpClient(handler);
 
             client.DefaultRequestHeaders.Clear();
-            if (Configuration.ConnectionMode == AiConnectionModes.AzureOpenAi)
-                client.DefaultRequestHeaders.Add("api-key", Configuration.DecryptedApiKey);
+            if (Connection.ConnectionMode == AiConnectionModes.AzureOpenAi)
+                client.DefaultRequestHeaders.Add("api-key", Connection.DecryptedApiKey);
             else
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Configuration.DecryptedApiKey);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.DecryptedApiKey);
 
             return client;
         }

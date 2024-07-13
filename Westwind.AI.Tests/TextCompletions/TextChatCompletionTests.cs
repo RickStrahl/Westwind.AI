@@ -175,9 +175,15 @@ namespace Westwind.AI.Tests.TextCompletions
 
             Console.WriteLine("Born on: " + bornDate);
 
-            var completion = new GenericAiChat(Connection);
-            completion.HttpClient.CaptureRequestData = true;
+            var completion = new GenericAiChat(Connection)
+            {
+                HttpClient =  
+                {
+                    CaptureRequestData = true
+                }
+            };
 
+            // We have to provide the start date, otherwise it uses the AI training date 🤣
             string result = await completion.Complete([               
                 new OpenAiChatMessage { content = "You are a helpful assistant that answers generic everyday questions precisely", role = "system"   },
                 new OpenAiChatMessage { content = "My name is Rick and I was born in 1966 in Berlin, Germany.\nHow old am I on " + currentDate, role = "user"   },
@@ -192,7 +198,9 @@ namespace Westwind.AI.Tests.TextCompletions
             Assert.IsNotNull(result, completion.ErrorMessage);
             Console.WriteLine(result);
 
+            
             Console.WriteLine("---\n" +completion.HttpClient.LastRequestJson);
+            Console.WriteLine("---\n" + completion.HttpClient.LastResponseJson);
         }
     
         void ConnectionMessage()

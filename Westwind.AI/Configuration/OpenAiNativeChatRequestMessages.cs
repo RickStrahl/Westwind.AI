@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace Westwind.AI.Chat
 {
     /// <summary>
-    /// OpenAI formatted messages for Chat Requests and Responses
+    /// Native OpenAI Chat messages that are used to send and receive JSON content from
+    /// the OpenAI service.
     /// </summary>
     public class OpenAiChatRequest
     {

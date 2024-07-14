@@ -238,6 +238,40 @@ namespace Westwind.AI.Chat.Configuration
             OnPropertyChanged(propertyName);
             return true;
         }
+
+        /// <summary>
+        /// Creates a specific connection base on the connection mode
+        /// </summary>
+        /// <param name="connectionMode"></param>
+        /// <returns></returns>
+        public static BaseOpenAiConnection Create(AiConnectionModes connectionMode, string name = null)
+        {
+            if (name == null)
+                name = "New Open AI Connection " + DataUtils.GenerateUniqueId(5);
+
+            switch (connectionMode)
+            {
+                case AiConnectionModes.OpenAi:
+                    return new OpenAiConnection() { Name = name };
+                case AiConnectionModes.AzureOpenAi:
+                    return new AzureOpenAiConnection() { Name = name };
+                case AiConnectionModes.Ollama:
+                    return new OllamaOpenAiConnection() { Name = name };
+                default:
+                    return new BaseOpenAiConnection() { Name = name };
+            }
+        }
+        /// <summary>
+        /// Creates a specific connection base on the connection mode
+        /// </summary>
+        /// <param name="connectionMode">string based connection mode</param>
+        /// <returns></returns>
+        public static BaseOpenAiConnection Create(string  connectionMode)
+        {
+            if(!Enum.TryParse<AiConnectionModes>(connectionMode, out var mode))
+                return new BaseOpenAiConnection();
+            return Create(mode);
+        }
     }
 
 
@@ -258,7 +292,17 @@ namespace Westwind.AI.Chat.Configuration
         {
             ConnectionMode = AiConnectionModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
-            ApiVersion = "2024-02-15-preview";
+            ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
+        }
+    }
+
+    public class OllamaOpenAiConnection : BaseOpenAiConnection
+    {
+        public OllamaOpenAiConnection()
+        {
+            ConnectionMode = AiConnectionModes.Ollama;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint= "http://127.0.0.1:11434/v1/";            
         }
     }
 
@@ -281,9 +325,14 @@ namespace Westwind.AI.Chat.Configuration
     public static class OpenAiEndPointTemplates
     {
         // 0 - EndPoint 1 - segment
-        public const string OpenAi = "{0}/{1}";
+        public static string OpenAi = "{0}/{1}";
 
         // 0 - EndPoint 1 - segment (ie. chat/completions) 2 - Model Id 3 - Api Version
-        public const string AzureOpenAi = "{0}/openai/deployments/{2}/{1}?api-version={3}";
+        public static string AzureOpenAi = "{0}/openai/deployments/{2}/{1}?api-version={3}";
+
+        /// <summary>
+        /// Azure API Version
+        /// </summary>
+        public static string DefaultAzureApiVersion = "2024-02-15-preview";
     }
 }

@@ -46,7 +46,9 @@ namespace Westwind.AI.Specialized
         /// <returns></returns>
         public async Task<string> TranslateText(string text, string sourceLang, string targetLang)
         {
-            string systemMessage = "You are a translator that translates from one language to another. Do not translate text or comments inside of code blocks. Be precise and return only the translated text in the result.";
+            string systemMessage = "You are a translator that translates from one language to another. " +
+                "Do not translate text or comments inside of code blocks. " +
+                "Be precise and return only the translated text in the result.";
             string query = $"Translate the following text from {sourceLang} to {targetLang}:\n{text}";
 
             string result = await HttpClient.GetChatAiResponse(query, systemMessage);
@@ -65,11 +67,12 @@ namespace Westwind.AI.Specialized
         /// <returns></returns>
         public async Task<string> CheckGrammar(string text)
         {
-            string system = "You are a grammar checker that corrects grammar on the input text. Return only the corrected text in the output.";
+            string system = "You are a grammar checker that corrects grammar on the input text. " +
+                            "Don't check grammar in code blocks or text inside of comments. " +
+                            "Return only the corrected text in the output.";
             string message = text;
 
             string result = await HttpClient.GetChatAiResponse(message, system);
-
             if (result == null)
             {
                 SetError(HttpClient.ErrorMessage);
@@ -86,7 +89,7 @@ namespace Westwind.AI.Specialized
         /// <returns></returns>
         public async Task<string> CheckGrammarAsDiff(string text)
         {
-            string system = "You are a grammar checker that corrects input text into grammatically correct grammar. Return only the corrected text in the output. Return the output as a PATCH in .diff format";
+            string system = "You are a grammar checker that corrects input text into grammatically correct text. Return only the corrected text in the output. Return the output as a PATCH  in .diff format";
             string message = text;
 
             string result = await HttpClient.GetChatAiResponse(message, system);

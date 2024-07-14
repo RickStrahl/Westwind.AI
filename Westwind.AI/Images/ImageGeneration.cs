@@ -65,7 +65,9 @@ namespace Westwind.Ai.Images
 
             if (!string.IsNullOrEmpty(result))
             {
-                HttpClient.LastResponseJson = result;
+                if (HttpClient.CaptureRequestData)
+                    HttpClient.LastResponseJson = result;
+
                 response = JsonConvert.DeserializeObject<ImageResults>(result);
 
                 foreach (var url in response.data)

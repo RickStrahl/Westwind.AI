@@ -270,7 +270,7 @@ namespace Westwind.AI
             var endpoint = Connection.Endpoint.TrimEnd('/');
 
 
-            if (Connection.ConnectionMode == AiConnectionModes.AzureOpenAi)
+            if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
             {
                 var template = Connection.EndpointTemplate;
                 if (string.IsNullOrEmpty(Connection.ApiVersion))
@@ -303,7 +303,7 @@ namespace Westwind.AI
             var client = new HttpClient(handler);
 
             client.DefaultRequestHeaders.Clear();
-            if (Connection.ConnectionMode == AiConnectionModes.AzureOpenAi)
+            if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
                 client.DefaultRequestHeaders.Add("api-key", Connection.DecryptedApiKey);
             else
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.DecryptedApiKey);

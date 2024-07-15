@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Westwind.Utilities;
 
@@ -13,8 +15,9 @@ namespace Westwind.AI.Chat.Configuration
     /// This class facilitates managing multiple connections and selecting the active one
     /// so you can quickly switche between different models and providers.
     /// </summary>
-    public class OpenAiConnectionConfiguration
+    public class OpenAiConnectionConfiguration : INotifyPropertyChanged
     {
+        
         /// <summary>
         /// The active connection based on the ActiveConnectionIndex    
         /// </summary>
@@ -32,12 +35,35 @@ namespace Westwind.AI.Chat.Configuration
 
                 return Connections[ActiveConnectionIndex];
             }
+            set
+            {
+                var idx = Connections.IndexOf(value);
+                if (idx != -1)
+                {
+                    ActiveConnectionIndex = idx;
+                    var connection = Connections[idx];
+                    connection?.OnPropertyChanged();
+                    connection?.OnPropertyChanged(nameof(connection.Name));                    
+                }
+            }
         }
 
         /// <summary>
         /// The index that determines which connection is the active one
         /// </summary>
-        public int ActiveConnectionIndex { get; set; } = 0;
+        public int ActiveConnectionIndex
+        {
+            get => _activeConnectionIndex;
+            set
+            {
+                if (value == _activeConnectionIndex) return;
+                _activeConnectionIndex = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ActiveConnection));
+            }
+        }
+        private int _activeConnectionIndex = 0;
+        private int _activeImageConnectionIndex = 0;
 
 
         /// <summary>
@@ -55,14 +81,36 @@ namespace Westwind.AI.Chat.Configuration
                         return null;
                 }
 
-                return Connections[ActiveImageConnectionIndex];
+                var connection = Connections[ActiveImageConnectionIndex];
+                return connection;
+            }
+            set
+            {
+                var idx = Connections.IndexOf(value);
+                if (idx != -1)
+                {
+                    ActiveImageConnectionIndex = idx;
+                    var connection = Connections[idx];
+                    connection?.OnPropertyChanged();
+                    connection?.OnPropertyChanged(nameof(connection.Name));
+                }
             }
         }
 
         /// <summary>
         /// The index that determines which image generation connection is the active one
         /// </summary>
-        public int ActiveImageConnectionIndex { get; set; } = 0;
+        public int ActiveImageConnectionIndex       
+        {
+            get => _activeImageConnectionIndex;
+            set
+            {
+                if (value == _activeImageConnectionIndex) return;
+                _activeImageConnectionIndex = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ActiveImageConnection));                
+            }
+        }
 
 
         /// <summary>
@@ -76,7 +124,13 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         /// <param name="key">Name of the connection to return</param>
         /// <returns></returns>
-        public BaseOpenAiConnection this[string key] => Connections.FirstOrDefault(c => c.Name.Equals(key, System.StringComparison.OrdinalIgnoreCase));
+        public BaseOpenAiConnection this[string key]
+        {
+            get
+            {                
+                return Connections.FirstOrDefault(c => c.Name.Equals(key, System.StringComparison.OrdinalIgnoreCase));
+            }
+        }
 
         /// <summary>
         /// Key indexer that return a connection by its index.
@@ -146,5 +200,21 @@ namespace Westwind.AI.Chat.Configuration
 
         #endregion
 
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+        #endregion
     }
 }

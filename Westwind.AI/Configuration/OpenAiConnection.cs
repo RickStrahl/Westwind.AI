@@ -42,11 +42,23 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         string ModelId { get; set; }
 
+
+        /// <summary>
+        /// Optional Api Version typically used for Azure
+        /// </summary>
         string ApiVersion { get; set; }
 
+
+        /// <summary>
+        /// Completions or Image operation
+        /// </summary>
         AiOperationModes OperationMode { get; set;  }    
 
-        AiConnectionModes ConnectionMode { get; set; }
+
+        /// <summary>
+        /// Which AI provider is used for this connection
+        /// </summary>
+        AiProviderModes ProviderMode { get; set; }
 
         bool IsEmpty { get; }
     }
@@ -105,7 +117,7 @@ namespace Westwind.AI.Chat.Configuration
         private string _endpointTemplate = "{0}/{1}";
         private string _modelId;
         private string _apiVersion;
-        private AiConnectionModes _connectionMode = AiConnectionModes.OpenAi;
+        private AiProviderModes _providerMode = AiProviderModes.OpenAi;
         private AiOperationModes _operationMode = AiOperationModes.Completions;
 
         [JsonIgnore]
@@ -186,13 +198,13 @@ namespace Westwind.AI.Chat.Configuration
         /// <summary>
         /// Determines whether this is an OpenAI or Azure connection
         /// </summary>
-        public AiConnectionModes ConnectionMode
+        public AiProviderModes ProviderMode
         {
-            get => _connectionMode;
+            get => _providerMode;
             set
             {
-                if (value == _connectionMode) return;
-                _connectionMode = value;
+                if (value == _providerMode) return;
+                _providerMode = value;
                 OnPropertyChanged();
             }
         }
@@ -226,7 +238,7 @@ namespace Westwind.AI.Chat.Configuration
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -242,20 +254,20 @@ namespace Westwind.AI.Chat.Configuration
         /// <summary>
         /// Creates a specific connection base on the connection mode
         /// </summary>
-        /// <param name="connectionMode"></param>
+        /// <param name="providerMode"></param>
         /// <returns></returns>
-        public static BaseOpenAiConnection Create(AiConnectionModes connectionMode, string name = null)
+        public static BaseOpenAiConnection Create(AiProviderModes providerMode, string name = null)
         {
             if (name == null)
                 name = "New Open AI Connection " + DataUtils.GenerateUniqueId(5);
 
-            switch (connectionMode)
+            switch (providerMode)
             {
-                case AiConnectionModes.OpenAi:
+                case AiProviderModes.OpenAi:
                     return new OpenAiConnection() { Name = name };
-                case AiConnectionModes.AzureOpenAi:
+                case AiProviderModes.AzureOpenAi:
                     return new AzureOpenAiConnection() { Name = name };
-                case AiConnectionModes.Ollama:
+                case AiProviderModes.Ollama:
                     return new OllamaOpenAiConnection() { Name = name };
                 default:
                     return new BaseOpenAiConnection() { Name = name };
@@ -268,7 +280,7 @@ namespace Westwind.AI.Chat.Configuration
         /// <returns></returns>
         public static BaseOpenAiConnection Create(string  connectionMode)
         {
-            if(!Enum.TryParse<AiConnectionModes>(connectionMode, out var mode))
+            if(!Enum.TryParse<AiProviderModes>(connectionMode, out var mode))
                 return new BaseOpenAiConnection();
             return Create(mode);
         }
@@ -281,7 +293,7 @@ namespace Westwind.AI.Chat.Configuration
         {
             ModelId = "gpt-3.5-turbo";
             Endpoint = "https://api.openai.com/v1/";
-            ConnectionMode = AiConnectionModes.OpenAi;
+            ProviderMode = AiProviderModes.OpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
         }
     }
@@ -290,7 +302,7 @@ namespace Westwind.AI.Chat.Configuration
     {
         public AzureOpenAiConnection()
         {
-            ConnectionMode = AiConnectionModes.AzureOpenAi;
+            ProviderMode = AiProviderModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
             ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
         }
@@ -300,7 +312,7 @@ namespace Westwind.AI.Chat.Configuration
     {
         public OllamaOpenAiConnection()
         {
-            ConnectionMode = AiConnectionModes.Ollama;
+            ProviderMode = AiProviderModes.Ollama;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
             Endpoint= "http://127.0.0.1:11434/v1/";            
         }
@@ -308,7 +320,7 @@ namespace Westwind.AI.Chat.Configuration
 
 
 
-    public enum AiConnectionModes
+    public enum AiProviderModes
     {
         OpenAi,
         AzureOpenAi,

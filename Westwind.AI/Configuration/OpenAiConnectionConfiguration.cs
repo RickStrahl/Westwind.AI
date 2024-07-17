@@ -30,7 +30,7 @@ namespace Westwind.AI.Chat.Configuration
                 {
                     ActiveConnectionIndex = 0;
                     if (Connections.Count < 1)
-                        return null;
+                        return null; //  new OpenAiConnection() { Name = "New OpenAI Completions Connection " + DataUtils.GenerateUniqueId(5), OperationMode = AiOperationModes.Completions };
                 }
 
                 return Connections[ActiveConnectionIndex];
@@ -74,11 +74,11 @@ namespace Westwind.AI.Chat.Configuration
         {
             get
             {
-                if (ActiveImageConnectionIndex < 0 || ActiveImageConnectionIndex >= Connections.Count)
+                if (Connections.Count < 1 || ActiveImageConnectionIndex < 0 || ActiveImageConnectionIndex >= Connections.Count)
                 {
                     ActiveImageConnectionIndex = 0;
                     if (Connections.Count < 1)
-                        return null;
+                        return null; //  new OpenAiConnection() { OperationMode = AiOperationModes.ImageGeneration };
                 }
 
                 var connection = Connections[ActiveImageConnectionIndex];

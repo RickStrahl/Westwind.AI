@@ -160,8 +160,6 @@ namespace Westwind.AI
                 return default;
             }
 
-
-
             ChatHistory.Add(choice.message);
 
             var resultText = choice.message?.content;
@@ -194,16 +192,15 @@ namespace Westwind.AI
                                       "---\n\n" +
                                       endpointUrl +"\n" + 
                                       Connection.ModelId + " " + Connection.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
-
-                json = " {}";
-
+                
                 try
                 {
                     message = await http.PostAsync(endpointUrl, new StringContent(jsonPayload, Encoding.UTF8, "application/json"));
                 }
-                catch
+                catch(Exception ex)
                 {
                     // request hard failed
+                    SetError("Http request failed: " + ex.Message);                    
                     return null;
                 }
             }
@@ -226,14 +223,14 @@ namespace Westwind.AI
                     var error = JsonConvert.DeserializeObject<dynamic>(json);
                     errorMessage = error.error?.message;
                 }
-                if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                if (message.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     SetError("Authentication failed. Invalid API Key. " + errorMessage);
                     return null;
                 }
-                if (message.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if (message.StatusCode == HttpStatusCode.NotFound)
                 {
-                    SetError("AI request failed: Invalid URL, resource not found.\n" + endpointUrl);
+                    SetError("AI request failed - invalid Url: " + endpointUrl);
                     return null;
                 }
 

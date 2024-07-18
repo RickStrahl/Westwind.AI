@@ -145,6 +145,7 @@ namespace Westwind.AI.Chat.Configuration
             }            
         }
 
+        [JsonIgnore]
         public bool HasConnections => Connections != null && Connections.Count > 0; 
 
         /// <summary>

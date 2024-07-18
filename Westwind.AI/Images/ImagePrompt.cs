@@ -159,10 +159,11 @@ namespace Westwind.Ai.Images
         }
 
 
-        [JsonIgnore]
+       
         /// <summary>
         /// If data is downloaded in Base64 JSON format
         /// </summary>
+        [JsonIgnore]
         public string Base64Data
         {
             get

@@ -6,11 +6,6 @@ namespace Westwind.AI.Chat;
 
 public class GenericAiChat : AiBase
 {
-    /// <summary>
-    /// Instance of the internally used Http client. It holds the chat history
-    /// and also can capture request and response data.
-    /// </summary>
-    public OpenAiHttpClient HttpClient { get; set; } 
 
     public GenericAiChat(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
     {

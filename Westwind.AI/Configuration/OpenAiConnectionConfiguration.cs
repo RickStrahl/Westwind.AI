@@ -145,6 +145,8 @@ namespace Westwind.AI.Chat.Configuration
             }            
         }
 
+        public bool HasConnections => Connections != null && Connections.Count > 0; 
+
         /// <summary>
         /// Loads configuration from a file on disk
         /// </summary>

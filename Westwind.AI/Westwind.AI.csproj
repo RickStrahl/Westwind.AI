@@ -13,8 +13,6 @@
 	  <PackageTags>Westwind OpenAI AI</PackageTags>
 	  <PackageReleaseNotes></PackageReleaseNotes>
 	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>
-
-
 	  <PackageIcon>icon.png</PackageIcon>
 	  <PackageLicenseFile>LICENSE.MD</PackageLicenseFile>
 	  <Copyright>Rick Strahl, West Wind Technologies, 2010-2024</Copyright>

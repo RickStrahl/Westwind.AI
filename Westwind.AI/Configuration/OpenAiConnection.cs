@@ -259,16 +259,16 @@ namespace Westwind.AI.Chat.Configuration
         public static BaseOpenAiConnection Create(AiProviderModes providerMode, string name = null)
         {
             if (name == null)
-                name = "New Open AI Connection " + DataUtils.GenerateUniqueId(5);
+                name = "OpenAI Connection " + DataUtils.GenerateUniqueId(5);
 
             switch (providerMode)
             {
                 case AiProviderModes.OpenAi:
                     return new OpenAiConnection() { Name = name };
                 case AiProviderModes.AzureOpenAi:
-                    return new AzureOpenAiConnection() { Name = name };
+                    return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Ollama:
-                    return new OllamaOpenAiConnection() { Name = name };
+                    return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
                 default:
                     return new BaseOpenAiConnection() { Name = name };
             }

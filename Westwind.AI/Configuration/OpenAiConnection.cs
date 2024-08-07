@@ -256,7 +256,7 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         /// <param name="providerMode"></param>
         /// <returns></returns>
-        public static BaseOpenAiConnection Create(AiProviderModes providerMode, string name = null)
+        public static BaseOpenAiConnection Create(AiProviderModes providerMode, string name = null, bool isImageGeneration = false)
         {
             if (name == null)
                 name = "OpenAI Connection " + DataUtils.GenerateUniqueId(5);
@@ -264,7 +264,7 @@ namespace Westwind.AI.Chat.Configuration
             switch (providerMode)
             {
                 case AiProviderModes.OpenAi:
-                    return new OpenAiConnection() { Name = name };
+                    return new OpenAiConnection() { Name = name, ModelId = isImageGeneration ? "dall-e-3" : "gpt-4o-mini" };
                 case AiProviderModes.AzureOpenAi:
                     return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Ollama:
@@ -278,11 +278,11 @@ namespace Westwind.AI.Chat.Configuration
         /// </summary>
         /// <param name="connectionMode">string based connection mode</param>
         /// <returns></returns>
-        public static BaseOpenAiConnection Create(string  connectionMode)
+        public static BaseOpenAiConnection Create(string  connectionMode, bool isImageGen = false)
         {
             if(!Enum.TryParse<AiProviderModes>(connectionMode, out var mode))
                 return new BaseOpenAiConnection();
-            return Create(mode);
+            return Create(mode, isImageGeneration: isImageGen);
         }
     }
 

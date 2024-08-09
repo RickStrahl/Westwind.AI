@@ -264,6 +264,9 @@ namespace Westwind.AI
         /// <returns></returns>
         public string GetEndpointUrl(string operationSegment)
         {
+            if (string.IsNullOrEmpty(Connection.Endpoint))
+                throw new InvalidOperationException("Connection.Endpoint is not set. Cannot make AI API request.");
+
             var endpoint = Connection.Endpoint.TrimEnd('/');
 
 

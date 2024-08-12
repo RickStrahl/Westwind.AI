@@ -6,7 +6,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Westwind.Utilities;
 
-namespace Westwind.AI.Chat.Configuration
+namespace Westwind.AI.Configuration
 {
 
     /// <summary>

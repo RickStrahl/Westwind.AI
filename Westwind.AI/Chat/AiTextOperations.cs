@@ -1,10 +1,9 @@
 ﻿// Import packages
 
 using System.Threading.Tasks;
-using Westwind.AI.Chat;
-using Westwind.AI.Chat.Configuration;
+using Westwind.AI.Configuration;
 
-namespace Westwind.AI.Specialized
+namespace Westwind.AI.Chat
 {
     /// <summary>
     /// Text Operations like summarizing

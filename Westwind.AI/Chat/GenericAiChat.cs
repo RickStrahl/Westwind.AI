@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Westwind.AI.Chat.Configuration;
+using Westwind.AI.Configuration;
 
 namespace Westwind.AI.Chat;
 

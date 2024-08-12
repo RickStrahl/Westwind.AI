@@ -1,7 +1,7 @@
 ﻿
 using System.Collections.Generic;
 
-namespace Westwind.AI.Chat
+namespace Westwind.AI.Configuration
 {
     /// <summary>
     /// Native OpenAI Chat messages that are used to send and receive JSON content from

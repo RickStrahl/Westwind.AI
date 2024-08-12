@@ -1,5 +1,5 @@
 ﻿using System;
-using Westwind.AI.Chat.Configuration;
+using Westwind.AI.Configuration;
 
 namespace Westwind.AI.Chat
 {

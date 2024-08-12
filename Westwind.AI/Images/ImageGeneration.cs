@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System;
 using Westwind.AI.Chat;
-using Westwind.AI.Chat.Configuration;
+using Westwind.AI.Configuration;
 using Westwind.AI;
 
 namespace Westwind.Ai.Images

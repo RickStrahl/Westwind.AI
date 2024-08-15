@@ -120,6 +120,18 @@ namespace Westwind.AI.Configuration
 
 
         /// <summary>
+        /// Determines whether any OpenAi Connections are available
+        /// </summary>
+        public bool IsAvailable => ActiveConnection != null && !ActiveConnection.IsEmpty;
+
+
+        /// <summary>
+        /// Determines whether an image generation connection si available.
+        /// </summary>
+        public bool IsImageConnectionAvailable => ActiveImageConnection != null && !ActiveConnection.IsEmpty;
+
+
+        /// <summary>
         /// Key indexer that return a named connection value or null if not found.
         /// </summary>
         /// <param name="key">Name of the connection to return</param>
@@ -200,7 +212,7 @@ namespace Westwind.AI.Configuration
         /// are automatically encrypted when accessed.
         /// </summary>
         public static string EncryptionPostFix { get; set; } = "@|-|@";
-
+        
         #endregion
 
         #region INotifyPropertyChanged

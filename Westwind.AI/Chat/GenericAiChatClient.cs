@@ -4,15 +4,15 @@ using Westwind.AI.Configuration;
 
 namespace Westwind.AI.Chat;
 
-public class GenericAiChat : AiBase
+public class GenericAiChatClient : AiBase
 {
 
-    public GenericAiChat(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
+    public GenericAiChatClient(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
     {
         HttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
     }
 
-    public GenericAiChat(IOpenAiConnection connection) : base(connection) 
+    public GenericAiChatClient(IOpenAiConnection connection) : base(connection) 
     {             
         HttpClient = new OpenAiHttpClient(connection);
     }

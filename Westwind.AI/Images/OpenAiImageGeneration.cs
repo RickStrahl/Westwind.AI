@@ -19,8 +19,6 @@ namespace Westwind.Ai.Images
     /// </summary>
     public class OpenAiImageGeneration : AiBase
     {
-
-
         public OpenAiImageGeneration(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig)
         {
             HttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);

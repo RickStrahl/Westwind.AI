@@ -8,11 +8,11 @@ namespace Westwind.AI.Chat
     /// <summary>
     /// Text Operations like summarizing
     /// </summary>
-    public class AiTextOperations : GenericAiChat
-    {
+    public class AiTextOperations : GenericAiChatClient
+    {        
         public AiTextOperations(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) { }
+        
         public AiTextOperations(IOpenAiConnection connection) : base(connection) { }
-
 
         /// <summary>
         /// Summarize text to a specific number of sentences.

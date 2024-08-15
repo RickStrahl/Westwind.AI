@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Newtonsoft.Json;
+using Westwind.AI.Chat;
+using Westwind.Ai.Images;
 using Westwind.Utilities;
 
 namespace Westwind.AI.Configuration
@@ -87,21 +89,21 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// The Encrypted API Key for the service
         /// </summary>
-        public string ApiKey { 
-            
-            set 
+        public string ApiKey {
+
+            set
             {
                 if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(value))
                 {
                     _apiKey = value;
                     OnPropertyChanged();
                     return;
-                }    
-                
+                }
+
                 // Already encrypted?
                 if (value.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
                     _apiKey = value;
-                else 
+                else
                     _apiKey = Encryption.EncryptString(value, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;
 
                 OnPropertyChanged();
@@ -130,7 +132,7 @@ namespace Westwind.AI.Configuration
                     return _apiKey;
 
                 var encrypted = _apiKey.Replace(OpenAiConnectionConfiguration.EncryptionPostFix, string.Empty);
-                var decrypted = Encryption.DecryptString(encrypted, OpenAiConnectionConfiguration.EncryptionKey, useBinHex:true);
+                var decrypted = Encryption.DecryptString(encrypted, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true);
                 return decrypted;
             }
         }
@@ -221,6 +223,27 @@ namespace Westwind.AI.Configuration
                 _operationMode = value;
                 OnPropertyChanged();
             }
+        }
+
+
+        /// <summary>
+        /// Retrieves a Chat Client Instance
+        /// </summary>
+        /// <returns></returns>
+        public GenericAiChatClient GetChatClient()
+        {
+            var completion = new GenericAiChatClient(this);
+            return completion;
+        }
+
+        /// <summary>
+        /// Retrieves an Image Generation Client
+        /// </summary>
+        /// <returns></returns>
+        public OpenAiImageGeneration GetImageGenerationClient()
+        {
+            var client = new OpenAiImageGeneration(this);
+            return client;
         }
 
 

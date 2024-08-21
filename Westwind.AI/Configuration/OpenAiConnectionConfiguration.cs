@@ -43,7 +43,7 @@ namespace Westwind.AI.Configuration
                     ActiveConnectionIndex = idx;
                     var connection = Connections[idx];
                     connection?.OnPropertyChanged();
-                    connection?.OnPropertyChanged(nameof(connection.Name));                    
+                    connection?.OnPropertyChanged(nameof(connection.Name));
                 }
             }
         }
@@ -118,6 +118,16 @@ namespace Westwind.AI.Configuration
         /// </summary>
         public List<BaseOpenAiConnection> Connections { get; set; } = new List<BaseOpenAiConnection>();
 
+
+        /// <summary>
+        /// Subset of only the Comletion Connections
+        /// </summary>
+        public List<BaseOpenAiConnection> CompletionConnections => Connections.Where(c => c.OperationMode == AiOperationModes.Completions).ToList();
+
+        /// <summary>
+        /// Subset of only the Image Generation Connections
+        /// </summary>
+        public List<BaseOpenAiConnection> ImageGenerationConnections => Connections.Where(c => c.OperationMode == AiOperationModes.ImageGeneration).ToList();
 
         /// <summary>
         /// Determines whether any OpenAi Connections are available

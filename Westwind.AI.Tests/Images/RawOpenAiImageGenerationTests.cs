@@ -1,8 +1,7 @@
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Westwind.AI.Chat.Configuration;
-using Westwind.Utilities;
+using Westwind.AI.Configuration;
 
 namespace Westwind.Ai.Test
 {

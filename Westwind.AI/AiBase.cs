@@ -7,14 +7,14 @@ namespace Westwind.AI.Chat
     {
         public IOpenAiConnection Connection { get; set; }
 
-        public OpenAiHttpClient HttpClient { get; set; }
+        public OpenAiHttpClient AiHttpClient { get; set; }
 
         public AiBase(OpenAiConnectionConfiguration openAiAuthConfig)
         {
             Connection = openAiAuthConfig.ActiveConnection;            
             if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
-            HttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
+            AiHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
         }
 
         public AiBase(IOpenAiConnection connection)
@@ -22,7 +22,7 @@ namespace Westwind.AI.Chat
             Connection = connection;
             if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
-            HttpClient = new OpenAiHttpClient(Connection);
+            AiHttpClient = new OpenAiHttpClient(Connection);
         }
 
 

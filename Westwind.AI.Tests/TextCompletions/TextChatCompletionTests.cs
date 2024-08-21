@@ -1,6 +1,5 @@
 ﻿using Westwind.AI.Chat;
-using Westwind.AI.Chat.Configuration;
-using Westwind.AI.Specialized;
+using Westwind.AI.Configuration;
 using Westwind.Utilities;
 
 namespace Westwind.AI.Tests.TextCompletions
@@ -31,16 +30,16 @@ namespace Westwind.AI.Tests.TextCompletions
         {
             ConnectionMessage();
 
-            var completion = new GenericAiChat(Connection);
-            completion.HttpClient.CaptureRequestData = true;
+            var completion = new GenericAiChatClient(Connection);
+            completion.AiHttpClient.CaptureRequestData = true;
                       
             string result = await completion.Complete(
                 "Translate the following from English to German:\nThe sky is below, the ground is above",
                 "You are a translator that translates between languages. Return only the translated text.");
 
             // optionally captured request and response data
-            Console.WriteLine(completion.HttpClient.LastRequestJson);
-            Console.WriteLine("\n\n" + completion.HttpClient.LastResponseJson);
+            Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+            Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
 
             Assert.IsNotNull(result, completion.ErrorMessage);
             Console.WriteLine(result);
@@ -84,7 +83,7 @@ namespace Westwind.AI.Tests.TextCompletions
         public async Task TranslationTest()
         {
             var translator = new AiTextOperations(Connection);
-            translator.HttpClient.CaptureRequestData = true;
+            translator.AiHttpClient.CaptureRequestData = true;
 
             Console.WriteLine("Using: " + Connection.Name);
 
@@ -140,7 +139,7 @@ namespace Westwind.AI.Tests.TextCompletions
 
             Console.WriteLine("Born on: "  + bornDate);
 
-            var completion = new GenericAiChat(Connection);
+            var completion = new GenericAiChatClient(Connection);
 
             string result = await completion.Complete( [
                  new OpenAiChatMessage { content = $"You are a helpful assistant that answers generic everyday questions precisely. " +
@@ -175,9 +174,9 @@ namespace Westwind.AI.Tests.TextCompletions
 
             Console.WriteLine("Born on: " + bornDate);
 
-            var completion = new GenericAiChat(Connection)
+            var completion = new GenericAiChatClient(Connection)
             {
-                HttpClient =  
+                AiHttpClient =  
                 {
                     CaptureRequestData = true
                 }
@@ -199,8 +198,8 @@ namespace Westwind.AI.Tests.TextCompletions
             Console.WriteLine(result);
 
             
-            Console.WriteLine("---\n" +completion.HttpClient.LastRequestJson);
-            Console.WriteLine("---\n" + completion.HttpClient.LastResponseJson);
+            Console.WriteLine("---\n" +completion.AiHttpClient.LastRequestJson);
+            Console.WriteLine("---\n" + completion.AiHttpClient.LastResponseJson);
         }
     
         void ConnectionMessage()

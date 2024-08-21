@@ -1,4 +1,4 @@
-﻿using Westwind.AI.Chat.Configuration;
+﻿using Westwind.AI.Configuration;
 using Westwind.Ai.Images;
 using Westwind.Utilities;
 
@@ -29,7 +29,7 @@ public class ImageGenerationTests
     public async Task ImageGenerationToUrlTest()
     {       
         var generator = new OpenAiImageGeneration(Connection);
-        generator.HttpClient.CaptureRequestData = true;
+        generator.AiHttpClient.CaptureRequestData = true;
 
         var imagePrompt = new ImagePrompt()
         {

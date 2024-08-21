@@ -9,20 +9,20 @@ public class GenericAiChatClient : AiBase
 
     public GenericAiChatClient(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
     {
-        HttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
+        AiHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
     }
 
     public GenericAiChatClient(IOpenAiConnection connection) : base(connection) 
     {             
-        HttpClient = new OpenAiHttpClient(connection);
+        AiHttpClient = new OpenAiHttpClient(connection);
     }
 
     public async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
     {         
-        var result = await HttpClient.GetChatAiResponse(prompt, systemPrompt, includeHistory);
+        var result = await AiHttpClient.GetChatAiResponse(prompt, systemPrompt, includeHistory);
         if (result == null)
         {
-            SetError(HttpClient.ErrorMessage);
+            SetError(AiHttpClient.ErrorMessage);
         }
 
         return result;
@@ -35,10 +35,10 @@ public class GenericAiChatClient : AiBase
     /// <returns></returns>
     public async Task<string> Complete( IEnumerable<OpenAiChatMessage> prompts,  bool includeHistory = false)
     {
-        var result = await HttpClient.GetChatAiResponse(prompts, includeHistory);
+        var result = await AiHttpClient.GetChatAiResponse(prompts, includeHistory);
         if (result == null)
         {
-            SetError(HttpClient.ErrorMessage);
+            SetError(AiHttpClient.ErrorMessage);
         }
 
         return result;

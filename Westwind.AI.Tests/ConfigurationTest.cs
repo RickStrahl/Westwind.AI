@@ -1,4 +1,4 @@
-using Westwind.AI.Chat.Configuration;
+using Westwind.AI.Configuration;
 using Westwind.Utilities;
 
 namespace Westwind.AI.Tests
@@ -35,7 +35,7 @@ namespace Westwind.AI.Tests
                 {
                     Name = "OpenAI",
                     ApiKey = "sk-....",
-                    ConnectionMode = AiConnectionModes.OpenAi
+                    ProviderMode = AiProviderModes.OpenAi
                 },
 
                 new AzureOpenAiConnection()
@@ -44,19 +44,19 @@ namespace Westwind.AI.Tests
                     Endpoint = "https://yourazuresite.openai.azure.com/",
                     ModelId = "Gpt35",
                     ApiKey = "123....",
-                    ConnectionMode = AiConnectionModes.AzureOpenAi
+                    ProviderMode = AiProviderModes.AzureOpenAi
                 },
                 new OpenAiConnection()
                 {
                     Name = "Ollama llama3",
                     ModelId = "llama3",                    
-                    ConnectionMode = AiConnectionModes.OpenAi
+                    ProviderMode = AiProviderModes.OpenAi
                 },
                 new OpenAiConnection()
                 {
                     Name = "Ollama Phi3",
                     ModelId = "phi3",                    
-                    ConnectionMode = AiConnectionModes.OpenAi
+                    ProviderMode = AiProviderModes.OpenAi
                 },
             ]);
 

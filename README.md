@@ -1,7 +1,7 @@
 # Westwind 
- <a href="https://www.nuget.org/packages/Westwind.AI/">![](https://img.shields.io/nuget/v/Westwind.AI.svg)</a> ![](https://img.shields.io/nuget/dt/Westwind.AI.svg)
+ [![](https://img.shields.io/nuget/v/Westwind.AI.svg)](https://www.nuget.org/packages/Westwind.AI/) ![](https://img.shields.io/nuget/dt/Westwind.AI.svg)
  
-<img src='Icon.png' width=200 />
+![Westwind.AI Logi - Lightbulb Pen](https://github.com/RickStrahl/Westwind.AI/raw/master/Icon_200.png)
 
 A self-contained library that talks directly to the OpenAI HTTP API without major dependencies. 
 

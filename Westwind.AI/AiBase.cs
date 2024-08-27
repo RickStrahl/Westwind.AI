@@ -28,7 +28,7 @@ namespace Westwind.AI.Chat
 
         #region Error Handling
 
-        public bool IsError => !string.IsNullOrEmpty(ErrorMessage);
+        public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
         public string ErrorMessage { get; set; }
 
 

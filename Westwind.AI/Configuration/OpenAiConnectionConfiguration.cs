@@ -22,7 +22,7 @@ namespace Westwind.AI.Configuration
         /// The active connection based on the ActiveConnectionIndex    
         /// </summary>
         [JsonIgnore]
-        public BaseOpenAiConnection ActiveConnection
+        public OpenAiConnection ActiveConnection
         {
             get
             {
@@ -70,7 +70,7 @@ namespace Westwind.AI.Configuration
         /// The active connection based on the ActiveImageConnectionIndex    
         /// </summary>
         [JsonIgnore]
-        public BaseOpenAiConnection ActiveImageConnection
+        public OpenAiConnection ActiveImageConnection
         {
             get
             {
@@ -116,18 +116,18 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// A collection of connections. The active connection is determined by the ActiveConnectionIndex
         /// </summary>
-        public List<BaseOpenAiConnection> Connections { get; set; } = new List<BaseOpenAiConnection>();
+        public List<OpenAiConnection> Connections { get; set; } = new List<OpenAiConnection>();
 
 
         /// <summary>
         /// Subset of only the Comletion Connections
         /// </summary>
-        public List<BaseOpenAiConnection> CompletionConnections => Connections.Where(c => c.OperationMode == AiOperationModes.Completions).ToList();
+        public List<OpenAiConnection> CompletionConnections => Connections.Where(c => c.OperationMode == AiOperationModes.Completions).ToList();
 
         /// <summary>
         /// Subset of only the Image Generation Connections
         /// </summary>
-        public List<BaseOpenAiConnection> ImageGenerationConnections => Connections.Where(c => c.OperationMode == AiOperationModes.ImageGeneration).ToList();
+        public List<OpenAiConnection> ImageGenerationConnections => Connections.Where(c => c.OperationMode == AiOperationModes.ImageGeneration).ToList();
 
         /// <summary>
         /// Determines whether any OpenAi Connections are available
@@ -146,7 +146,7 @@ namespace Westwind.AI.Configuration
         /// </summary>
         /// <param name="key">Name of the connection to return</param>
         /// <returns></returns>
-        public BaseOpenAiConnection this[string key]
+        public OpenAiConnection this[string key]
         {
             get
             {                
@@ -159,7 +159,7 @@ namespace Westwind.AI.Configuration
         /// </summary>
         /// <param name="index">Index into the connections available</param>
         /// <returns></returns>
-        public BaseOpenAiConnection this[int index] {
+        public OpenAiConnection this[int index] {
             get {
                 if (index < 0 || index >= Connections.Count)
                     return null;

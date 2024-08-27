@@ -33,17 +33,52 @@ namespace Westwind.AI.Tests.TextCompletions
             var completion = new GenericAiChatClient(Connection);
             completion.AiHttpClient.CaptureRequestData = true;
                       
-            string result = await completion.Complete(
+            string resultText = await completion.Complete(
                 "Translate the following from English to German:\nThe sky is below, the ground is above",
                 "You are a translator that translates between languages. Return only the translated text.");
+
+            Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+            Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Console.WriteLine(resultText);
 
             // optionally captured request and response data
             Console.WriteLine(completion.AiHttpClient.LastRequestJson);
             Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
-
-            Assert.IsNotNull(result, completion.ErrorMessage);
-            Console.WriteLine(result);
         }
+
+        public async Task GenericCompletionPromptTest()
+        {
+            ConnectionMessage();
+
+            var completion = new GenericAiChatClient(Connection);
+            completion.AiHttpClient.CaptureRequestData = true;
+
+            var prompts = new List<OpenAiChatMessage>
+            {
+                new OpenAiChatMessage { 
+                    content = "You are a translator that translates between languages. Return only the translated text.",
+                    role = "system" 
+                },
+                new OpenAiChatMessage {
+                    content = "Translate the following from English to German:\nThe sky is below, the ground is above",
+                    role = "user" 
+                },
+            };
+
+            await completion.Complete()
+            string resultText = await completion.Complete(
+                "Translate the following from English to German:\nThe sky is below, the ground is above",
+                "You are a translator that translates between languages. Return only the translated text.");
+
+            Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+            Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Console.WriteLine(resultText);
+
+            // optionally captured request and response data
+            Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+            Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+        }
+
 
         [TestMethod]
         public async Task SummarizeCompletionTest()

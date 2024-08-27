@@ -18,28 +18,155 @@ You can use manual configuration like this for connecting to the OpenAI API:
 ```cs
 var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "dall-e-3"
+   ModelId = "gpt-4o-mini",
+   OperationMode = AiOperationModes.Completions;
 };
 ```
 
-> Note this is the simplest use case for OpenAI. Depending on what provider you connect to you may have to provide additional connection information like an endpoint url [More info below](#configuration-and-authorization).
-
-Alternately you can use Configuration manager that can hold multiple connections so you can quickly rotate switch between different providers and models:
+For image generation:
 
 ```cs
-Configurations = OpenAiConnectionConfiguration.Load();
-var connection = Configuration.ActiveConnection;  // based on index
-connection = Configurations.Connections.FirstOrDefault(c=> c.Name == "Azure OpenAI")
+var connection = new OpenAiConnection() {
+   ApiKey = myApiKey,
+   ModelId = "dall-e-3",
+   OperationMode = AiOperationModes.ImageGeneration;
+};
 ```
 
-### Image Generation
-Capturing to a Url:
+More info on the various different connection providers (OpenAi, Azure, Ollama and generic Open AI) and how to create multiple providers to choose from and store them [is discussed below](#openai-connections) in more detail.
+
+### Chat Completions
+This library provides basic Chat Completions that directly pass messages to the API and return the result. If you need more sophisticated functionality for adding custom processing or additional training data, use [Microsoft Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/). It provides all the features used here, but at a significantly bigger footprint.
+
+This library is geared towards simple interactions that provide small and fast local application integrations especially for working with local models.
+
+```csharp
+// Load pre-configured connection
+// var config = OpenAiConnectionConfiguration.Load();
+// var connection = config.ActiveConnection;
+
+// Manual Connection
+var connection = new OpenAiConnection() {
+   ApiKey = myApiKey,
+   ModelId = "gpt-4o-mini",
+   OperationMode = AiOperationModes.Completions;
+};
+
+
+var completion = new GenericAiChatClient(Connection);
+completion.AiHttpClient.CaptureRequestData = true;
+          
+string resultText = await completion.Complete(
+    "Translate the following from English to German:\nThe sky is below, the ground is above",
+    "You are a translator that translates between languages. Return only the translated text.");
+
+Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+Assert.IsTrue(string.IsNullOrEmpty(resultText), 
+              "No completion response was returned (null or empty).");
+Console.WriteLine(resultText);
+
+// optionally captured request and response data
+Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+```
+
+Alternately you can pass a collection of prompts:
 
 ```cs
-Configurations = OpenAiConnectionConfiguration.Load();
-var config = Configurations.ActiveConnection;
+var completion = new GenericAiChatClient(Connection);
+completion.AiHttpClient.CaptureRequestData = true;
 
-var generator = new OpenAiImageGeneration(Config);
+var prompts = new List<OpenAiChatMessage>
+{
+    new OpenAiChatMessage { 
+        content = "You are a translator that translates between languages. Return only the translated text.",
+        role = "system" 
+    },
+    new OpenAiChatMessage {
+        content = "Translate the following from English to German:\nThe sky is below, the ground is above",
+        role = "user" 
+    },
+};
+
+var resultText = await completion.Complete(prompts);
+
+Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+Console.WriteLine(resultText);
+
+// optionally captured request and response data
+Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+```
+
+### Keep track of Chat History
+You can keep track of the Chat History if you keep the AiChatClient around and use `IncludeHistory`:
+
+```csharp
+string bornDate = DateTime.Now.AddYears(-30).ToString("MMMM yyyy");
+string currentDate = DateTime.Now.ToString("MMMM yyyy");
+
+Console.WriteLine("Born on: " + bornDate);
+
+var completion = new GenericAiChatClient(Connection)
+{
+    AiHttpClient =  
+    {
+        CaptureRequestData = true
+    }
+};
+
+// We have to provide the start date, otherwise it uses the AI training date 🤣
+string result = await completion.Complete([               
+    new OpenAiChatMessage { 
+        content = "You are a helpful assistant that answers generic everyday questions precisely", 
+        role = "system"   
+    },
+    new OpenAiChatMessage { 
+        content = "My name is Rick and I was born in 1966 in Berlin, Germany.\nHow old am I on " + currentDate, 
+        role = "user"   
+    },
+]);
+
+Assert.IsNotNull(result, completion.ErrorMessage);
+Console.WriteLine(result);
+
+// continue conversion with the previous in chat history (uses completion.HttpClient.ChatHistory)
+result = await completion.Complete("Tell me about my birth city.", 
+                                   includeHistory: true);
+
+Assert.IsNotNull(result, completion.ErrorMessage);
+Console.WriteLine(result);
+
+Console.WriteLine("---\n" +completion.AiHttpClient.LastRequestJson);
+Console.WriteLine("---\n" + completion.AiHttpClient.LastResponseJson);
+```
+
+
+
+### Image Generation
+You can use OpenAI image generation APIs using OpenAi and Azure OpenAi  to generate images from prompt text. Images are generated and captured along with revised prompts that you can save.
+
+ImageGeneration works through an `ImagePrompt` class that acts as input and output for an individual image generation request.
+
+**Capturing to a Url**
+
+```cs
+// Load pre-configured connection
+// var config = OpenAiConnectionConfiguration.Load();
+// var connection = config.ActiveImageConnection;
+
+// Manual Connection
+var connection = new OpenAiConnection() {
+   ApiKey = myApiKey,
+   ModelId = "dall-e-3",
+   OperationMode = AiOperationModes.ImageGeneration;
+};
+
+var generator = new OpenAiImageGeneration(connection);
+
+// Optionally capture raw request data for debugging
+generator.AiHttpClient.CaptureRequestData = true;
 
 var imagePrompt = new ImagePrompt()
 {
@@ -50,20 +177,20 @@ var imagePrompt = new ImagePrompt()
 };
 
 // Generate and set properties on `imagePrompt` instance
-Assert.IsTrue(await generator.Generate(imagePrompt), generator.ErrorMessage);
+bool result = await generator.Generate(imagePrompt), generator.ErrorMessage);
+
+Assert.IsTrue(result, generator.ErrorMessage);
 
 // prompt returns an array of images, but for Dall-e-3 it's always one
 // so FirstImage returns the first image and FirstImageUrl returns the url.
 var imageUrl = imagePrompt.FirstImageUrl;
 Console.WriteLine(imageUrl);
+Console.WriteLine(imagePrompt.RevisedPrompt);
 
 // Display the image as a Url
 ShellUtils.GoUrl(imageUrl);
 
-// Typically the AI **fixes up the prompt**
-Console.WriteLine(imagePrompt.RevisedPrompt);
-
-// You can download the image from the captured URL to a local file
+// You can optionally download the image from the captured URL to a local file
 // Default folder is %temp%\openai-images\images or specify `ImageFolderPath`
 // imagePrompt.ImageFolderPath = "c:\\temp\\openai-images\\"; 
 Assert.IsTrue(await imagePrompt.DownloadImageToFile(), "Image saving failed: " + generator.ErrorMessage);
@@ -72,12 +199,16 @@ string imageFile = imagePrompt.ImageFilePath;
 Console.WriteLine(imageFile);
 
 Console.WriteLine(JsonSerializationUtils.Serialize(imagePrompt, formatJsonOutput: true));
+
 ```
 
-To capture base64 content:
+**Capture binary image as base64**
 
 ```csharp
-var generator = new OpenAiImageGeneration(Configuration);        
+var config = OpenAiConnectionConfiguration.Load();
+var connection = config.ActiveImageConnection;
+
+var generator = new OpenAiImageGeneration(connection);        
 
 var imagePrompt = new ImagePrompt()
 {
@@ -87,7 +218,8 @@ var imagePrompt = new ImagePrompt()
     ImageStyle = "vivid"
 };
 
-bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.Base64);
+bool result = await generator.Generate(imagePrompt, 
+                            outputFormat: ImageGenerationOutputFormats.Base64);
 
 // Generate and set properties on `imagePrompt` instance
 Assert.IsTrue(result, generator.ErrorMessage);
@@ -105,26 +237,6 @@ Console.WriteLine("File generated: " + file);
 ShellUtils.GoUrl(file);
 ```
 
-### Chat Completions
-This library provides basic Chat Completions that directly pass messages to the API and return the result. If you need more sophisticated functionality for adding custom processing or additional training data, use [Microsoft Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/). It provides all the features used here, but at a significantly bigger footprint.
-
-This library is geared towards simple interactions that provide small and fast local application integrations especially for working with local models.
-
-```csharp
-[TestMethod]
-public async Task GenericCompletionTest()
-{
-    var completion = new GenericAiChat(Connection);
-
-    string result = await completion.Complete(                
-        "Translate the following from English to German:\nThe sky is below, the ground is above",
-        "You are a translator that translates between languages. Return only the translated text.");
-
-    // optionally captured request and response data
-    Assert.IsNotNull(result, completion.ErrorMessage);
-    Console.WriteLine(result); 
-}
-```
 
 
 ## Configuration and Authorization

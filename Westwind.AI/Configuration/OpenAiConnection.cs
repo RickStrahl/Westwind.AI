@@ -70,8 +70,18 @@ namespace Westwind.AI.Configuration
     /// Base class that can be used to access OpenAI and Azure OpenAI
     /// or any other OpenAI based service like local Ollama interface.
     /// </summary>
-    public class BaseOpenAiConnection : IOpenAiConnection, INotifyPropertyChanged
+    public class OpenAiConnection : IOpenAiConnection, INotifyPropertyChanged
     {
+
+        public OpenAiConnection()
+        {
+            ModelId = "gpt-4o-mini";
+            Endpoint = "https://api.openai.com/v1/";
+            ProviderMode = AiProviderModes.OpenAi;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -279,7 +289,7 @@ namespace Westwind.AI.Configuration
         /// </summary>
         /// <param name="providerMode"></param>
         /// <returns></returns>
-        public static BaseOpenAiConnection Create(AiProviderModes providerMode, string name = null, bool isImageGeneration = false)
+        public static OpenAiConnection Create(AiProviderModes providerMode, string name = null, bool isImageGeneration = false)
         {
             if (name == null)
                 name = "OpenAI Connection " + DataUtils.GenerateUniqueId(5);
@@ -293,7 +303,7 @@ namespace Westwind.AI.Configuration
                 case AiProviderModes.Ollama:
                     return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
                 default:
-                    return new BaseOpenAiConnection() { Name = name };
+                    return new OpenAiConnection() { Name = name };
             }
         }
         /// <summary>
@@ -301,41 +311,38 @@ namespace Westwind.AI.Configuration
         /// </summary>
         /// <param name="connectionMode">string based connection mode</param>
         /// <returns></returns>
-        public static BaseOpenAiConnection Create(string  connectionMode, bool isImageGen = false)
+        public static OpenAiConnection Create(string  connectionMode, bool isImageGen = false)
         {
             if(!Enum.TryParse<AiProviderModes>(connectionMode, out var mode))
-                return new BaseOpenAiConnection();
+                return new OpenAiConnection();
             return Create(mode, isImageGeneration: isImageGen);
         }
     }
 
-
-    public class OpenAiConnection : BaseOpenAiConnection
-    {
-        public OpenAiConnection()
-        {
-            ModelId = "gpt-3.5-turbo";
-            Endpoint = "https://api.openai.com/v1/";
-            ProviderMode = AiProviderModes.OpenAi;
-            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
-        }
-    }
-
-    public class AzureOpenAiConnection : BaseOpenAiConnection
+    /// <summary>
+    /// Azure Open AI specific connection.
+    /// 
+    /// Uses:
+    /// Endpoint - Azure OpenAI Base Site Url (without deployment and operation paths)
+    /// ModelId - Name of the deployment
+    /// ApiVersion - Version of the Azure API (default provided)
+    /// </summary>
+    public class AzureOpenAiConnection : OpenAiConnection
     {
         public AzureOpenAiConnection()
         {
             ProviderMode = AiProviderModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
-            ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
+            ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;                
         }
     }
 
-    public class OllamaOpenAiConnection : BaseOpenAiConnection
+    public class OllamaOpenAiConnection : OpenAiConnection
     {
         public OllamaOpenAiConnection()
         {
             ProviderMode = AiProviderModes.Ollama;
+            OperationMode = AiOperationModes.Completions;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
             Endpoint= "http://127.0.0.1:11434/v1/";            
         }

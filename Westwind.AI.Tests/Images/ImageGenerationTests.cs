@@ -22,7 +22,7 @@ public class ImageGenerationTests
         ImagePrompt.DefaultImageStoragePath = Path.GetFullPath("images/GeneratedImages");
     }
 
-    public BaseOpenAiConnection Connection { get; set; }
+    public OpenAiConnection Connection { get; set; }
     public OpenAiConnectionConfiguration Configurations { get; set; }
 
     [TestMethod]

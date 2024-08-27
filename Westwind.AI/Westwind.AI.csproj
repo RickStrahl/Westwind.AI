@@ -21,6 +21,7 @@
 	  <PackageReleaseNotes></PackageReleaseNotes>
 	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>
 	  <PackageIcon>icon.png</PackageIcon>
+	  <PackageReadme>README.MD</PackageReadme>
 	  <PackageLicenseFile>LICENSE.MD</PackageLicenseFile>
 	  
   </PropertyGroup>

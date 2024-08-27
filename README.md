@@ -1,5 +1,5 @@
 # Westwind 
- <!--<a href="https://www.nuget.org/packages/Westwind.AI/">![](https://img.shields.io/nuget/v/Westwind.AI.svg)</a> ![](https://img.shields.io/nuget/dt/Westwind.AI.svg)-->
+ <a href="https://www.nuget.org/packages/Westwind.AI/">![](https://img.shields.io/nuget/v/Westwind.AI.svg)</a> ![](https://img.shields.io/nuget/dt/Westwind.AI.svg)
  
 <img src='Icon.png' width=200 />
 
@@ -299,7 +299,7 @@ Console.WriteLine(result);
 ## Configuration and Authorization
 The library uses a single configuration mechanism via two classes:
 
-* **OpenAiConnection / AzureOpenAiConnection**  
+* **OpenAiConnection / AzureOpenAiConnection / OllamaOpenAiConnectio**  
 A specific configuration for an AI connection that contains an endpoint, model Id and Api keys. You can create these individually to configure a connection or use the configuration class that holds multiple connections that can be stored to disk.
 
 * **OpenAiConnectionConfiguration**  
@@ -378,20 +378,54 @@ The values used depend on whether you're accessing OpenAI or an openAI compatibl
 
 You can also create the connections directly in code if you prefer.
 
+### OpenAiConnection.Create()
+You can create manual provider connections, but the easiest way to create a new provider connection manually is to use:
 
-### OpenAI Connections
-This is the easiest configuration you basically only need to set the ApiKey and Model name in code.
+```cs
+var apiKey = "sk-superseekrit";
+var connection = OpenAiConnection.Create(AiProviderModes.OpenAi, "Open AI Connection");
+connection.ApiKey = apiKey;
 
-For Chat:
+Assert.IsTrue(connection.ProviderMode == AiProviderModes.OpenAi,"Incorrect Provider Mode");
+Assert.IsTrue(connection.OperationMode == AiOperationModes.Completions,"Incorrect Operation Mode");
+Assert.IsTrue(connection.ModelId == "gpt-4o-mini","Incorrect Model"); // default 
+// Important - API key is encrypted for storage so use DecryptedApiKey
+Assert.AreEqual(connection.DecryptedApiKey, apiKey,"Incorrect ApiKey");
+```            
+
+Alternately you can use the name as a string (easier to use from UI):
+
+```cs
+var connection = OpenAiConnection.Create("OpenAi", "Open AI Connection");
+```
+
+The provider modes are:
+
+* OpenAi
+* AzureOpenAi
+* Ollama
+
+Anything else defaults to unconfigured OpenAi.
+
+### Manual Provider Connections
+You can of course also use manually create connections by specifying either the default `OpenAiConnection` provider and setting all properties manually, or by using a specific provider subclass that sets defaults based on the provider.
+
+
+#### OpenAI Connections
+This is the default connection that is used as the base configuration.
+
+This is the easiest configuration as you only need to set the **ApiKey** and **ModelId** and for images specify `OperationModes.ImageGeneration`:
+
+**For Completions**
 
 ```cs
 var config = new OpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "gpt-4o-mini"
+   ModelId = "gpt-4"
 };
 ```
 
-For Images:
+**For Images**
 
 ```cs
 var config = new OpenAiConnection() {
@@ -401,35 +435,29 @@ var config = new OpenAiConnection() {
 };
 ```
 
-### Azure 
-Azure uses a different logon mechanism and requires that you set up an Azure site and separate deployments for each of the models you want to use. As such you specify the **Deployment Name** as the ModelId.
+#### AzureOpenAi Connections
+Azure uses a different logon mechanism and requires that you set up an Azure site and separate deployments for each of the models you want to use. As such you specify the **Deployment Name** as the ModelId as the deployment has the model pre-set. You need to specify the **EndPoint** which is the *Base Url for the Azure Site* (without any site relative paths) in addition to the **ApiKey**.
 
-For Chat or Images:
+**For Completions or Images**
 
 ```cs
 var config = new AzureOpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "MyGtp35tDeployment",    // "MyDalleDeployment"
-   EndPoint = "https://myAzureSite.openai.azure.com/",
-   OperationMode = AiOperationModes.ImageGeneration  // or .Completions ImageGeneration
+   EndPoint = "https://myAzureSite.openai.azure.com/"
 };
 ```
 
-The actual model or operation mode is determined by the 
+#### Ollama Local
+You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull` the model desired. Using Ollama you only specify the **ApiKey** and **ModelId** which specifies any of the models that are installed in your local Ollama setup. 
 
-### Ollama Local
-You can also use any local SLMs that support OpenAI. If you use the popular Ollama install locally you can host any of the models by running `ollama serve `  (or whatever other model that you've pulled). 
-
-For Chat:
+**For Completions**
 
 ```cs
-var config = new OpenAiConnection() {
-   Endpoint="https://127.0.0.1:11434/v1/",
+var config = new OllamaOpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "phi3" // "llama3"
 };
 ```
 
-You can then use the `ModelId` to switch between the different locally installed models. Keep in mind that switching models is initially very slow as the large local models have to be loaded. Subsequent operations against the same model are significantly faster than first hits.
-
-In general you'll get better results from the online models - both for performance and quality.
+The model works with any downloaded model. Note that Ollama automatically switches between models, but be aware that jumping across models can be slow as each mode is reloaded.

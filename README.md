@@ -3,18 +3,26 @@
  
 <img src='Icon.png' width=200 />
 
-A self-contained library that talks directly to the OpenAI HTTP API without major dependencies. The purpose of this library is provide a minimal dependencies client for raw OpenAi Completions and Image Generation operations.
+A self-contained library that talks directly to the OpenAI HTTP API without major dependencies. 
+
+The purpose of this library is provide a **minimal dependencies client for raw OpenAi Completions and Image Generation operations**. It's meant for lightweight integrations into existing applications that have simple AI integration needs and don't need advanced features.
   
 This library supports:
 
-* OpenAI Image Generation via `ImageGeneration` class
-* Generic Chat and Chat History Integrations via `GeneriAiChatClient`
-* Pre-configured Text operations via `AiTextOperations`
-* Easy connection creation and a connection manager for multiple connections
+* Generic Chat and Chat History Integrations via `GenericAiChatClient`
+* Several pre-configured Text operations via `AiTextOperations`
+    * Text Summary
+    * Translation
+    * Grammar Check
+* Image Generation via `ImageGeneration`
+* Easy connection creation and multiple connection management
+* Basic Request/Response API only - no streaming APIs
 
 .NET Targets:
 
 * .NET 8.0
+
+> If you need streaming interfaces or want to do extended processing on your AI results with  custom functions or other add-on operations, then using one of the more powerful and heavy dependencies tools like [Semantic Kernal](https://github.com/microsoft/semantic-kernel) makes good sense.
 
 ## Usage Examples
 

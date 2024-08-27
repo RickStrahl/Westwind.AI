@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
-	  <Version>0.1.2</Version>
+	  <Version>0.1.3</Version>
 	  <Authors>Rick Strahl, West Wind Technologies</Authors>
 	  <Company>West Wind Technologies</Company>	  
 	  <Copyright>Rick Strahl, West Wind Technologies, 2010-2024</Copyright>
@@ -20,10 +20,10 @@
 	  <PackageTags>Westwind OpenAI AI</PackageTags>
 	  <PackageReleaseNotes></PackageReleaseNotes>
 	  <PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>
-	  <PackageIcon>icon.png</PackageIcon>
-	  <PackageReadme>README.MD</PackageReadme>
-	  <PackageLicenseFile>LICENSE.MD</PackageLicenseFile>
 	  
+	  <PackageIcon>icon.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE.MD</PackageLicenseFile>
+	  <PackageReadmeFile>README.MD</PackageReadmeFile>	  
   </PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

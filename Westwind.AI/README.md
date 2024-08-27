@@ -203,11 +203,45 @@ The values used depend on whether you're accessing OpenAI or an openAI compatibl
 
 You can also create the connections directly in code if you prefer.
 
+### OpenAiConnection.Create()
+You can create manual provider connections, but the easiest way to create a new provider connection manually is to use:
 
-### OpenAI Connections
-This is the easiest configuration you basically only need to set the ApiKey and Model name in code.
+```cs
+var apiKey = "sk-superseekrit";
+var connection = OpenAiConnection.Create(AiProviderModes.OpenAi, "Open AI Connection");
+connection.ApiKey = apiKey;
 
-For Chat:
+Assert.IsTrue(connection.ProviderMode == AiProviderModes.OpenAi,"Incorrect Provider Mode");
+Assert.IsTrue(connection.OperationMode == AiOperationModes.Completions,"Incorrect Operation Mode");
+Assert.IsTrue(connection.ModelId == "gpt-4o-mini","Incorrect Model"); // default 
+// Important - API key is encrypted for storage so use DecryptedApiKey
+Assert.AreEqual(connection.DecryptedApiKey, apiKey,"Incorrect ApiKey");
+```            
+
+Alternately you can use the name as a string (easier to use from UI):
+
+```cs
+var connection = OpenAiConnection.Create("OpenAi", "Open AI Connection");
+```
+
+The provider modes are:
+
+* OpenAi
+* AzureOpenAi
+* Ollama
+
+Anything else defaults to unconfigured OpenAi.
+
+### Manual Provider Connections
+You can of course also use manually create connections by specifying either the default `OpenAiConnection` provider and setting all properties manually, or by using a specific provider subclass that sets defaults based on the provider.
+
+
+#### OpenAI Connections
+This is the default connection that is used as the base configuration.
+
+This is the easiest configuration as you only need to set the **ApiKey** and **ModelId** and for images specify `OperationModes.ImageGeneration`:
+
+**For Completions**
 
 ```cs
 var config = new OpenAiConnection() {
@@ -216,19 +250,20 @@ var config = new OpenAiConnection() {
 };
 ```
 
-For Images:
+**For Images**
 
 ```cs
 var config = new OpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "dall-e-3"
+   ModelId = "dall-e-3",
+   OperationMode = AiOperationModes.ImageGeneration
 };
 ```
 
-### Azure 
-Azure uses a different logon mechanism and requires that you set up an Azure site and separate deployments for each of the models you want to use. As such you specify the **Deployment Name** as the ModelId.
+#### AzureOpenAi Connections
+Azure uses a different logon mechanism and requires that you set up an Azure site and separate deployments for each of the models you want to use. As such you specify the **Deployment Name** as the ModelId as the deployment has the model pre-set. You need to specify the **EndPoint** which is the *Base Url for the Azure Site* (without any site relative paths) in addition to the **ApiKey**.
 
-For Chat or Images:
+**For Completions or Images**
 
 ```cs
 var config = new AzureOpenAiConnection() {
@@ -238,15 +273,16 @@ var config = new AzureOpenAiConnection() {
 };
 ```
 
-### Ollama Local
-You can also use any local SMLs that support OpenAI. If you use the popular Ollama docker install locally you can host any of the models by running `ollama serve llama3`  (or whatever other model that you've pulled).
+#### Ollama Local
+You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull` the model desired. Using Ollama you only specify the **ApiKey** and **ModelId** which specifies any of the models that are installed in your local Ollama setup. 
+
+**For Completions**
 
 ```cs
-var config = new OpenAiConnection() {
-   Endpoint="https://127.0.0.1:11434/v1/",
+var config = new OllamaOpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "phi3" // "llama3"
 };
 ```
 
-The model works with any downloaded model. Note that ollama also will automatically switch between models, but it can be slow as new models are loaded.
+The model works with any downloaded model. Note that Ollama automatically switches between models, but be aware that jumping across models can be slow as each mode is reloaded.

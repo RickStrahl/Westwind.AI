@@ -130,8 +130,6 @@ namespace Westwind.AI.Tests.TextCompletions
             Console.WriteLine(result);
         }
 
-
-
         [TestMethod]
         public async Task GrammarCheckTest()
         {

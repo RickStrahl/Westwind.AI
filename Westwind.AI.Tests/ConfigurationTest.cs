@@ -62,5 +62,21 @@ namespace Westwind.AI.Tests
 
             config.Save();
         }
+
+        [TestMethod]
+        public void CreateProviderTest()
+        {
+            var apiKey = "sk-superseekrit";
+            var connection = OpenAiConnection.Create(AiProviderModes.OpenAi, "Open AI Connection");
+            connection.ApiKey = apiKey;
+            // connection.ModelId = "gpt-4o-mini";  // default
+
+            Assert.IsTrue(connection.ProviderMode == AiProviderModes.OpenAi,"Incorrect Provider Mode");
+            Assert.IsTrue(connection.OperationMode == AiOperationModes.Completions,"Incorrect Operation Mode");
+            Assert.IsTrue(connection.ModelId == "gpt-4o-mini","Incorrect Model");
+
+            // Important - API key is encrypted for storage so use DecryptedApiKey
+            Assert.AreEqual(connection.DecryptedApiKey, apiKey,"Incorrect ApiKey");
+        }
     }
 }

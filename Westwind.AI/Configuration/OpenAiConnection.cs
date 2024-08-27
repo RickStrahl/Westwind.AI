@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Newtonsoft.Json;
 using Westwind.AI.Chat;
 using Westwind.Ai.Images;
@@ -67,8 +66,13 @@ namespace Westwind.AI.Configuration
 
 
     /// <summary>
-    /// Base class that can be used to access OpenAI and Azure OpenAI
-    /// or any other OpenAI based service like local Ollama interface.
+    /// Base AI configuration class that contains all the base settings 
+    /// required to connect to OpenAI. The default uses the bona fide
+    /// OpenAi (company) API settings for defaults.
+    /// 
+    /// Subclasses of this class simply override default settings and 
+    /// provide additional Intellisense information for specific 
+    /// settings and providers.
     /// </summary>
     public class OpenAiConnection : IOpenAiConnection, INotifyPropertyChanged
     {
@@ -309,12 +313,12 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// Creates a specific connection base on the connection mode
         /// </summary>
-        /// <param name="connectionMode">string based connection mode</param>
+        /// <param name="providerMode">string based connection mode</param>
         /// <returns></returns>
-        public static OpenAiConnection Create(string  connectionMode, bool isImageGen = false)
+        public static OpenAiConnection Create(string  providerMode, bool isImageGen = false)
         {
-            if(!Enum.TryParse<AiProviderModes>(connectionMode, out var mode))
-                return new OpenAiConnection();
+            if(!Enum.TryParse<AiProviderModes>(providerMode, out var mode))
+                return new OpenAiConnection(); // default to OpenAi
             return Create(mode, isImageGeneration: isImageGen);
         }
     }

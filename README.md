@@ -1,14 +1,20 @@
-# Westwind.AI
-
+# Westwind 
+ <!--<a href="https://www.nuget.org/packages/Westwind.AI/">![](https://img.shields.io/nuget/v/Westwind.AI.svg)</a> ![](https://img.shields.io/nuget/dt/Westwind.AI.svg)-->
+ 
 <img src='Icon.png' width=200 />
 
-A self-contained library that talks directly to the OpenAI HTTP API without major dependencies.
-
+A self-contained library that talks directly to the OpenAI HTTP API without major dependencies. The purpose of this library is provide a minimal dependencies client for raw OpenAi Completions and Image Generation operations.
+  
 This library supports:
 
 * OpenAI Image Generation via `ImageGeneration` class
-* Chat Integrations via `GenericAiChat`
+* Generic Chat and Chat History Integrations via `GeneriAiChatClient`
+* Pre-configured Text operations via `AiTextOperations`
+* Easy connection creation and a connection manager for multiple connections
 
+.NET Targets:
+
+* .NET 8.0
 
 ## Usage Examples
 

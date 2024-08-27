@@ -50,7 +50,7 @@ public class ImageGenerationTests
         Console.WriteLine(imageUrl);
 
         // Display the image as a Url
-        ShellUtils.GoUrl(imageUrl);
+        ShellUtils.OpenUrl(imageUrl);
 
         // Typically the AI **fixes up the prompt**
         Console.WriteLine(imagePrompt.RevisedPrompt);

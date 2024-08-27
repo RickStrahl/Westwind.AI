@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.IO;
 using Westwind.AI.Configuration;
 using Westwind.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Westwind.AI.Tests
 {
@@ -29,8 +32,8 @@ namespace Westwind.AI.Tests
         {
             var config = new OpenAiConnectionConfiguration();
             
-            config.Connections.AddRange([
-
+            config.Connections.AddRange(new List<OpenAiConnection>
+            {
                 new OpenAiConnection()
                 {
                     Name = "OpenAI",
@@ -49,16 +52,16 @@ namespace Westwind.AI.Tests
                 new OpenAiConnection()
                 {
                     Name = "Ollama llama3",
-                    ModelId = "llama3",                    
+                    ModelId = "llama3",
                     ProviderMode = AiProviderModes.OpenAi
                 },
                 new OpenAiConnection()
                 {
                     Name = "Ollama Phi3",
-                    ModelId = "phi3",                    
+                    ModelId = "phi3",
                     ProviderMode = AiProviderModes.OpenAi
                 },
-            ]);
+            }.AsReadOnly());
 
             config.Save();
         }

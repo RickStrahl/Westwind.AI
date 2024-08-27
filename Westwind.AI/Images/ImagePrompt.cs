@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Westwind.AI.Utilities;
 using Westwind.Utilities;
 
 namespace Westwind.Ai.Images
@@ -174,12 +175,28 @@ namespace Westwind.Ai.Images
 
 
         [JsonIgnore]
-        public byte[] ByteData
+        public byte[] ByteData => EmbeddedBase64ToBinary(Base64Data).bytes;
+
+        /// <summary>
+        /// Decoded an embedded base64 resource string into its binary content and mime type
+        /// </summary>
+        /// <param name="base64Data">Embedded Base64 data (data:mime/type;b64data) </param>
+        /// <returns></returns>
+        private static (byte[] bytes, string mimeType) EmbeddedBase64ToBinary(string base64Data)
         {
-            get
-            {
-                return HtmlUtils.EmbeddedBase64ToBinary(Base64Data).bytes;
-            }
+            if (string.IsNullOrEmpty(base64Data))
+                return (null, null);
+
+            var parts = base64Data.Split(',');
+            if (parts.Length != 2)
+                return (null, null);
+
+            var mimeType = parts[0].Replace("data:", "").Replace(";base64", "");
+            var data = parts[1];
+
+            var bytes = Convert.FromBase64String(data);
+
+            return (bytes, mimeType);
         }
 
         [JsonIgnore]
@@ -306,7 +323,12 @@ namespace Westwind.Ai.Images
             var fname = GetImageFilename(filename);
             if (File.Exists(fname))
             {
+
+#if NETFRAMEWORK
+                var bytes = await FileHelper.ReadAllBytesAsync(fname);
+#else
                 var bytes = await File.ReadAllBytesAsync(fname);
+#endif
                 return HtmlUtils.BinaryToEmbeddedBase64(bytes, "image/png");
             }
 
@@ -325,7 +347,11 @@ namespace Westwind.Ai.Images
 
             if (File.Exists(fname))
             {
+#if NETFRAMEWORK
+                return await FileHelper.ReadAllBytesAsync(fname);
+#else
                 return await File.ReadAllBytesAsync(fname);
+#endif
             }
 
             return null;
@@ -397,7 +423,11 @@ namespace Westwind.Ai.Images
                 Directory.CreateDirectory(ImageFolderPath);
             var filename = Path.Combine(ImageFolderPath, shortFilename);
 
+#if NETFRAMEWORK            
+            await FileHelper.WriteAllBytesAsync(filename, data);            
+#else
             await File.WriteAllBytesAsync(filename, data);
+#endif
 
             return shortFilename;
         }
@@ -420,7 +450,7 @@ namespace Westwind.Ai.Images
 
             return existing;
         }
-        #endregion
+#endregion
 
         #region Base64 Operations
 
@@ -460,12 +490,17 @@ namespace Westwind.Ai.Images
             // write to a specific location
             if (!Directory.Exists(Path.GetDirectoryName(filename)))
                 Directory.CreateDirectory(Path.GetDirectoryName(filename));
+
+#if NETFRAMEWORK
+            await FileHelper.WriteAllBytesAsync(filename, imageBytes);
+#else
             await File.WriteAllBytesAsync(filename, imageBytes);
+#endif
             return filename;
         }
 
 
-        #endregion
+#endregion
 
         public override string ToString()
         {

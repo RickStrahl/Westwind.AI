@@ -1,7 +1,14 @@
+using System;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Westwind.AI.Configuration;
+using System.Net;
+using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Westwind.Ai.Test
 {
@@ -40,11 +47,14 @@ namespace Westwind.Ai.Test
                 // OpenAI
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", OpenAiApiKey);
 
-
-                var Message = await client.PostAsync(apiUrl, new StringContent(json, new MediaTypeHeaderValue("application/json")));
-                if (Message.IsSuccessStatusCode)
+#if NETFRAMEWORK
+                var message = await client.PostAsync(apiUrl, new StringContent(json, Encoding.UTF8, "application/json"));
+#else
+                var message = await client.PostAsync(apiUrl, new StringContent(json, new MediaTypeHeaderValue("application/json")));
+#endif
+                if (message.IsSuccessStatusCode)
                 {
-                    var content = await Message.Content.ReadAsStringAsync();
+                    var content = await message.Content.ReadAsStringAsync();
                     response = JsonConvert.DeserializeObject<JObject>(content);
 
                     var resultUrl = response.data[0].url;
@@ -52,11 +62,11 @@ namespace Westwind.Ai.Test
                 }
                 else
                 {
-                    if (Message.StatusCode == System.Net.HttpStatusCode.BadRequest || Message.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    if (message.StatusCode == System.Net.HttpStatusCode.BadRequest || message.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
-                        if (Message.Content.Headers.ContentLength > 0 && Message.Content.Headers.ContentType?.ToString() == "application/json")
+                        if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType?.ToString() == "application/json")
                         {
-                            json = await Message.Content.ReadAsStringAsync();
+                            json = await message.Content.ReadAsStringAsync();
                             dynamic error = JsonConvert.DeserializeObject<JObject>(json);
                             Console.WriteLine(json);
 

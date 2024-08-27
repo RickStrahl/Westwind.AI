@@ -1,7 +1,7 @@
-# Westwind 
+# Westwind.AI
  [![](https://img.shields.io/nuget/v/Westwind.AI.svg)](https://www.nuget.org/packages/Westwind.AI/) ![](https://img.shields.io/nuget/dt/Westwind.AI.svg)
  
-![Westwind.AI Logi - Lightbulb Pen](https://github.com/RickStrahl/Westwind.AI/raw/master/Icon_200.png)
+![Westwind.AI Logi - Lightbulb Pen](https://raw.githubusercontent.com/RickStrahl/Westwind.AI/master/Icon_200.png)
 
 A self-contained library that talks directly to the OpenAI HTTP API without major dependencies. 
 
@@ -9,7 +9,7 @@ The purpose of this library is provide a **minimal dependencies client for raw O
   
 This library supports:
 
-* Generic Chat and Chat History Integrations via `GenericAiChatClient`
+* Generic Completions and Chat History  via `GenericAiChatClient`
 * Several pre-configured Text operations via `AiTextOperations`
     * Text Summary
     * Translation
@@ -20,7 +20,8 @@ This library supports:
 
 .NET Targets:
 
-* .NET 8.0
+* .NET8.0
+* .NET472
 
 > If you need streaming interfaces or want to do extended processing on your AI results with  custom functions or other add-on operations, then using one of the more powerful and heavy dependencies tools like [Semantic Kernal](https://github.com/microsoft/semantic-kernel) makes good sense.
 

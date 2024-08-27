@@ -1,6 +1,11 @@
-﻿using Westwind.AI.Chat;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Westwind.AI.Chat;
 using Westwind.AI.Configuration;
 using Westwind.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 
 namespace Westwind.AI.Tests.TextCompletions
 {

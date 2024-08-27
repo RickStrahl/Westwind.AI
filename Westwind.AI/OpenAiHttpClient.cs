@@ -7,9 +7,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Westwind.AI.Chat;
 using Westwind.AI.Configuration;
 using Westwind.Utilities;
+
 
 namespace Westwind.AI
 {

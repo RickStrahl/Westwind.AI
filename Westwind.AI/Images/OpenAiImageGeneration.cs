@@ -217,23 +217,26 @@ namespace Westwind.Ai.Images
                 return false;
 
 
-            using var client = AiHttpClient.GetHttpClient();
-            client.Timeout = TimeSpan.FromSeconds(3);
-            client.DefaultRequestHeaders.Clear();
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", key);
-
-            var endPointUrl = AiHttpClient.GetEndpointUrl("models");
-            HttpResponseMessage response;
-            try
+            using (var client = AiHttpClient.GetHttpClient())
             {
-                response = await client.GetAsync("https://api.openai.com/v1/models");
+                client.Timeout = TimeSpan.FromSeconds(3);
+                client.DefaultRequestHeaders.Clear();
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", key);
+
+                var endPointUrl = AiHttpClient.GetEndpointUrl("models");
+                HttpResponseMessage response;
+                try
+                {
+                    response = await client.GetAsync("https://api.openai.com/v1/models");
+                }
+                catch
+                {
+                    return false;
+                }
+
+                return response.IsSuccessStatusCode;
             }
-            catch
-            {
-                return false;
-            }
-            return response.IsSuccessStatusCode;
         }
         #endregion
 

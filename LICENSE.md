@@ -1,4 +1,6 @@
-MIT License
+# Westwind.AI
+
+## MIT License
 
 Copyright (c) 2024, West Wind Technologies
 

@@ -240,7 +240,7 @@ ShellUtils.GoUrl(file);
 ## Specialized AI Completions
 This library has a few common operations that you can use for:
 
-* Summarization
+* Text Summary
 * Translation
 * Grammar Checking
 
@@ -289,9 +289,6 @@ Console.WriteLine("Original:\n" + orig);
 Console.WriteLine("\nAdjusted:\n");
 Console.WriteLine(result);
 ```
-
-         
-
 
 ## Configuration and Authorization
 The library uses a single configuration mechanism via two classes:

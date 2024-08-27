@@ -15,7 +15,7 @@ namespace Westwind.Ai.Test
 
             OpenAiConnectionConfiguration config = OpenAiConnectionConfiguration.Load();
             var connection = config.Connections.FirstOrDefault(config => config.Name == "OpenAI");
-            OpenAiApiKey = connection.DecryptedApiKey;
+            OpenAiApiKey = connection?.DecryptedApiKey;
         }
 
         [TestMethod]

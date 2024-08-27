@@ -29,6 +29,8 @@ public class ImageGenerationTests
     public async Task ImageGenerationToUrlTest()
     {       
         var generator = new OpenAiImageGeneration(Connection);
+
+        // Capture raw request data for debugging
         generator.AiHttpClient.CaptureRequestData = true;
 
         var imagePrompt = new ImagePrompt()

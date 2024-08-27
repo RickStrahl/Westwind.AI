@@ -237,6 +237,60 @@ Console.WriteLine("File generated: " + file);
 ShellUtils.GoUrl(file);
 ```
 
+## Specialized AI Completions
+This library has a few common operations that you can use for:
+
+* Summarization
+* Translation
+* Grammar Checking
+
+### Summarize
+There's a custom helper for summarizing input text.
+
+**Summarize from string**
+
+```csharp
+var completion = new AiTextOperations(Connection);            
+
+string result = await completion.Summarize(
+    textToSummarize, 
+    numberOfSentences: 3);
+
+Assert.IsNotNull(result, completion.ErrorMessage);
+Console.WriteLine(result);
+```
+
+### Translate
+
+```csharp
+var translator = new AiTextOperations(Connection);
+translator.AiHttpClient.CaptureRequestData = true;
+
+Console.WriteLine("Using: " + Connection.Name);
+
+string result = await translator.TranslateText(
+    "The sky is below, the ground is above", "en", "de");
+
+Assert.IsNotNull(result, translator.ErrorMessage);
+Console.WriteLine(result);
+```
+
+### Check Grammar
+
+```csharp
+var orig = "Long story short one of the use cases that usually made me grab for the Newtonsoft library was dynamic parsing, but I'm glad to see that at some time at least some minimal support for dynamic parsing was added to the `System.Text.Json.JsonSerializer` class";
+var checker = new AiTextOperations(Connection);
+var result = await checker.CheckGrammar(orig);
+
+Assert.IsNotNull(result, checker.ErrorMessage);
+
+Console.WriteLine("Original:\n" + orig);
+
+Console.WriteLine("\nAdjusted:\n");
+Console.WriteLine(result);
+```
+
+         
 
 
 ## Configuration and Authorization
@@ -330,7 +384,7 @@ For Chat:
 ```cs
 var config = new OpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "gpt-4"
+   ModelId = "gpt-4o-mini"
 };
 ```
 
@@ -339,7 +393,8 @@ For Images:
 ```cs
 var config = new OpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "dall-e-3"
+   ModelId = "dall-e-3",
+   OperationMode = AiOperationModes.ImageGeneration
 };
 ```
 
@@ -352,12 +407,17 @@ For Chat or Images:
 var config = new AzureOpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "MyGtp35tDeployment",    // "MyDalleDeployment"
-   EndPoint = "https://myAzureSite.openai.azure.com/"
+   EndPoint = "https://myAzureSite.openai.azure.com/",
+   OperationMode = AiOperationModes.ImageGeneration  // or .Completions ImageGeneration
 };
 ```
 
+The actual model or operation mode is determined by the 
+
 ### Ollama Local
-You can also use any local SMLs that support OpenAI. If you use the popular Ollama docker install locally you can host any of the models by running `ollama serve llama3`  (or whatever other model that you've pulled).
+You can also use any local SLMs that support OpenAI. If you use the popular Ollama install locally you can host any of the models by running `ollama serve `  (or whatever other model that you've pulled). 
+
+For Chat:
 
 ```cs
 var config = new OpenAiConnection() {
@@ -367,4 +427,6 @@ var config = new OpenAiConnection() {
 };
 ```
 
-The model works with any downloaded model. Note that ollama also will automatically switch between models, but it can be slow as new models are loaded.
+You can then use the `ModelId` to switch between the different locally installed models. Keep in mind that switching models is initially very slow as the large local models have to be loaded. Subsequent operations against the same model are significantly faster than first hits.
+
+In general you'll get better results from the online models - both for performance and quality.

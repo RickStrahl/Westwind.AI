@@ -38,7 +38,7 @@ namespace Westwind.AI.Tests.TextCompletions
                 "You are a translator that translates between languages. Return only the translated text.");
 
             Assert.IsFalse(completion.HasError, completion.ErrorMessage);
-            Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
             Console.WriteLine(resultText);
 
             // optionally captured request and response data
@@ -65,11 +65,9 @@ namespace Westwind.AI.Tests.TextCompletions
                 },
             };
 
-            await completion.Complete()
-            string resultText = await completion.Complete(
-                "Translate the following from English to German:\nThe sky is below, the ground is above",
-                "You are a translator that translates between languages. Return only the translated text.");
 
+            var resultText = await completion.Complete(prompts);
+            
             Assert.IsFalse(completion.HasError, completion.ErrorMessage);
             Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
             Console.WriteLine(resultText);
@@ -87,7 +85,8 @@ namespace Westwind.AI.Tests.TextCompletions
 
             var completion = new AiTextOperations(Connection);            
             string result = await completion.Summarize(
-                textToSummarize, 3);
+                textToSummarize, 
+                numberOfSentences: 3);
 
             Assert.IsNotNull(result, completion.ErrorMessage);
             Console.WriteLine(result);
@@ -136,6 +135,8 @@ namespace Westwind.AI.Tests.TextCompletions
         [TestMethod]
         public async Task GrammarCheckTest()
         {
+            ConnectionMessage();
+
             var orig = "Long story short one of the use cases that usually made me grab for the Newtonsoft library was dynamic parsing, but I'm glad to see that at some time at least some minimal support for dynamic parsing was added to the `System.Text.Json.JsonSerializer` class";
             var checker = new AiTextOperations(Connection);
             var result = await checker.CheckGrammar(orig);
@@ -151,6 +152,9 @@ namespace Westwind.AI.Tests.TextCompletions
         [TestMethod]
         public async Task GrammarCheckDiffTest()
         {
+
+            ConnectionMessage();
+
             var orig = "Long story short one of the use cases that usually made me grab for the Newtonsoft library was dynamic parsing, but I'm glad to see that at some time at least some minimal support for dynamic parsing was added to the `System.Text.Json.JsonSerializer` class";
             var checker = new AiTextOperations(Connection);
             var result = await checker.CheckGrammarAsDiff(orig);

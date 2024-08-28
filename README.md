@@ -23,7 +23,7 @@ This library supports:
 * .NET8.0
 * .NET472
 
-> If you need streaming interfaces or want to do extended processing on your AI results with  custom functions or other add-on operations, then using one of the more powerful and heavy dependencies tools like [Semantic Kernal](https://github.com/microsoft/semantic-kernel) makes good sense.
+> If you need streaming interfaces or want to do extended processing on your AI results with  custom functions or other add-on operations, then using one of the more powerful and heavy dependencies tools like [Semantic Kernel](https://github.com/microsoft/semantic-kernel) makes good sense.
 
 ## Usage Examples
 
@@ -443,30 +443,53 @@ var config = new OpenAiConnection() {
    OperationMode = AiOperationModes.ImageGeneration
 };
 ```
+##### Open AI Links:
+
+- [Sign up for OpenAI API Account](https://platform.openai.com/signup)
+- [Usage](https://platform.openai.com/usage)
+- [Billing](https://platform.openai.com/account/billing/overview)
+- [Usage Limits](https://platform.openai.com/account/limits)
+
+###### Open AI API (applies to all providers)
+
+- [Open AI Chat API Reference](https://platform.openai.com/docs/api-reference/chat)
+- [Open AI Images API Reference](https://platform.openai.com/docs/api-reference/images)
 
 #### AzureOpenAi Connections
-Azure uses a different logon mechanism and requires that you set up an Azure site and separate deployments for each of the models you want to use. As such you specify the **Deployment Name** as the ModelId as the deployment has the model pre-set. You need to specify the **EndPoint** which is the *Base Url for the Azure Site* (without any site relative paths) in addition to the **ApiKey**.
+Azure uses a different logon mechanism and requires that you set up an Azure site and separate deployments for each of the models you want to use. 
+
+You need to specify the **Deployment Name** as the ModelId - Azure has a fixed model per deployment so the deployment is fixed to a model. 
+
+You need to specify the **EndPoint** which is the *Base Url for the Azure Site* (without any site relative paths).
+
+And you need an **ApiKey** to access the API.
 
 **For Completions or Images**
 
 ```cs
 var config = new AzureOpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "MyGtp35tDeployment",    // "MyDalleDeployment"
+   ModelId = "MyGtp35tDeployment",   
    EndPoint = "https://myAzureSite.openai.azure.com/"
 };
 ```
 
+
 #### Ollama Local
-You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull` the model desired. Using Ollama you only specify the **ApiKey** and **ModelId** which specifies any of the models that are installed in your local Ollama setup. 
+You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull` the model desired. Using Ollama you only specify the **ModelId** which references any of the models that are installed in your local Ollama setup (`llama3`, `phi3.5`, `mistral` etc.)
 
 **For Completions**
 
 ```cs
 var config = new OllamaOpenAiConnection() {
-   ApiKey = myApiKey,
    ModelId = "phi3" // "llama3"
 };
 ```
 
 The model works with any downloaded model. Note that Ollama automatically switches between models, but be aware that jumping across models can be slow as each mode is reloaded.
+
+##### Ollama Links
+
+* [Ollama Download](https://ollama.com)
+* [Ollama Getting Started (GitHub)](https://github.com/ollama/ollama)
+* [Ollama Model Library](https://ollama.com/library)

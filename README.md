@@ -3,7 +3,12 @@
  
 ![Westwind.AI Logi - Lightbulb Pen](https://raw.githubusercontent.com/RickStrahl/Westwind.AI/master/Icon_200.png)
 
-A self-contained library that talks directly to the OpenAI HTTP API without major dependencies. 
+A self-contained library that talks directly to the OpenAI HTTP API without major dependencies with explicit support for:
+
+* OpenAI
+* AzureOpenAI
+* Ollama
+* Any generic OpenAI API
 
 The purpose of this library is to provide a **minimal dependencies client for raw OpenAi Completions and Image Generation operations**. It's meant for lightweight integrations into existing applications that have simple AI integration needs and don't need advanced features.
   

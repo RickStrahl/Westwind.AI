@@ -474,24 +474,27 @@ And you need an **ApiKey** to access the API.
 ```cs
 var config = new AzureOpenAiConnection() {
    ApiKey = myApiKey,
-   ModelId = "MyGtp35tDeployment",   
+   ModelId = "Gtp4oMiniDeployment",   
    EndPoint = "https://myAzureSite.openai.azure.com/"
+   OperationMode = AiOperationModes.Completions
 };
 ```
 
 
 #### Ollama Local
-You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull` the model desired. Using Ollama you only specify the **ModelId** which references any of the models that are installed in your local Ollama setup (`llama3`, `phi3.5`, `mistral` etc.)
+You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull <model>` the model desired. 
+
+Using Ollama you only specify the **ModelId** which references any of the models that are installed in your local Ollama setup (`llama3`, `phi3.5`, `mistral` etc.)
 
 **For Completions**
 
 ```cs
 var config = new OllamaOpenAiConnection() {
-   ModelId = "phi3" // "llama3"
+   ModelId = "phi3.5" // "llama3"
 };
 ```
 
-The model works with any downloaded model. Note that Ollama automatically switches between models, but be aware that jumping across models can be slow as each mode is reloaded.
+Note that Ollama can easily switch between models with the ModelId, but be aware that switching models is very slow as the model gets first loaded.
 
 ##### Ollama Links
 

@@ -382,8 +382,10 @@ namespace Westwind.AI.Images
         /// * Saves into image folder
         /// * Sets Filename to the file downloaded (filename only)
         /// </summary>
+        /// <param name="imageurl">Optional image url. If not specified uses prompt's first image url</param>
+        /// <param name="filename">Optional filename to save to. If not specified saves to image save folder with generated name</param>
         /// <returns>true or false</returns>
-        public async Task<bool> DownloadImageToFile(string imageurl = null)
+        public async Task<bool> DownloadImageToFile(string imageurl = null, string filename = null)
         {
             if (string.IsNullOrEmpty(imageurl))
                 imageurl = FirstImageUrl;
@@ -400,15 +402,27 @@ namespace Westwind.AI.Images
 
             try
             {
-                ImageFilename = await WriteDataToImageFileAsync(data);
+                if (!string.IsNullOrEmpty(filename))
+                {
+                    File.WriteAllBytes(filename, data);
+                    ImageFilename = Path.GetFullPath(filename);
+                }
+                else
+                {
+                    ImageFilename = await WriteDataToImageFileAsync(data);
+                }
             }
             catch
             {
                 return false;
             }
 
+
             return true;
         }
+
+        
+
 
         /// <summary>
         /// Writes binary data to an image file in the image file folder

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Westwind.AI.Chat;
-using Westwind.Ai.Images;
+using Westwind.AI.Images;
 using Westwind.Utilities;
 
 namespace Westwind.AI.Configuration

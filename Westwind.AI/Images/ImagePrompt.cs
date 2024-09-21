@@ -6,10 +6,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Westwind.AI.Utilities;
 using Westwind.Utilities;
+using Westwind.AI.Utilities;
 
-namespace Westwind.Ai.Images
+namespace Westwind.AI.Images
 {
     /// <summary>
     /// Open AI Prompt container that holds both the request data

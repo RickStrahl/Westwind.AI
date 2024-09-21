@@ -11,7 +11,7 @@ using Westwind.AI.Chat;
 using Westwind.AI.Configuration;
 using Westwind.AI;
 
-namespace Westwind.Ai.Images
+namespace Westwind.AI.Images
 {
 
     /// <summary>

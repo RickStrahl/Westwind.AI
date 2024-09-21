@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Westwind.AI.Configuration;
-using Westwind.Ai.Images;
+using Westwind.AI.Images;
 using Westwind.Utilities;
 
 namespace Westwind.Ai.Test

@@ -409,7 +409,7 @@ namespace Westwind.AI.Images
                 }
                 else
                 {
-                    ImageFilename = await WriteDataToImageFileAsync(data);
+                    ImageFilename = WriteDataToImageFile(data);
                 }
             }
             catch
@@ -429,7 +429,7 @@ namespace Westwind.AI.Images
         /// </summary>
         /// <param name="data">binary data to write</param>
         /// <returns>returns the file name only (no path)</returns>
-        public async Task<string> WriteDataToImageFileAsync(byte[] data)
+        public string WriteDataToImageFile(byte[] data)
         {
             var shortFilename = "_" + DataUtils.GenerateUniqueId(8) + ".png";
 
@@ -437,11 +437,7 @@ namespace Westwind.AI.Images
                 Directory.CreateDirectory(ImageFolderPath);
             var filename = Path.Combine(ImageFolderPath, shortFilename);
 
-#if NETFRAMEWORK            
-            await FileHelper.WriteAllBytesAsync(filename, data);            
-#else
-            await File.WriteAllBytesAsync(filename, data);
-#endif
+            File.WriteAllBytes(filename, data);
 
             return shortFilename;
         }
@@ -486,7 +482,7 @@ namespace Westwind.AI.Images
         /// </summary>
         /// <param name="filename">Optional - file to write to. If not provided file is created in image storage folder</param>
         /// <returns></returns>
-        public async Task<string> SaveImageFromBase64(string filename = null)
+        public string SaveImageFromBase64(string filename = null)
         {
             if (FirstImage == null)
                 return null;
@@ -497,7 +493,7 @@ namespace Westwind.AI.Images
             if (string.IsNullOrEmpty(filename))
             {
                 // create a new file and store it on the image prompt
-                ImageFilename = await WriteDataToImageFileAsync(imageBytes);
+                ImageFilename = WriteDataToImageFile(imageBytes);
                 return ImageFilePath;
             }
 
@@ -505,11 +501,8 @@ namespace Westwind.AI.Images
             if (!Directory.Exists(Path.GetDirectoryName(filename)))
                 Directory.CreateDirectory(Path.GetDirectoryName(filename));
 
-#if NETFRAMEWORK
-            await FileHelper.WriteAllBytesAsync(filename, imageBytes);
-#else
-            await File.WriteAllBytesAsync(filename, imageBytes);
-#endif
+            File.WriteAllBytes(filename, imageBytes);
+
             return filename;
         }
 

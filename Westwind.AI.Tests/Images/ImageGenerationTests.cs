@@ -93,7 +93,7 @@ namespace Westwind.Ai.Test
             byte[] bytes =  imagePrompt.GetBytesFromBase64();
             Assert.IsNotNull(bytes);
 
-            string file = await imagePrompt.SaveImageFromBase64();        
+            string file = imagePrompt.SaveImageFromBase64();        
             Assert.IsTrue(File.Exists(file));
 
             // show image in OS viewer
@@ -114,22 +114,14 @@ namespace Westwind.Ai.Test
                 ImageStyle = "vivid"
             };
 
+            // This should fail!
             bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.Url);
 
             // Generate and set properties on `imagePrompt` instance
-            Assert.IsTrue(result, generator.ErrorMessage);
+            Assert.IsFalse(result);
 
-            // prompt returns an array of images, but for Dall-e-3 it's always one
-            // so FirstImage returns the first image.
-            byte[] bytes = imagePrompt.GetBytesFromBase64();
-            Assert.IsNotNull(bytes);
-
-            string file = await imagePrompt.SaveImageFromBase64();
-            Assert.IsTrue(File.Exists(file));
-
-            // show image in OS viewer
-            Console.WriteLine("File generated: " + file);
-            ShellUtils.GoUrl(file);
+            Console.WriteLine(generator.ErrorMessage);
+            Assert.IsTrue(generator.ErrorMessage.Contains("Image generation failed"));
         }
 
         ///// <summary>

@@ -449,6 +449,8 @@ var config = new OpenAiConnection() {
 };
 ```
 
+
+
 **For Images**
 
 ```cs
@@ -511,3 +513,18 @@ Note that Ollama can easily switch between models with the ModelId, but be aware
 * [Ollama Download](https://ollama.com)
 * [Ollama Getting Started (GitHub)](https://github.com/ollama/ollama)
 * [Ollama Model Library](https://ollama.com/library)
+
+
+### Generic OpenAI
+You can also connect to most other APIs that are using OpenAI's API. In these scenarios you'll need to provide all the relevant connection information including endpoint, api key and model id.
+
+Here's an example using NVIDIA's OpenAI API:
+
+```cs
+// nvidia OpenAI
+var config = new OpenAiConnection() {
+   ApiKey = nvidiaApiKey,
+   ModelId = "meta/llama-3.1-405b-instruct",
+   Endpoind = "https://integrate.api.nvidia.com/v1/"
+};
+```

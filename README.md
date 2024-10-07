@@ -345,6 +345,16 @@ This class can be used as a container for multiple connections that you can easi
       "OperationMode": "Completions"
     },
     {
+     "Name": "NVidia",
+     "ApiKey": "02AC6CD...342@|-|@",
+     "Endpoint": "https://integrate.api.nvidia.com/v1/",
+     "EndpointTemplate": "{0}/{1}",
+     "ModelId": "meta/llama-3.1-405b-instruct",
+     "ApiVersion": null,
+     "ConnectionMode": "OpenAi",
+     "OperationMode": "Completions"
+    },
+    {
       "Name": "Ollama llama3",
       "ApiKey": "",
       "Endpoint": "http://127.0.0.1:11434/v1/",

@@ -194,7 +194,10 @@ namespace Westwind.AI
                 
                 try
                 {
-                    message = await http.PostAsync(endpointUrl, new StringContent(jsonPayload, Encoding.UTF8, "application/json"));
+                    var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                    // clear content type - some AI Engines (nvidia) don't like charset
+                    jsonContent.Headers.ContentType.CharSet = "";
+                    message = await http.PostAsync(endpointUrl, jsonContent);              
                 }
                 catch(Exception ex)
                 {
@@ -302,6 +305,7 @@ namespace Westwind.AI
             var client = new HttpClient(handler);
 
             client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
             if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
                 client.DefaultRequestHeaders.Add("api-key", Connection.DecryptedApiKey);
             else

@@ -306,6 +306,8 @@ namespace Westwind.AI.Configuration
                     return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Ollama:
                     return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.Nvidia:
+                    return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
                 default:
                     return new OpenAiConnection() { Name = name };
             }
@@ -352,6 +354,17 @@ namespace Westwind.AI.Configuration
         }
     }
 
+    public class NvidiaOpenAiConnection : OpenAiConnection
+    {
+        public NvidiaOpenAiConnection()
+        {
+            ProviderMode = AiProviderModes.Nvidia;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://integrate.api.nvidia.com/v1/";
+            ModelId = "meta/llama-3.1-405b-instruct";
+        }
+    }
 
 
     public enum AiProviderModes
@@ -359,7 +372,8 @@ namespace Westwind.AI.Configuration
         OpenAi,
         AzureOpenAi,
         Ollama,
-        Other
+        Nvidia,
+        Other,
     }
 
     public enum AiOperationModes

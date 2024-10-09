@@ -8,6 +8,7 @@ A self-contained library that talks directly to the OpenAI HTTP API without majo
 * OpenAI
 * AzureOpenAI
 * Ollama
+* Nvidia
 * Any generic OpenAI API
 
 The purpose of this library is to provide a **minimal dependencies client for raw OpenAi Completions and Image Generation operations**. It's meant for lightweight integrations into existing applications that have simple AI integration needs and don't need advanced features.

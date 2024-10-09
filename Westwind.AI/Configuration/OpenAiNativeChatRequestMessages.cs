@@ -12,6 +12,15 @@ namespace Westwind.AI.Configuration
         public string model { get; set; }
 
         public List<OpenAiChatMessage> messages { get; set; } = new List<OpenAiChatMessage> { };
+
+
+        public bool stream { get; set; }
+
+        public int? max_completion_tokens { get; set; } = null;
+
+        public decimal temperature { get; set; } = 1;
+
+        public decimal top_p { get; set; } = 1;
     }
 
     public class OpenAiChatMessages
@@ -23,6 +32,8 @@ namespace Westwind.AI.Configuration
         public OpenAiResponseChoice[] choices { get; set; }
         public OpenAiResponseUsage usage { get; set; }
         public object system_fingerprint { get; set; }
+
+        public string finish_reason { get; set; }
     }
 
     public class OpenAiResponseUsage

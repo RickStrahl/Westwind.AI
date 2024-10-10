@@ -166,6 +166,87 @@ namespace Westwind.AI
         }
 
 
+        public async Task<HttpResponseMessage> SendJsonHttpRequestToResponse(string jsonPayload, string operationSegment = "chat/completions")
+        {
+            if (Connection == null || Connection.IsEmpty)
+            {
+                SetError("No configuration provided.");
+                return null;
+            }
+
+            var endpointUrl = GetEndpointUrl(operationSegment);
+            string json;   // invalid json
+
+            HttpResponseMessage message;
+            using (var http = GetHttpClient())
+            {
+                if (CaptureRequestData)
+                    LastRequestJson = jsonPayload + "\n\n" +
+                                      "---\n\n" +
+                                      endpointUrl + "\n" +
+                                      Connection.ModelId + " " + Connection.DecryptedApiKey?.GetMaxCharacters(5) + "...";
+
+                try
+                {
+                    var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                    // clear content type - some AI Engines (nvidia) don't like charset
+                    jsonContent.Headers.ContentType.CharSet = "";
+                    message = await http.PostAsync(endpointUrl, jsonContent);
+
+
+                    // should always fail
+                    if (!message.IsSuccessStatusCode)
+                    {
+                        string errorMessage = null;
+                        if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
+                        {
+                            json = await message.Content.ReadAsStringAsync();
+                            LastResponseJson = json;
+                            var error = JsonConvert.DeserializeObject<dynamic>(json);
+                            errorMessage = error.error?.message;
+                        }
+                        if (message.StatusCode == HttpStatusCode.Unauthorized)
+                        {
+                            SetError("Authentication failed. Invalid API Key. " + errorMessage);
+                            return null;
+                        }
+                        if (message.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            SetError("AI request failed - invalid Url: " + endpointUrl);
+                            return null;
+                        }
+
+                        if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
+                        {
+                            json = await message.Content.ReadAsStringAsync();
+                            var error = JsonConvert.DeserializeObject<dynamic>(json);
+                            string msg = error.error?.message;
+
+                            SetError($"AI request failed : {msg}");
+                        }
+                        else
+                        {
+                            SetError("AI request failed: " + message.StatusCode.ToString());
+                        }
+
+                        return null;
+                    }
+
+
+                    return message;
+                }
+                catch (Exception ex)
+                {
+                    // request hard failed
+                    SetError("Http request failed: " + ex.Message);
+                    return null;
+                }
+
+                
+            }
+        }
+
+
         /// <summary>
         /// Low level, generic routine that sends an HTTP request to the OpenAI server. This method
         /// works to send any type - chat, image, variation etc. - to the server.
@@ -175,82 +256,16 @@ namespace Westwind.AI
         /// <returns>JSON response or null</returns>
         public async Task<string> SendJsonHttpRequest(string jsonPayload, string operationSegment = "chat/completions")
         {
-            if (Connection == null || Connection.IsEmpty)
+            var message = await SendJsonHttpRequestToResponse(jsonPayload, operationSegment);
+            if (message == null)
             {
-                SetError("No configuration provided.");
+                return null;
             }
 
-            var endpointUrl = GetEndpointUrl(operationSegment);
-            string json;   // invalid json
-
-            HttpResponseMessage message;
-            using (var http = GetHttpClient())
-            {
-                if(CaptureRequestData)
-                    LastRequestJson = jsonPayload + "\n\n" +
-                                      "---\n\n" +
-                                      endpointUrl +"\n" + 
-                                      Connection.ModelId + " " + Connection.DecryptedApiKey?.GetMaxCharacters(5) + "..." ;                      
-                
-                try
-                {
-                    var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                    // clear content type - some AI Engines (nvidia) don't like charset
-                    jsonContent.Headers.ContentType.CharSet = "";
-                    message = await http.PostAsync(endpointUrl, jsonContent);              
-                }
-                catch(Exception ex)
-                {
-                    // request hard failed
-                    SetError("Http request failed: " + ex.Message);                    
-                    return null;
-                }
-            }
-
-            if (message.IsSuccessStatusCode)
-            {
-                var jsonContent = await message.Content.ReadAsStringAsync();
-                LastResponseJson = jsonContent;
-                return jsonContent;
-            }
-
-            // should always fail
-            if (!message.IsSuccessStatusCode)
-            {
-                string errorMessage = null;
-                if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
-                {
-                    json = await message.Content.ReadAsStringAsync();
-                    LastResponseJson = json;
-                    var error = JsonConvert.DeserializeObject<dynamic>(json);
-                    errorMessage = error.error?.message;
-                }
-                if (message.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    SetError("Authentication failed. Invalid API Key. " + errorMessage);
-                    return null;
-                }
-                if (message.StatusCode == HttpStatusCode.NotFound)
-                {
-                    SetError("AI request failed - invalid Url: " + endpointUrl);
-                    return null;
-                }
-
-                if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
-                {
-                    json = await message.Content.ReadAsStringAsync();
-                    var error = JsonConvert.DeserializeObject<dynamic>(json);
-                    string msg = error.error?.message;
-
-                    SetError($"AI request failed : {msg}");
-                }
-                else
-                {
-                    SetError("AI request failed: " + message.StatusCode.ToString());
-                }
-            }
-
-            return null;
+            var jsonContent = await message.Content.ReadAsStringAsync();
+            LastResponseJson = jsonContent;
+            
+            return jsonContent;            
         }
 
 

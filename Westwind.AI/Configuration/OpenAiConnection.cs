@@ -270,7 +270,7 @@ namespace Westwind.AI.Configuration
 
         public override string ToString()
         {
-            return Name ?? Endpoint;
+            return $"{Name} - {ProviderMode} - {ModelId} - {Endpoint}";
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

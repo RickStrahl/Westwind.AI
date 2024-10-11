@@ -16,7 +16,7 @@ namespace Westwind.AI.Configuration
 
         public bool stream { get; set; }
 
-        public int? max_completion_tokens { get; set; } = null;
+        //public int? max_completion_tokens { get; set; } = null;
 
         public decimal temperature { get; set; } = 1;
 

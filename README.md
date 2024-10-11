@@ -21,6 +21,7 @@ This library supports:
     * Translation
     * Grammar Check
 * Image Generation via `ImageGeneration`
+* Text to Speech via `TextToSpeechGeneration`
 * Easy connection creation and multiple connection management
 * Basic Request/Response API only - no streaming APIs
 
@@ -40,7 +41,7 @@ You can use manual configuration like this for connecting to the OpenAI API:
 var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "gpt-4o-mini",
-   OperationMode = AiOperationModes.Completions;
+   // OperationMode = AiOperationModes.Completions;   // default
 };
 ```
 

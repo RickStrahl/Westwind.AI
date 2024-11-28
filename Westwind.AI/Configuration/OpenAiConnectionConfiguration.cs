@@ -182,6 +182,12 @@ namespace Westwind.AI.Configuration
             if (auth == null)
                 auth = new OpenAiConnectionConfiguration();
 
+            // force re-encryption of keys if not already encrypted
+            foreach (var conn in auth.Connections)
+            {
+                conn.ApiKey = conn.ApiKey?.Trim();  // force encrypt if not encrypted
+            }
+
             return auth;
         }
 
@@ -207,7 +213,7 @@ namespace Westwind.AI.Configuration
         /// manually add keys unencrypted and saved them encrypted as long as you explicitly
         /// save the configuration to file.
         /// </summary>
-        public static bool UseEncryption { get; set; } = true;
+        public static bool UseApiKeyEncryption { get; set; } = true;
 
         /// <summary>
         /// Encryption key used for the apikey in the configuration file.

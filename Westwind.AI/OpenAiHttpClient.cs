@@ -184,7 +184,7 @@ namespace Westwind.AI
                     LastRequestJson = jsonPayload + "\n\n" +
                                       "---\n\n" +
                                       endpointUrl + "\n" +
-                                      Connection.ModelId + " " + Connection.DecryptedApiKey?.GetMaxCharacters(5) + "...";
+                                      Connection.ModelId + " " + Connection.ApiKey?.GetMaxCharacters(5) + "...";
 
                 try
                 {
@@ -322,13 +322,14 @@ namespace Westwind.AI
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
-                client.DefaultRequestHeaders.Add("api-key", Connection.DecryptedApiKey);
+                client.DefaultRequestHeaders.Add("api-key", Connection.ApiKey);
             else
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.DecryptedApiKey);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.ApiKey);
 
             return client;
         }
 
+       
 
         #region Error Handling
 

@@ -32,6 +32,9 @@ namespace Westwind.Ai.Test
         [TestMethod]
         public async Task ImageGenerationToUrlTest()
         {       
+
+            Console.WriteLine("Connection: " + Connection.Name);
+
             var generator = new OpenAiImageGeneration(Connection);
 
             // Capture raw request data for debugging
@@ -73,6 +76,8 @@ namespace Westwind.Ai.Test
         [TestMethod]
         public async Task ImageGenerationToBase64Test()
         {
+            Console.WriteLine("Connection: " + Connection.Name);
+
             var generator = new OpenAiImageGeneration(Connection);        
 
             var imagePrompt = new ImagePrompt()
@@ -104,6 +109,8 @@ namespace Westwind.Ai.Test
         [TestMethod]
         public async Task ImageGenerationErrorTest()
         {
+            Console.WriteLine("Connection: " + Connection.Name);
+
             var generator = new OpenAiImageGeneration(Connection);
 
             var imagePrompt = new ImagePrompt()

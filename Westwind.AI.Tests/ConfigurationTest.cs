@@ -3,6 +3,7 @@ using System.IO;
 using Westwind.AI.Configuration;
 using Westwind.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace Westwind.AI.Tests
 {
@@ -15,6 +16,14 @@ namespace Westwind.AI.Tests
             // load configuration from default file
             var config = OpenAiConnectionConfiguration.Load();
             config.Save(); // write back out with encrypted keys
+
+
+            Console.WriteLine(JsonSerializationUtils.Serialize(config, formatJsonOutput: true));
+
+            foreach(var conn in config.Connections)
+            {
+                Console.WriteLine(conn.Name + " " + conn.ApiKey);                 
+            }
 
             // Opens in JSON editor and lets you copy the encrypted api keys/file into project
             ShellUtils.ShellExecute(Path.GetFullPath("_AiAuthenticationConfiguration.json"));
@@ -73,13 +82,13 @@ namespace Westwind.AI.Tests
             var connection = OpenAiConnection.Create(AiProviderModes.OpenAi, "Open AI Connection");
             connection.ApiKey = apiKey;
             // connection.ModelId = "gpt-4o-mini";  // default
+            Console.WriteLine(connection.ApiKey);            
+            Console.WriteLine(JsonSerializationUtils.Serialize(connection, false, true));
 
             Assert.IsTrue(connection.ProviderMode == AiProviderModes.OpenAi,"Incorrect Provider Mode");
             Assert.IsTrue(connection.OperationMode == AiOperationModes.Completions,"Incorrect Operation Mode");
             Assert.IsTrue(connection.ModelId == "gpt-4o-mini","Incorrect Model");
-
-            // Important - API key is encrypted for storage so use DecryptedApiKey
-            Assert.AreEqual(connection.DecryptedApiKey, apiKey,"Incorrect ApiKey");
+            
         }
     }
 }

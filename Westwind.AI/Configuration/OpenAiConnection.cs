@@ -26,8 +26,6 @@ namespace Westwind.AI.Configuration
         /// </summary>
         string ApiKey { get; set; }
 
-        string DecryptedApiKey { get; }
-
         /// <summary>
         /// The Endpoint for the service
         /// </summary>
@@ -43,18 +41,15 @@ namespace Westwind.AI.Configuration
         /// </summary>
         string ModelId { get; set; }
 
-
         /// <summary>
         /// Optional Api Version typically used for Azure
         /// </summary>
         string ApiVersion { get; set; }
 
-
         /// <summary>
         /// Completions or Image operation
         /// </summary>
-        AiOperationModes OperationMode { get; set;  }    
-
+        AiOperationModes OperationMode { get; set; }
 
         /// <summary>
         /// Which AI provider is used for this connection
@@ -103,31 +98,39 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// The Encrypted API Key for the service
         /// </summary>
-        public string ApiKey {
+        [JsonIgnore]        
+        public string ApiKey
+        {
 
             set
             {
-                if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(value))
-                {
-                    _apiKey = value;
-                    OnPropertyChanged();
-                    return;
-                }
-
-                // Already encrypted?
-                if (value.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
-                    _apiKey = value;
-                else
-                    _apiKey = Encryption.EncryptString(value, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;
-
+                _apiKey = EncryptApiKey(value);
                 OnPropertyChanged();
             }
             get
             {
-                return _apiKey;
+                return DecryptApiKey(_apiKey);
             }
         }
+        [NonSerialized]
         private string _apiKey;
+
+        /// <summary>
+        /// The Encrypted API Key for the connection
+        /// that is used for storing the key in a configuration file.
+        /// 
+        /// Value is here mainly for serialization purposes
+        /// </summary>
+        [JsonProperty("EncryptedApiKey")] 
+        internal string EncryptedApiKey
+        {
+            get { return _apiKey; }
+            set { 
+                _apiKey = value;  
+            }
+        }
+        
+
         private string _name;
         private string _endpoint;
         private string _endpointTemplate = "{0}/{1}";
@@ -136,20 +139,7 @@ namespace Westwind.AI.Configuration
         private AiProviderModes _providerMode = AiProviderModes.OpenAi;
         private AiOperationModes _operationMode = AiOperationModes.Completions;
 
-        [JsonIgnore]
-        public string DecryptedApiKey
-        {
-            get
-            {
-                OnPropertyChanged();
-                if (!OpenAiConnectionConfiguration.UseEncryption || string.IsNullOrEmpty(_apiKey))
-                    return _apiKey;
-
-                var encrypted = _apiKey.Replace(OpenAiConnectionConfiguration.EncryptionPostFix, string.Empty);
-                var decrypted = Encryption.DecryptString(encrypted, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true);
-                return decrypted;
-            }
-        }
+        
 
         /// <summary>
         /// The Endpoint for the service
@@ -265,7 +255,7 @@ namespace Westwind.AI.Configuration
         /// Determines whether the credentials are empty    
         /// </summary>
         [JsonIgnore]
-        public bool IsEmpty =>  string.IsNullOrEmpty(Endpoint);
+        public bool IsEmpty => string.IsNullOrEmpty(Endpoint);
 
 
         public override string ToString()
@@ -317,12 +307,63 @@ namespace Westwind.AI.Configuration
         /// </summary>
         /// <param name="providerMode">string based connection mode</param>
         /// <returns></returns>
-        public static OpenAiConnection Create(string  providerMode, bool isImageGen = false)
+        public static OpenAiConnection Create(string providerMode, bool isImageGen = false)
         {
-            if(!Enum.TryParse<AiProviderModes>(providerMode, out var mode))
+            if (!Enum.TryParse<AiProviderModes>(providerMode, out var mode))
                 return new OpenAiConnection(); // default to OpenAi
             return Create(mode, isImageGeneration: isImageGen);
         }
+
+        /// <summary>
+        /// Encrypts an API key if encryption is enabled
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        internal string EncryptApiKey(string key)
+        {            
+            if (!OpenAiConnectionConfiguration.UseApiKeyEncryption ||
+                string.IsNullOrEmpty(key) ||
+                key.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
+            {
+                return key;
+            }
+
+            return Encryption.EncryptString(key, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;
+        }
+
+        /// <summary>
+        /// Returns a decrypted API key. Key also expands % % Environment Variables
+        /// </summary>
+        /// <param name="key">Optional - the encrypted (or unencrypted) key to return. If not passed uses this connections API key</param>
+        /// <returns></returns>
+        internal string DecryptApiKey(string key = null)
+        {
+            if (string.IsNullOrEmpty(key))
+                key = _apiKey;
+
+            if (string.IsNullOrEmpty(key) || !OpenAiConnectionConfiguration.UseApiKeyEncryption)
+                return key;
+
+            if (key.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
+            {
+                var encrypted = key.Replace(OpenAiConnectionConfiguration.EncryptionPostFix, string.Empty);
+                key = Encryption.DecryptString(encrypted, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true);
+            }
+            else
+            {
+                // force encrypt the Api Key for storage direct access
+                _apiKey = EncryptApiKey(key);
+            }
+
+            // Environment variables
+            if (key.StartsWith("%") && key.EndsWith("%"))
+            {
+                key = StringUtils.ExtractString(key, "%", "%");
+            }
+
+            return key;
+        }
+
     }
 
     /// <summary>
@@ -339,7 +380,7 @@ namespace Westwind.AI.Configuration
         {
             ProviderMode = AiProviderModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
-            ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;                
+            ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
         }
     }
 
@@ -350,7 +391,19 @@ namespace Westwind.AI.Configuration
             ProviderMode = AiProviderModes.Ollama;
             OperationMode = AiOperationModes.Completions;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
-            Endpoint= "http://127.0.0.1:11434/v1/";            
+            Endpoint = "http://127.0.0.1:11434/v1/";
+        }
+    }
+
+    public class XOpenAiConnection : OpenAiConnection
+    {
+        public XOpenAiConnection()
+        {
+            ProviderMode = AiProviderModes.Other;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://api.x.ai/v1/";
+            ModelId = "grok-beta";
         }
     }
 
@@ -373,6 +426,7 @@ namespace Westwind.AI.Configuration
         AzureOpenAi,
         Ollama,
         Nvidia,
+        XOpenAi,
         Other,
     }
 
@@ -395,4 +449,6 @@ namespace Westwind.AI.Configuration
         /// </summary>
         public static string DefaultAzureApiVersion = "2024-02-15-preview";
     }
+
+
 }

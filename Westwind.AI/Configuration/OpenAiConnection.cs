@@ -298,6 +298,8 @@ namespace Westwind.AI.Configuration
                     return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Nvidia:
                     return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.XOpenAi:
+                    return new XOpenAiConnection() { Name = "X Connection " + DataUtils.GenerateUniqueId(5) };
                 default:
                     return new OpenAiConnection() { Name = name };
             }

@@ -299,7 +299,7 @@ namespace Westwind.AI.Configuration
                 case AiProviderModes.Nvidia:
                     return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.XOpenAi:
-                    return new XOpenAiConnection() { Name = "X Connection " + DataUtils.GenerateUniqueId(5) };
+                    return new XOpenAiConnection() { Name = "XConnection " + DataUtils.GenerateUniqueId(5) };
                 default:
                     return new OpenAiConnection() { Name = name };
             }
@@ -394,6 +394,7 @@ namespace Westwind.AI.Configuration
             OperationMode = AiOperationModes.Completions;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
             Endpoint = "http://127.0.0.1:11434/v1/";
+            ModelId = "llama3";
         }
     }
 
@@ -449,7 +450,7 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// Azure API Version
         /// </summary>
-        public static string DefaultAzureApiVersion = "2024-02-15-preview";
+        public static string DefaultAzureApiVersion = "2024-04-01";
     }
 
 

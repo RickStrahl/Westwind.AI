@@ -23,10 +23,12 @@ This library supports:
 * Image Generation via `ImageGeneration`
 * Text to Speech via `TextToSpeechGeneration`
 * Easy connection creation and multiple connection management
+* Connection information JSON storage and encryption
 * Basic Request/Response API only - no streaming APIs
 
 .NET Targets:
 
+* .NET9.0
 * .NET8.0
 * .NET472
 
@@ -328,7 +330,7 @@ This class can be used as a container for multiple connections that you can easi
   "Connections": [
     {
       "Name": "OpenAI",
-      "ApiKey": "18064FE1...12E@|-|@",
+      "EncryptedApiKey": "18064FE1...12E@|-|@",
       "Endpoint": "https://api.openai.com/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "gpt-3.5-turbo",
@@ -338,7 +340,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
       "Name": "Azure OpenAi",
-      "ApiKey": "01BA5CC...442@|-|@",
+      "EncryptedApiKey": "01BA5CC...442@|-|@",
       "Endpoint": "https://rasopenaisample.openai.azure.com/",
       "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
       "ModelId": "Gpt35",
@@ -348,7 +350,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
      "Name": "NVidia",
-     "ApiKey": "02AC6CD...342@|-|@",
+     "EncryptedApiKey": "02AC6CD...342@|-|@",
      "Endpoint": "https://integrate.api.nvidia.com/v1/",
      "EndpointTemplate": "{0}/{1}",
      "ModelId": "meta/llama-3.1-405b-instruct",
@@ -358,7 +360,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
       "Name": "Ollama llama3",
-      "ApiKey": "",
+      "EncryptedApiKey": "",
       "Endpoint": "http://127.0.0.1:11434/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "llama3",
@@ -368,7 +370,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
       "Name": "Ollama Phi3",
-      "ApiKey": "",
+      "EncryptedApiKey": "",
       "Endpoint": "http://127.0.0.1:11434/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "phi3",
@@ -378,7 +380,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
       "Name": "OpenAI Dall-E",
-      "ApiKey": "1806416...2ACE@|-|@",
+      "EncryptedApiKey": "1806416...2ACE@|-|@",
       "Endpoint": "https://api.openai.com/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "dall-e-3",
@@ -388,7 +390,7 @@ This class can be used as a container for multiple connections that you can easi
     },
     {
       "Name": "Azure OpenAi Dall-E",
-      "ApiKey": "01B2C29E...E9EA@|-|@",
+      "EncryptedApiKey": "01B2C29E...E9EA@|-|@",
       "Endpoint": "https://rasopenaisample.openai.azure.com/",
       "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
       "ModelId": "ImageGenerations",
@@ -399,6 +401,13 @@ This class can be used as a container for multiple connections that you can easi
   ]
 }
 ```
+
+> #### API Key Encryption
+> By default API keys are internally encrypted once assigned but you can always access the key via the `conn.ApiKey` property. However, then the value is stored or written it's written encrypted. 
+>
+> Stored JSON configuration however can accept an unencrypted API key in the `EncryptedApiKey` property to allow setting a key there, but the key will be encrypted the next time the configuration is saved.
+>
+> You can disable key encryption at the application level with the static `OpenAiConnection.UseApiKeyEncryption = false` property.
 
 The values used depend on whether you're accessing OpenAI or an openAI compatible API or Azure OpenAi. Azure uses a deployments to manage models and uses non-standard Api key referencing.
 

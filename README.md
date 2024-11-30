@@ -7,7 +7,8 @@ A self-contained library that talks directly to the OpenAI HTTP API without majo
 
 * OpenAI
 * AzureOpenAI
-* Ollama
+* Ollama (Local)
+* X 
 * Nvidia
 * Any generic OpenAI API
 

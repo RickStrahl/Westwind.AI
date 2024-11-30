@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Westwind.AI.Utilities
 {
     /// <summary>
-    /// File helper to provide missing async file byte operations
+    /// File helper to provide missing async file byte operations in .NET Framework 
     /// </summary>
     internal class FileHelper
     {

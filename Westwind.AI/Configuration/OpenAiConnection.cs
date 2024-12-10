@@ -327,7 +327,7 @@ namespace Westwind.AI.Configuration
                 string.IsNullOrEmpty(key) ||
                 key.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
             {
-                return key;
+                return key ?? string.Empty;
             }
 
             return Encryption.EncryptString(key, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true) + OpenAiConnectionConfiguration.EncryptionPostFix;
@@ -344,7 +344,7 @@ namespace Westwind.AI.Configuration
                 key = _apiKey;
 
             if (string.IsNullOrEmpty(key) || !OpenAiConnectionConfiguration.UseApiKeyEncryption)
-                return key;
+                return key ?? string.Empty;
 
             if (key.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
             {
@@ -358,9 +358,9 @@ namespace Westwind.AI.Configuration
             }
 
             // Environment variables
-            if (key.StartsWith("%") && key.EndsWith("%"))
+            if (key.Contains("%"))
             {
-                key = StringUtils.ExtractString(key, "%", "%");
+                key = Environment.ExpandEnvironmentVariables(key);
             }
 
             return key;

@@ -6,7 +6,7 @@
 		<LangVersion>latest</LangVersion>
 		<Authors>Rick Strahl, West Wind Technologies</Authors>
 		<Company>West Wind Technologies</Company>
-		<Copyright>Rick Strahl, West Wind Technologies, 2010-2024</Copyright>
+		<Copyright>Rick Strahl, West Wind Technologies, 2023-2025</Copyright>
 		<Description>
 			A small very lightweight OpenAI API Client for .NET that provides access to
 			OpenAi Completion and ImageGeneration APIs. Supports OpenAi, Azure OpenAi

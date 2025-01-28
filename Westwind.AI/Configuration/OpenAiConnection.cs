@@ -300,6 +300,8 @@ namespace Westwind.AI.Configuration
                     return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.XOpenAi:
                     return new XOpenAiConnection() { Name = "XConnection " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.DeepSeek:
+                    return new DeepSeekAiConnection() { Name = "DeepSeek Connection " + DataUtils.GenerateUniqueId(5) };
                 default:
                     return new OpenAiConnection() { Name = name };
             }
@@ -422,6 +424,18 @@ namespace Westwind.AI.Configuration
         }
     }
 
+    public class DeepSeekAiConnection : OpenAiConnection
+    {
+        public DeepSeekAiConnection()
+        {
+            ProviderMode = AiProviderModes.DeepSeek;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://api.deepseek.com";
+            ModelId = "deepseek-chat";
+        }
+    }
+
 
     public enum AiProviderModes
     {
@@ -431,6 +445,7 @@ namespace Westwind.AI.Configuration
         Nvidia,
         XOpenAi,
         Other,
+        DeepSeek
     }
 
     public enum AiOperationModes

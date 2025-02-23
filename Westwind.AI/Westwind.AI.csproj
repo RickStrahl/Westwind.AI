@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net9.0;net8.0;net472</TargetFrameworks>
-		<Version>0.2.4</Version>
+		<Version>0.2.4.2</Version>
 
 		<LangVersion>latest</LangVersion>
 		<Authors>Rick Strahl, West Wind Technologies</Authors>
@@ -17,7 +17,7 @@
 		<PackageReleaseNotes></PackageReleaseNotes>
 		<PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>
 
-		<PackageCopyright>Rick Strahl, West Wind Technologies 2023-2024</PackageCopyright>
+		<PackageCopyright>Rick Strahl, West Wind Technologies 2023-2025</PackageCopyright>
 		<PackageTags>Westwind OpenAI AI</PackageTags>
 		<PackageReleaseNotes></PackageReleaseNotes>
 		<PackageProjectUrl>http://github.com/rickstrahl/westwind.ai</PackageProjectUrl>

@@ -5,18 +5,40 @@ Websurge-Request-Name: Open Ai Completion
 WebSurge-Request-Group: OpenAI
 
 {
-    "model": "gpt-3.5-turbo",
-    "messages": [
-      {
-        "role": "system",
-        "content": "You are a translator to translate between languages. Return only the translated text in the output"
-      },
-      {
-        "role": "user",
-        "content": "Translate from English to German:\nThe sky is below and the ground is above."
-      }      
-    ]
-  }
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a translator to translate between languages. Return only the translated text in the output"
+    },
+    {
+      "role": "user",
+      "content": "Translate from English to German:\nThe sky is below and the ground is above."
+    }
+  ]
+}
+
+------------------------------------------------------------------
+
+POST https://api.openai.com/v1/chat/completions HTTP/2.0
+Content-Type: application/json
+Authorization: Bearer {{%OPENAI_KEY%}}
+Websurge-Request-Name: Open AI Text Completion
+WebSurge-Request-Group: OpenAI
+
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an expert writing assistant. Below is a complete document with an insertion marker delimited with `{{INSERT_HERE}}` - or if it's missing the end of the document. Your task is to generate the next 5 words that seamlessly follow the insertion point, matching the style, tone, and context of the surrounding text. Please ensure that the inserted text bridges the narrative logically and maintains the flow of ideas."
+    },
+    {
+      "role": "user",
+      "content": "When building hybrid Web applications where .NET code interacts with WebView HTML content, one of thHowever, to achieve a more seamless experience, it's crucial to implement event handlers that can detect when the document is fully loaded. By subscribing to events like `NavigationCompleted` or `DOMContentLoaded`, developers can ensure that their scripts execute only after the content is ready. This approach not only enhances performance {{INSERT_HERE}}"
+    }
+  ]
+}
 
 ------------------------------------------------------------------
 
@@ -122,6 +144,11 @@ WebSurge-Request-Group: Dall-E
   "style": "vivid",
   "quality": "standard"
 }
+
+------------------------------------------------------------------
+
+GET  HTTP/2.0
+Accept-Encoding: gzip,deflate
 
 ------------------------------------------------------------------
 

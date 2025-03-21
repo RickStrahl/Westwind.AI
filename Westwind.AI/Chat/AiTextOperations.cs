@@ -14,6 +14,30 @@ namespace Westwind.AI.Chat
         
         public AiTextOperations(IOpenAiConnection connection) : base(connection) { }
 
+
+        /// <summary>
+        /// Generic completion interface that lets you provide
+        /// system and user prompts.
+        /// </summary>
+        /// <param name="prompt"></param>
+        /// <param name="systemMessage"></param>
+        /// <returns></returns>
+        public async Task<string> Complete(string prompt, string systemMessage = null, bool includeChatHistory = false)
+        {
+            if (string.IsNullOrEmpty(systemMessage))
+            {
+                systemMessage = "You are a text completion assistant. Complete the following text. Return only the result text.";
+            }
+
+            var result = await AiHttpClient.GetChatAiResponse(prompt, systemMessage, includeChatHistory);
+            if (result == null)
+            {
+                SetError(AiHttpClient.ErrorMessage);
+            }
+            return result;
+        }
+
+
         /// <summary>
         /// Summarize text to a specific number of sentences.
         /// </summary>
@@ -64,16 +88,14 @@ namespace Westwind.AI.Chat
         /// <summary>
         /// Checks grammar of the input text and returns adjusted text.
         /// </summary>
-        /// <param name="text"></param>
+        /// <param name="text">Text to check grammar on</param>        
         /// <returns></returns>
         public async Task<string> CheckGrammar(string text)
         {
-            string system = "You are a grammar checker that corrects grammar on the input text. " +
-                            "Don't check grammar in code blocks or text inside of comments. " +
-                            "Return only the corrected text in the output.";
+
             string message = text;
 
-            string result = await AiHttpClient.GetChatAiResponse(message, system);
+            string result = await AiHttpClient.GetChatAiResponse(message, CheckGrammarSystemPrompt);
             if (result == null)
             {
                 SetError(AiHttpClient.ErrorMessage);
@@ -90,10 +112,11 @@ namespace Westwind.AI.Chat
         /// <returns></returns>
         public async Task<string> CheckGrammarAsDiff(string text)
         {
-            string system = "You are a grammar checker that corrects input text into grammatically correct text. Return only the corrected text in the output. Return the output in  diff format";
+           
+            
             string message = text;
 
-            string result = await AiHttpClient.GetChatAiResponse(message, system);
+            string result = await AiHttpClient.GetChatAiResponse(message, CheckGrammarSystemPrompt);
 
             if (result == null)
             {
@@ -102,6 +125,11 @@ namespace Westwind.AI.Chat
             return result;
         }
 
+
+        public const string CheckGrammarSystemPrompt =
+            "You are a grammar checker that corrects grammar on the input text. " +
+            "Don't check grammar in code blocks or text inside of comments. " +
+            "Return only the corrected text in the output.";
     }
 }
 

@@ -12,31 +12,7 @@ namespace Westwind.AI.Chat
     {        
         public AiTextOperations(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) { }
         
-        public AiTextOperations(IOpenAiConnection connection) : base(connection) { }
-
-
-        /// <summary>
-        /// Generic completion interface that lets you provide
-        /// system and user prompts.
-        /// </summary>
-        /// <param name="prompt"></param>
-        /// <param name="systemMessage"></param>
-        /// <returns></returns>
-        public async Task<string> Complete(string prompt, string systemMessage = null, bool includeChatHistory = false)
-        {
-            if (string.IsNullOrEmpty(systemMessage))
-            {
-                systemMessage = "You are a text completion assistant. Complete the following text. Return only the result text.";
-            }
-
-            var result = await AiHttpClient.GetChatAiResponse(prompt, systemMessage, includeChatHistory);
-            if (result == null)
-            {
-                SetError(AiHttpClient.ErrorMessage);
-            }
-            return result;
-        }
-
+        public AiTextOperations(IOpenAiConnection connection) : base(connection) { }       
 
         /// <summary>
         /// Summarize text to a specific number of sentences.

@@ -20,6 +20,28 @@ WebSurge-Request-Group: OpenAI
 
 ------------------------------------------------------------------
 
+POST https://api.openai.com/v1/chat/completions_NEW HTTP/2.0
+Content-Type: application/json
+Authorization: Bearer {{OpenAiKey}}
+Websurge-Request-Name: Open Ai Completion Image Output
+WebSurge-Request-Group: OpenAI
+
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a translator to translate between languages. Return only the translated text in the output"
+    },
+    {
+      "role": "user",
+      "content": "Translate from English to German:\nThe sky is below and the ground is above."
+    }
+  ]
+}
+
+------------------------------------------------------------------
+
 POST https://api.openai.com/v1/chat/completions HTTP/2.0
 Content-Type: application/json
 Authorization: Bearer {{%OPENAI_KEY%}}

@@ -280,11 +280,11 @@ namespace Westwind.AI.Images
         
         public string quality { get; set; } = "auto";   // dall-e-3: hd/standard   gpt-image: high, medium, low
 
-        public string background { get; set; } = "auto";  // auto, transparent, opaque
-
-        public int output_compression { get; set; } = 100;  // 0-100% jpg/webp compression - gpt-image only
-
-        public string output_format { get; set; } = "png"; // png, jpg, webp   - gpt-image only
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string background { get; set; } = null;  // auto, transparent, opaque
+       
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string output_format { get; set; } = null; // png, jpg, webp   - gpt-image only
     }
 
     internal class ImageUrlItem

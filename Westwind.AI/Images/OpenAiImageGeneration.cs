@@ -51,13 +51,28 @@ namespace Westwind.AI.Images
                 model = prompt.Model,
                 style = prompt.ImageStyle,
                 quality = prompt.ImageQuality,
-                response_format = outputFormat == ImageGenerationOutputFormats.Base64 ? "b64_json" : "url"
+                background = prompt.ImageBackground              
             };
+            switch(outputFormat)
+            {
+                case ImageGenerationOutputFormats.Url:
+                    requiredImage.response_format = "url";
+                    break;
+                case ImageGenerationOutputFormats.Base64:
+                    requiredImage.response_format = "b64_json";
+                    break;
+                case ImageGenerationOutputFormats.None:
+                    requiredImage.response_format = null;
+                    break;
+                default:                    
+                    requiredImage.response_format = null;
+                    break;
+            }
 
             var imageResults = new List<ImageResult>();
             ImageResults response;
 
-            var json = JsonConvert.SerializeObject(requiredImage);
+            var json = JsonConvert.SerializeObject(requiredImage, Formatting.Indented);
             var result = await AiHttpClient.SendJsonHttpRequest(json, "images/generations");
 
             if (!string.IsNullOrEmpty(result))
@@ -257,13 +272,22 @@ namespace Westwind.AI.Images
 
         public string size { get; set; } = "1024x1024";
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string response_format { get; set; } = "url";  // b64_json
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string style { get; set; } = "vivid";  // natural
-        public string quality { get; set; } = "standard";
+        
+        public string quality { get; set; } = "auto";   // dall-e-3: hd/standard   gpt-image: high, medium, low
+
+        public string background { get; set; } = "auto";  // auto, transparent, opaque
+
+        public int output_compression { get; set; } = 100;  // 0-100% jpg/webp compression - gpt-image only
+
+        public string output_format { get; set; } = "png"; // png, jpg, webp   - gpt-image only
     }
 
-    internal class ImageUrls
+    internal class ImageUrlItem
     {
         public string url { get; set; }
 
@@ -275,14 +299,14 @@ namespace Westwind.AI.Images
     internal class ImageResults
     {
         public long created { get; set; }
-        public List<ImageUrls> data { get; set; }
-
+        public List<ImageUrlItem> data { get; set; }
     }
 
     public enum ImageGenerationOutputFormats
     {
         Url,
-        Base64
+        Base64,
+        None  // use for gtp-image
     }
 
     #endregion

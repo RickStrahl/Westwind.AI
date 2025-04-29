@@ -122,22 +122,26 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// Subset of only the Comletion Connections
         /// </summary>
+        [JsonIgnore]
         public List<OpenAiConnection> CompletionConnections => Connections.Where(c => c.OperationMode == AiOperationModes.Completions).ToList();
 
         /// <summary>
         /// Subset of only the Image Generation Connections
         /// </summary>
+        [JsonIgnore]
         public List<OpenAiConnection> ImageGenerationConnections => Connections.Where(c => c.OperationMode == AiOperationModes.ImageGeneration).ToList();
 
         /// <summary>
         /// Determines whether any OpenAi Connections are available
         /// </summary>
+        [JsonIgnore]
         public bool IsAvailable => ActiveConnection != null && !ActiveConnection.IsEmpty;
 
 
         /// <summary>
         /// Determines whether an image generation connection si available.
         /// </summary>
+        [JsonIgnore]
         public bool IsImageConnectionAvailable => ActiveImageConnection != null && !ActiveConnection.IsEmpty;
 
 

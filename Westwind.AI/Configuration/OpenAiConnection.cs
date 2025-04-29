@@ -360,7 +360,7 @@ namespace Westwind.AI.Configuration
             }
 
             // Environment variables
-            if (key.Contains("%"))
+            if (key.StartsWith("%"))
             {
                 key = Environment.ExpandEnvironmentVariables(key);
             }

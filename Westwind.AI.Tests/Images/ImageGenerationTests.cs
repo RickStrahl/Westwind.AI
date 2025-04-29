@@ -107,6 +107,39 @@ namespace Westwind.Ai.Test
         }
 
         [TestMethod]
+        public async Task ImageGenerationToBase64GtpImage1Test()
+        {
+            Console.WriteLine("Connection: " + Connection.Name);
+
+            
+            var generator = new OpenAiImageGeneration(Connection);
+
+            var imagePrompt = new ImagePrompt()
+            {
+                Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
+                ImageSize = "1024x1024",            
+                Model = "gpt-image-1"
+            };
+
+            bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.None);
+
+            // Generate and set properties on `imagePrompt` instance
+            Assert.IsTrue(result, generator.ErrorMessage);
+
+            // prompt returns an array of images, but for Dall-e-3 it's always one
+            // so FirstImage returns the first image.
+            byte[] bytes = imagePrompt.GetBytesFromBase64();
+            Assert.IsNotNull(bytes);
+
+            string file = imagePrompt.SaveImageFromBase64();
+            Assert.IsTrue(File.Exists(file));
+
+            // show image in OS viewer
+            Console.WriteLine("File generated: " + file);
+            ShellUtils.GoUrl(file);
+        }
+
+        [TestMethod]
         public async Task ImageGenerationErrorTest()
         {
             Console.WriteLine("Connection: " + Connection.Name);

@@ -54,15 +54,15 @@ namespace Westwind.AI.Images
         }
 
         /// <summary>
-        /// Values dall-e-3 (default) or dall-e-2
+        /// Values dall-e-3 (default) 
         /// * 1024x1024  (default)
         /// * 1792x1024
         /// * 1024x1792
         /// 
-        /// Values: dall-e-2
+        /// Values: gpt-image-1
         /// * 1024x1024
-        /// * 512x512
-        /// * 256x256
+        /// * 1536x1024
+        /// * 1024x1536
         /// </summary>
         public string ImageSize
         {
@@ -107,6 +107,23 @@ namespace Westwind.AI.Images
             }
         }
 
+        
+
+        /// <summary>
+        /// Background for the image.
+        /// auto, transparent, opaque
+        /// </summary>
+        public string ImageBackground
+        {
+            get => _imageBackground;
+            set
+            {
+                if (value == _imageBackground) return;
+                _imageBackground = value;
+                OnPropertyChanged();
+            }
+        } // default is transparent background
+
         /// <summary>
         /// For Dall-e-3 this is always 1
         /// </summary>
@@ -137,6 +154,37 @@ namespace Westwind.AI.Images
             }
         }
 
+        [JsonIgnore]
+        public bool IsDalle3 => Model?.StartsWith("dall-e") ?? true;
+
+        [JsonIgnore]
+        public bool IsGtpImage1 => Model?.StartsWith("gpt-image") ?? false;
+
+        [JsonIgnore]
+        public List<string> ImageSizes
+        {
+            get
+            {
+                if (IsDalle3)
+                    return ["1024x1024", "1792x1024", "1024x1792", "auto"];
+
+                // gpt-image-1
+                return ["1024x1024", "1536x1024", "1024x1536", "auto"];
+            }
+        }
+
+        [JsonIgnore]
+        public List<string> Qualities
+        {
+            get
+            {
+                if (IsDalle3)
+                    return ["standard", "hd", "auto"];
+
+                // gpt-image-1
+                return ["high", "medium", "low", "auto"];
+            }
+        }
         #endregion
 
         #region Result Properties
@@ -541,10 +589,11 @@ namespace Westwind.AI.Images
         private string _prompt;
         private string _imageSize = "1024x1024";
         private int _imageCount = 1;
-        private string _imageStyle = "vivid";  // natural
+        private string _imageStyle = null;
+        private string _imageBackground = "auto";
         private string _imageFilename;
         private string _model = "dall-e-3";
-        private string _imageQuality = "standard";
+        private string _imageQuality = "auto";
         private string _variationImageFile;
         private string _imageFolderPath = ImagePrompt.DefaultImageStoragePath;
 

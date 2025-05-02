@@ -590,7 +590,7 @@ namespace Westwind.AI.Images
         private string _imageSize = "1024x1024";
         private int _imageCount = 1;
         private string _imageStyle = null;
-        private string _imageBackground = "auto";
+        private string _imageBackground = null;
         private string _imageFilename;
         private string _model = "dall-e-3";
         private string _imageQuality = "auto";

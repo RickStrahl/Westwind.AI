@@ -306,10 +306,12 @@ namespace Westwind.AI.Configuration
                     return new OpenAiConnection() { Name = name };
             }
         }
+
         /// <summary>
         /// Creates a specific connection base on the connection mode
         /// </summary>
         /// <param name="providerMode">string based connection mode</param>
+        /// <param name="isImageGen">Determines whether it's an image mode </param>
         /// <returns></returns>
         public static OpenAiConnection Create(string providerMode, bool isImageGen = false)
         {

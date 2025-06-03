@@ -17,6 +17,13 @@ namespace Westwind.AI.Chat
             AiHttpClient = new OpenAiHttpClient(connection);
         }
 
+        /// <summary>
+        /// Does a simple completion with prompt input and optional system prompt. 
+        /// </summary>
+        /// <param name="prompt">Prompt what to ask for</param>
+        /// <param name="systemPrompt">Optional system prompt to provide to set the LLMs 'actor' context</param>
+        /// <param name="includeHistory">If true includes the accumulated history of requests</param>
+        /// <returns></returns>
         public async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
         {         
             var result = await AiHttpClient.GetChatAiResponse(prompt, systemPrompt, includeHistory);
@@ -43,7 +50,6 @@ namespace Westwind.AI.Chat
 
             return result;
         }
-
 
     }
 }

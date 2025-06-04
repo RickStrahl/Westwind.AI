@@ -288,12 +288,14 @@ namespace Westwind.AI.Configuration
             if (name == null)
                 name = "OpenAI Connection " + DataUtils.GenerateUniqueId(5);
 
+            var mode = isImageGeneration ? AiOperationModes.ImageGeneration : AiOperationModes.Completions;
+
             switch (providerMode)
             {
                 case AiProviderModes.OpenAi:
-                    return new OpenAiConnection() { Name = name, ModelId = isImageGeneration ? "dall-e-3" : "gpt-4o-mini" };
+                    return new OpenAiConnection() { Name = name, ModelId = isImageGeneration ? "dall-e-3" : "gpt-4o-mini", OperationMode = mode };
                 case AiProviderModes.AzureOpenAi:
-                    return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5) };
+                    return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5), OperationMode = mode };
                 case AiProviderModes.Ollama:
                     return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Nvidia:

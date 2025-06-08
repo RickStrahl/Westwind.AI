@@ -298,6 +298,8 @@ namespace Westwind.AI.Configuration
                     return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5), OperationMode = mode };
                 case AiProviderModes.Ollama:
                     return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.GitHubModels:
+                    return new GitHubModelsConnection() { Name = "GitHub " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Nvidia:
                     return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.XOpenAi:
@@ -364,10 +366,7 @@ namespace Westwind.AI.Configuration
             }
 
             // Environment variables
-            if (key.StartsWith("%"))
-            {
-                key = Environment.ExpandEnvironmentVariables(key);
-            }
+            key = Environment.ExpandEnvironmentVariables(key).Trim();
 
             return key;
         }
@@ -389,6 +388,18 @@ namespace Westwind.AI.Configuration
             ProviderMode = AiProviderModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
             ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
+        }
+    }
+
+    public class GitHubModelsConnection : OpenAiConnection
+    {
+        public GitHubModelsConnection()
+        {
+            ProviderMode = AiProviderModes.GitHubModels;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://models.github.ai/inference";
+            ModelId = "github/gpt-4.1-nano";
         }
     }
 
@@ -449,7 +460,8 @@ namespace Westwind.AI.Configuration
         Nvidia,
         XOpenAi,
         Other,
-        DeepSeek
+        DeepSeek,
+        GitHubModels
     }
 
     public enum AiOperationModes

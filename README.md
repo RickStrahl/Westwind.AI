@@ -7,6 +7,7 @@ A self-contained library that talks directly to the OpenAI HTTP API without majo
 
 * OpenAI
 * AzureOpenAI
+* GitHub Models
 * Ollama (Local)
 * X 
 * Nvidia

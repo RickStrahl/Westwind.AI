@@ -288,14 +288,20 @@ namespace Westwind.AI.Configuration
             if (name == null)
                 name = "OpenAI Connection " + DataUtils.GenerateUniqueId(5);
 
+            var mode = isImageGeneration ? AiOperationModes.ImageGeneration : AiOperationModes.Completions;
+
             switch (providerMode)
             {
                 case AiProviderModes.OpenAi:
-                    return new OpenAiConnection() { Name = name, ModelId = isImageGeneration ? "dall-e-3" : "gpt-4o-mini" };
+                    return new OpenAiConnection() { Name = name, ModelId = isImageGeneration ? "dall-e-3" : "gpt-4.1-nano", OperationMode = mode };
                 case AiProviderModes.AzureOpenAi:
-                    return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5) };
+                    return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5), OperationMode = mode };
                 case AiProviderModes.Ollama:
                     return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.GitHubModels:
+                    return new GitHubModelsConnection() { Name = "GitHub " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.OpenRouterAi:
+                    return new OpenRouterAiConnection() { Name = "OpenRouter " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Nvidia:
                     return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.XOpenAi:
@@ -362,10 +368,7 @@ namespace Westwind.AI.Configuration
             }
 
             // Environment variables
-            if (key.StartsWith("%"))
-            {
-                key = Environment.ExpandEnvironmentVariables(key);
-            }
+            key = Environment.ExpandEnvironmentVariables(key).Trim();
 
             return key;
         }
@@ -387,6 +390,18 @@ namespace Westwind.AI.Configuration
             ProviderMode = AiProviderModes.AzureOpenAi;
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
             ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
+        }
+    }
+
+    public class GitHubModelsConnection : OpenAiConnection
+    {
+        public GitHubModelsConnection()
+        {
+            ProviderMode = AiProviderModes.GitHubModels;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://models.github.ai/inference";
+            ModelId = "github/gpt-4.1-nano";
         }
     }
 
@@ -437,7 +452,17 @@ namespace Westwind.AI.Configuration
             ModelId = "deepseek-chat";
         }
     }
-
+    public class OpenRouterAiConnection : OpenAiConnection
+    {
+        public OpenRouterAiConnection()
+        {
+            ProviderMode = AiProviderModes.OpenRouterAi;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://openrouter.ai/api/v1/";
+            ModelId = "qwen/qwen3-235b-a22b-2507:free";
+        }
+    }
 
     public enum AiProviderModes
     {
@@ -447,7 +472,9 @@ namespace Westwind.AI.Configuration
         Nvidia,
         XOpenAi,
         Other,
-        DeepSeek
+        DeepSeek,
+        GitHubModels,
+        OpenRouterAi
     }
 
     public enum AiOperationModes

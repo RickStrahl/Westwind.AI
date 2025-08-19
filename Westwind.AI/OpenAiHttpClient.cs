@@ -284,20 +284,22 @@ namespace Westwind.AI
             if (string.IsNullOrEmpty(Connection.Endpoint))
                 throw new InvalidOperationException("Connection.Endpoint is not set. Cannot make AI API request.");
 
-            var endpoint = Connection.Endpoint.TrimEnd('/');
-
+            var endpoint = Environment.ExpandEnvironmentVariables(Connection.Endpoint).TrimEnd('/');
 
             if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
             {
+                string apiVersion = string.Empty;
                 var template = Connection.EndpointTemplate;
                 if (string.IsNullOrEmpty(Connection.ApiVersion))
                     template = template.Replace("?api-version={3}", string.Empty);
+                else
+                    apiVersion = Environment.ExpandEnvironmentVariables(Connection.ApiVersion);
 
                 return string.Format(template,
                     endpoint,
                     operationSegment,
                     Connection.ModelId,
-                    Connection.ApiVersion);
+                    apiVersion);
             }
 
             // OpenAi

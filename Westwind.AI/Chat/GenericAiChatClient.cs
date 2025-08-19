@@ -24,7 +24,7 @@ namespace Westwind.AI.Chat
         /// <param name="systemPrompt">Optional system prompt to provide to set the LLMs 'actor' context</param>
         /// <param name="includeHistory">If true includes the accumulated history of requests</param>
         /// <returns></returns>
-        public async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
+        public virtual async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
         {         
             var result = await AiHttpClient.GetChatAiResponse(prompt, systemPrompt, includeHistory);
             if (result == null)
@@ -40,7 +40,7 @@ namespace Westwind.AI.Chat
         /// </summary>
         /// <param name="prompts">Pass in an existing set of prompts </param>
         /// <returns></returns>
-        public async Task<string> Complete( IEnumerable<OpenAiChatMessage> prompts,  bool includeHistory = false)
+        public virtual async Task<string> Complete( IEnumerable<OpenAiChatMessage> prompts,  bool includeHistory = false)
         {
             var result = await AiHttpClient.GetChatAiResponse(prompts, includeHistory);
             if (result == null)

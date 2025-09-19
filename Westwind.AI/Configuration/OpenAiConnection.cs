@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json;
 using Westwind.AI.Chat;
 using Westwind.AI.Images;
 using Westwind.Utilities;
+using static System.Net.WebRequestMethods;
 
 namespace Westwind.AI.Configuration
 {
@@ -388,6 +389,7 @@ namespace Westwind.AI.Configuration
         public AzureOpenAiConnection()
         {
             ProviderMode = AiProviderModes.AzureOpenAi;
+            Endpoint = "https://<AZURE RESOURCE NAME>.openai.azure.com";
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
             ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
         }
@@ -494,7 +496,7 @@ namespace Westwind.AI.Configuration
         /// <summary>
         /// Azure API Version
         /// </summary>
-        public static string DefaultAzureApiVersion = "2024-04-01";
+        public static string DefaultAzureApiVersion = "2025-04-01-preview";
     }
 
 

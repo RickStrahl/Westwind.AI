@@ -51,5 +51,16 @@ namespace Westwind.AI.Chat
             return result;
         }
 
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(ErrorMessage))
+                return $"Error: {ErrorMessage}  Connection: {Connection?.Name}";
+
+            if (Connection != null)
+                return $"{Connection.Name}";
+            
+            return base.ToString();
+        }
+
     }
 }

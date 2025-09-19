@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net9.0;net8.0;net472</TargetFrameworks>
-		<Version>0.2.7.4</Version>
+		<Version>0.2.7.7</Version>
 
 		<LangVersion>latest</LangVersion>
 		<Authors>Rick Strahl, West Wind Technologies</Authors>
@@ -38,7 +38,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Westwind.Utilities" Version="5.1.15.2" />
+		<PackageReference Include="Westwind.Utilities" Version="5.1.16" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

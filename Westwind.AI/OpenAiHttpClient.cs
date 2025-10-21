@@ -132,7 +132,16 @@ namespace Westwind.AI
             }
             foreach (var msg in messages)
             {
-                request.messages.Add(msg);
+                if (msg.data != null)
+                {
+                    
+                }
+                else
+                {
+                    request.messages.Add(msg);
+                }
+
+                    
                 ChatHistory.Add(msg);
             }
 

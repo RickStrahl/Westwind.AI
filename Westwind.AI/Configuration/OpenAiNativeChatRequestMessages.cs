@@ -55,6 +55,28 @@ namespace Westwind.AI.Configuration
     {
         public string role { get; set; }
         public string content { get; set; }
+        
+        public byte[] data { get; set; }
+
+        public string type { get; set; } 
+    }
+
+    public class OpenAiContentData
+    {
+        /// <summary>
+        /// text, image_url, audio
+        /// </summary>
+        public string type { get; set;  }
+
+        /// <summary>
+        /// Text data
+        /// </summary>
+        public string text { get; set; }
+
+        /// <summary>
+        /// {  url: "https://..." } or "data:..."  
+        /// </summary>
+        public object image_url { get; set; }   
     }
 
 

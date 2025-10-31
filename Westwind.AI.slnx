@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Other/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Westwind.AI.Tests/Westwind.AI.Tests.csproj" />
+  <Project Path="Westwind.AI/Westwind.AI.csproj" />
+</Solution>

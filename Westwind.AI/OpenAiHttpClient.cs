@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -131,22 +132,27 @@ namespace Westwind.AI
                     request.messages.Add(msg);
             }
             foreach (var msg in messages)
-            {
-                if (msg.data != null)
-                {
-                    
-                }
-                else
-                {
-                    request.messages.Add(msg);
-                }
-
-                    
+            {                   
+                request.messages.Add(msg);                    
                 ChatHistory.Add(msg);
             }
 
+            foreach(var msg in request.messages)
+            {
+                // string data is sent as a raw string
+                if (msg.content is not string)
+                {
+                    // content object must be an array 
+                    msg.content = new[] { msg.content };
+                }
+                
+            }
+
             var json = JsonSerializationUtils.Serialize(request, formatJsonOutput: true);
+            Debug.WriteLine("SENT:\n" + json);
             var resultJson = await SendJsonHttpRequest(json, "chat/completions");
+
+            Debug.WriteLine("RECEIVED:\n" + resultJson);
 
             if (string.IsNullOrEmpty(resultJson))
                 return default;            
@@ -170,7 +176,7 @@ namespace Westwind.AI
 
             ChatHistory.Add(choice.message);
 
-            var resultText = choice.message?.content;
+            var resultText = choice.message?.content as string;
             return resultText;
         }
 

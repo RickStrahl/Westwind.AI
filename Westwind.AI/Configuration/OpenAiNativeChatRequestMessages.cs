@@ -1,5 +1,7 @@
 ﻿
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Configuration
 {
@@ -53,32 +55,100 @@ namespace Westwind.AI.Configuration
 
     public class OpenAiChatMessage
     {
-        public string role { get; set; }
-        public string content { get; set; }
-        
+        public string role { get; set; } = "user";
+
+        public object content { get; set; }
+
+        [JsonIgnore]
+        public string Text
+        {
+            get
+            {
+                if (content is string)
+                    return content as string;
+                if (content is OpenAiContentData)
+                    return ((OpenAiContentData)content).text;
+
+                return null;
+            }
+            set => content = value;
+        }
+
+      
+
+        [JsonIgnore]
+        public string ImageUrl
+        {
+            get
+            {
+                if (content is OpenAiContentData)
+                    return ((OpenAiContentData)content).image_url.url as string;
+
+                return null;
+            }
+
+            
+            set => content = new OpenAiContentData { type = "image_url", image_url = new OpenAiImageUrl(value) };
+        }
+
+        /// <summary>
+        /// Optionally allows directly assigning a binary string to 
+        /// set a base64 Image Url
+        /// </summary>
+        public byte[] ImageData {  
+            set
+            {
+                if (value == null)
+                    ImageUrl = null;
+                else
+                    ImageUrl = HtmlUtils.BinaryToEmbeddedBase64(value);
+            } 
+        }
+
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public byte[] data { get; set; }
 
-        public string type { get; set; } 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string type { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Text ?? ImageUrl}";
+        }
     }
 
+    
     public class OpenAiContentData
     {
         /// <summary>
         /// text, image_url, audio
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string type { get; set;  }
 
         /// <summary>
         /// Text data
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string text { get; set; }
 
         /// <summary>
         /// {  url: "https://..." } or "data:..."  
         /// </summary>
-        public object image_url { get; set; }   
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public OpenAiImageUrl image_url { get; set; }   
     }
 
+    public class OpenAiImageUrl(string url)
+    {        
+        public string url { get;  } = url;
+
+        public override string ToString()
+        {
+            return $"{ url}";
+        }
+    }
 
     public class OpenAiErrorResponse        
     {

@@ -149,10 +149,7 @@ namespace Westwind.AI
             }
 
             var json = JsonSerializationUtils.Serialize(request, formatJsonOutput: true);
-            Debug.WriteLine("SENT:\n" + json);
             var resultJson = await SendJsonHttpRequest(json, "chat/completions");
-
-            Debug.WriteLine("RECEIVED:\n" + resultJson);
 
             if (string.IsNullOrEmpty(resultJson))
                 return default;            

@@ -137,15 +137,15 @@ namespace Westwind.AI
                 ChatHistory.Add(msg);
             }
 
+            // turn OpenAiContentData into an Array
             foreach(var msg in request.messages)
             {
-                // string data is sent as a raw string
-                if (msg.content is not string)
-                {
+                
+                if (msg.content is OpenAiContentData)
+                {                     
                     // content object must be an array 
                     msg.content = new[] { msg.content };
-                }
-                
+                }                
             }
 
             var json = JsonSerializationUtils.Serialize(request, formatJsonOutput: true);

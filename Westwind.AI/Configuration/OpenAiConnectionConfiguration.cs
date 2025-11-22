@@ -37,6 +37,7 @@ namespace Westwind.AI.Configuration
             }
             set
             {
+                bool wasNull = ActiveConnection == null;
                 var idx = Connections.IndexOf(value);
                 if (idx != -1)
                 {

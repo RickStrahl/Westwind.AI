@@ -119,6 +119,12 @@ namespace Westwind.AI
         {
             SetError();
 
+            if (messages == null || !messages.Any())
+            {
+                SetError("No messages provided for chat request.");
+                return null;
+            }
+
             var request = new OpenAiChatRequest()
             {
                 model = Connection.ModelId,
@@ -131,8 +137,20 @@ namespace Westwind.AI
                 foreach(var msg in ChatHistory)
                     request.messages.Add(msg);
             }
+            
             foreach (var msg in messages)
             {                   
+                if(msg.data != null)
+                {
+                    if (request.messages.Any(m => m.data == msg.data))
+                        continue;
+                }
+                else if (!string.IsNullOrEmpty(msg.Text))
+                {
+                    if (request.messages.Any(m => m.Text == msg.Text))
+                        continue;
+                }
+
                 request.messages.Add(msg);                    
                 ChatHistory.Add(msg);
             }
@@ -180,6 +198,8 @@ namespace Westwind.AI
 
         public async Task<HttpResponseMessage> SendJsonHttpRequestToResponse(string jsonPayload, string operationSegment = "chat/completions")
         {
+            SetError();
+
             if (Connection == null || Connection.IsEmpty)
             {
                 SetError("No configuration provided.");
@@ -219,12 +239,13 @@ namespace Westwind.AI
                         }
                         if (message.StatusCode == HttpStatusCode.Unauthorized)
                         {
-                            SetError("Authentication failed. Invalid API Key. " + errorMessage);
+                            SetError(
+                                $"Authentication failed. Invalid API Key or request not supported.\n{errorMessage}");
                             return null;
                         }
                         if (message.StatusCode == HttpStatusCode.NotFound)
                         {
-                            SetError("AI request failed - invalid Url: " + endpointUrl);
+                            SetError($"AI request failed - invalid Url: {endpointUrl}\n{errorMessage}");
                             return null;
                         }
 
@@ -234,7 +255,7 @@ namespace Westwind.AI
                             var error = JsonConvert.DeserializeObject<dynamic>(json);
                             string msg = error.error?.message;
 
-                            SetError($"AI request failed : {msg}");
+                            SetError($"AI request failed: {msg}");
                         }
                         else
                         {
@@ -334,7 +355,7 @@ namespace Westwind.AI
             var client = new HttpClient(handler);
 
             client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");            
             if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
                 client.DefaultRequestHeaders.Add("api-key", Connection.ApiKey);
             else
@@ -357,7 +378,7 @@ namespace Westwind.AI
                 ErrorMessage = string.Empty;
                 return;
             }
-            ErrorMessage += message;
+            ErrorMessage += message + "\n";
         }
 
         protected void SetError(Exception ex, bool checkInner = false)

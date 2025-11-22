@@ -110,7 +110,10 @@ namespace Westwind.AI.Configuration
             }
             get
             {
-                return DecryptApiKey(_apiKey);
+                if (string.IsNullOrEmpty(_apiKey))
+                    return _apiKey;
+                var decrypted = DecryptApiKey(_apiKey);               
+                return decrypted;
             }
         }
         [NonSerialized]

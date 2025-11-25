@@ -319,23 +319,13 @@ namespace Westwind.AI
 
             var endpoint = Environment.ExpandEnvironmentVariables(Connection.Endpoint).TrimEnd('/');
 
-            if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
+            if (Connection.ProviderMode == AiProviderModes.AzureOpenAi && Connection.EndpointTemplate.Contains("deployments"))
             {
-                string apiVersion = string.Empty;
-                var template = Connection.EndpointTemplate;
-                if (string.IsNullOrEmpty(Connection.ApiVersion))
-                    template = template.Replace("?api-version={3}", string.Empty);
-                else
-                    apiVersion = Environment.ExpandEnvironmentVariables(Connection.ApiVersion);
-
-                return string.Format(template,
-                    endpoint,
-                    operationSegment,
-                    Connection.ModelId,
-                    apiVersion);
+                Connection.EndpointTemplate = "{0}/openai/v1/{1}";  // same as OpenAI template
+                if (Connection.Endpoint.Contains("/openai/v1"))
+                    Connection.Endpoint = Connection.Endpoint.Replace("/openai/v1", string.Empty).TrimEnd('/');
             }
 
-            // OpenAi
             return string.Format(Connection.EndpointTemplate, endpoint, operationSegment);
         }
 
@@ -356,14 +346,15 @@ namespace Westwind.AI
 
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/json");            
-            if (Connection.ProviderMode == AiProviderModes.AzureOpenAi)
-                client.DefaultRequestHeaders.Add("api-key", Connection.ApiKey);
-            else
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.ApiKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.ApiKey);
 
             return client;
         }
 
+        public override string ToString()
+        {
+            return $"{Connection.Name?.ToString() ?? "No Connection"}  {ErrorMessage}";
+        }
        
 
         #region Error Handling

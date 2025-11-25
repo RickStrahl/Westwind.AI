@@ -75,7 +75,7 @@ namespace Westwind.AI.Configuration
 
         public OpenAiConnection()
         {
-            ModelId = "gpt-4o-mini";
+            ModelId = "gpt-4.1-nano";
             Endpoint = "https://api.openai.com/v1/";
             ProviderMode = AiProviderModes.OpenAi;
             OperationMode = AiOperationModes.Completions;
@@ -192,8 +192,9 @@ namespace Westwind.AI.Configuration
         }
 
         /// <summary>
-        /// An optional API version (used for Azure)
+        /// An optional API version (used for Azure if using old deployments syntax)
         /// </summary>
+        [Obsolete("Api Version is no longer needed with newer Azure APIs that follow the Open AI API format for url and headers")]
         public string ApiVersion
         {
             get => _apiVersion;
@@ -394,7 +395,6 @@ namespace Westwind.AI.Configuration
             ProviderMode = AiProviderModes.AzureOpenAi;
             Endpoint = "https://<AZURE RESOURCE NAME>.openai.azure.com";
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
-            ApiVersion = OpenAiEndPointTemplates.DefaultAzureApiVersion;
         }
     }
 
@@ -405,7 +405,7 @@ namespace Westwind.AI.Configuration
             ProviderMode = AiProviderModes.GitHubModels;
             OperationMode = AiOperationModes.Completions;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
-            Endpoint = "https://models.github.ai/inference";
+            Endpoint = "https://models.github.ai/inference/";
             ModelId = "github/gpt-4.1-nano";
         }
     }
@@ -430,7 +430,7 @@ namespace Westwind.AI.Configuration
             OperationMode = AiOperationModes.Completions;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
             Endpoint = "https://api.x.ai/v1/";
-            ModelId = "grok-beta";
+            ModelId = "grok-4-1-fast-non-reasoning";
         }
     }
 
@@ -494,12 +494,7 @@ namespace Westwind.AI.Configuration
         public static string OpenAi = "{0}/{1}";
 
         // 0 - EndPoint 1 - segment (ie. chat/completions) 2 - Model Id 3 - Api Version
-        public static string AzureOpenAi = "{0}/openai/deployments/{2}/{1}?api-version={3}";
-
-        /// <summary>
-        /// Azure API Version
-        /// </summary>
-        public static string DefaultAzureApiVersion = "2025-04-01-preview";
+        public static string AzureOpenAi = "{0}/openai/v1/{1}";     
     }
 
 

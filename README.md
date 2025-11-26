@@ -14,7 +14,9 @@ A self-contained library that talks directly to the OpenAI HTTP API without majo
 * Nvidia
 * Any generic OpenAI API
 
-The purpose of this library is to provide a **minimal dependencies client for raw OpenAi Completions and Image Generation operations**. It's meant for lightweight integrations into existing applications that have simple AI integration needs and don't need advanced features.
+The purpose of this library is to provide a **minimal dependencies client for raw OpenAi Completions and Image Generation operations**. It also provides a simple connection configuration interface that facilitates managing multiple connections to different in applications via simple Json configuration.  
+
+This is meant for lightweight integrations into existing applications that have simple, one-off AI integration needs and don't need advanced features although it's also possible to build more sophisticated interfaces like a chat Ui.
   
 This library supports:
 
@@ -25,6 +27,7 @@ This library supports:
     * Grammar Check
 * Image Generation via `ImageGeneration`
 * Text to Speech via `TextToSpeechGeneration`
+* Chat History for multi-request context
 * Easy connection creation and multiple connection management
 * Connection information JSON storage and encryption
 * Basic Request/Response API only - no streaming APIs

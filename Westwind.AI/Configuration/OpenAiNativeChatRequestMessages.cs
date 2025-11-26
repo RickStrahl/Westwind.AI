@@ -36,6 +36,12 @@ namespace Westwind.AI.Configuration
         public object system_fingerprint { get; set; }
 
         public string finish_reason { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string ToJson() => JsonSerializationUtils.Serialize(this, false, true, true);
     }
 
     public class OpenAiResponseUsage

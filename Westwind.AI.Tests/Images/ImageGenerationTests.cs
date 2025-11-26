@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Westwind.AI.Configuration;
@@ -45,11 +46,18 @@ namespace Westwind.Ai.Test
                 Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
                 ImageSize = "1024x1024",
                 ImageQuality = "standard",
-                ImageStyle = "vivid"
+                ImageStyle = "vivid",
+                Model = Connection.ModelId  // Important as Azure uses the deployment name!
             };
+            bool result = await generator.Generate(imagePrompt);
+
+            
+            Console.WriteLine(generator.Connection + " - " + generator.Connection.Endpoint);
+            Console.WriteLine(generator.AiHttpClient.LastRequestJson);
 
             // Generate and set properties on `imagePrompt` instance
-            Assert.IsTrue(await generator.Generate(imagePrompt), generator.ErrorMessage);
+            Assert.IsTrue(result, generator.ErrorMessage);
+
 
             // prompt returns an array of images, but for Dall-e-3 it's always one
             // so FirstImage returns the first image and FirstImageUrl returns the url.
@@ -85,7 +93,8 @@ namespace Westwind.Ai.Test
                 Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
                 ImageSize = "1024x1024",
                 ImageQuality = "standard",
-                ImageStyle = "vivid"
+                ImageStyle = "vivid",
+                Model = Connection.ModelId  // Important as Azure uses the deployment name!
             };
 
             bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.Base64);
@@ -109,16 +118,16 @@ namespace Westwind.Ai.Test
         [TestMethod]
         public async Task ImageGenerationToBase64GtpImage1Test()
         {
-            Console.WriteLine("Connection: " + Connection.Name);
-
-            
-            var generator = new OpenAiImageGeneration(Connection);
+            // Explicitly use OpenAI connection for gpt-image-1
+            var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Dall-E");           
+            Console.WriteLine("Connection: " + conn.Name);            
+            var generator = new OpenAiImageGeneration(conn);
 
             var imagePrompt = new ImagePrompt()
             {
                 Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
                 ImageSize = "1024x1024",            
-                Model = "gpt-image-1"
+                Model = "gpt-image-1"  // 
             };
 
             bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.None);
@@ -151,7 +160,8 @@ namespace Westwind.Ai.Test
                 Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
                 ImageSize = "1024x10241", // invalid dimensions
                 ImageQuality = "standard",
-                ImageStyle = "vivid"
+                ImageStyle = "vivid",
+                Model = Connection.ModelId  // Important as Azure uses the deployment name!
             };
 
             // This should fail!

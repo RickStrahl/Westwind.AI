@@ -8,8 +8,9 @@ A self-contained library that talks directly to the OpenAI HTTP API without majo
 * OpenAI
 * AzureOpenAI
 * GitHub Models
+* OpenRouter
 * Ollama (Local)
-* X 
+* X-AI/Grok
 * Nvidia
 * Any generic OpenAI API
 
@@ -30,11 +31,11 @@ This library supports:
 
 .NET Targets:
 
-* .NET9.0
+* .NET10.0
 * .NET8.0
 * .NET472
 
-> If you need streaming interfaces or want to do extended processing on your AI results with  custom functions or other add-on operations, then using one of the more powerful and heavy dependencies tools like [Semantic Kernel](https://github.com/microsoft/semantic-kernel) makes good sense.
+> If you need streaming interfaces or want to do extended processing on your AI results with  custom functions, MCP integration or other add-on operations, then using one of the more powerful and heavy dependencies tools like [Microsoft.Extensions.AI](https://learn.microsoft.com/en-us/dotnet/ai/microsoft-extensions-ai) makes good sense.
 
 ## Usage Examples
 

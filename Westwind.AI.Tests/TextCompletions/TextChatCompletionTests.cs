@@ -274,9 +274,6 @@ namespace Westwind.AI.Tests.TextCompletions
 
             Assert.IsNotNull(result, completion.ErrorMessage);
             Console.WriteLine(result);
-
-
-
         }
 
 

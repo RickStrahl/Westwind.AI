@@ -72,7 +72,6 @@ namespace Westwind.AI.Configuration
     /// </summary>
     public class OpenAiConnection : IOpenAiConnection, INotifyPropertyChanged
     {
-
         public OpenAiConnection()
         {
             ModelId = "gpt-4.1-nano";
@@ -83,7 +82,7 @@ namespace Westwind.AI.Configuration
         }
 
         /// <summary>
-        /// 
+        ///  User friendly display name of the connection
         /// </summary>
         public string Name
         {

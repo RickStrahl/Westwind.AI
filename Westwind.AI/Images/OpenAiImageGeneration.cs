@@ -266,6 +266,12 @@ namespace Westwind.AI.Images
     {
         public string prompt { get; set; }
 
+
+        /// <summary>
+        /// The name of the model to use. dall-e-3 or gpt-image-1. 
+        /// IMPORTANT: Azure uses the deployment name here so use Connection.ModelId 
+        ///            if running from configuration.
+        /// </summary>
         public string model { get; set; } = "dall-e-3";
 
         public int n { get; set; } = 1;

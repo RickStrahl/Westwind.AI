@@ -20,12 +20,11 @@ namespace Westwind.AI.Tests.Voice
             // Load confingurations from disk
             Configurations = OpenAiConnectionConfiguration.Load();
 
-            // Note: for Azure you need a separate deployment for Dall-E-3 specific models
-            Connection = Configurations.ActiveConnection; // Configurations["Azure OpenAi Dall-E"];
-            // Connection = Configurations["OpenAI Dall-E"];
+            // Note: for Azure you need a separate deployment for speech specific models
+            Connection = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI");
 
             if (Connection == null)
-                throw new InvalidOperationException("No Dall-E-3 configuration found.");
+                throw new InvalidOperationException("No configuration found.");
 
             ImagePrompt.DefaultImageStoragePath = Path.GetFullPath("images/GeneratedImages");
         }
@@ -44,7 +43,6 @@ namespace Westwind.AI.Tests.Voice
             Assert.IsTrue(result, generator.ErrorMessage);
 
             ShellUtils.GoUrl(file);
-
         }
     }
 }

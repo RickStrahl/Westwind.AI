@@ -179,8 +179,7 @@ namespace Westwind.AI
                 return default;
             }
 
-            if (CaptureRequestData)
-                LastChatResponse = chatResponse;
+            LastChatResponse = chatResponse;
 
             var choice = chatResponse?.choices?.FirstOrDefault();
             if (choice == null)
@@ -212,7 +211,7 @@ namespace Westwind.AI
             HttpResponseMessage message;
             using (var http = GetHttpClient())
             {
-                if (CaptureRequestData)
+                if (CaptureRequestData)                    
                     LastRequestJson = jsonPayload + "\n\n" +
                                       "---\n\n" +
                                       endpointUrl + "\n" +
@@ -221,10 +220,10 @@ namespace Westwind.AI
                 try
                 {
                     var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                    // clear content type - some AI Engines (nvidia) don't like charset
+                    // explicitly clear content type - some AI Engines (nvidia) don't like charset (charset=utf-8 is default)
                     jsonContent.Headers.ContentType.CharSet = "";
-                    message = await http.PostAsync(endpointUrl, jsonContent);
 
+                    message = await http.PostAsync(endpointUrl, jsonContent);
 
                     // should always fail
                     if (!message.IsSuccessStatusCode)
@@ -233,7 +232,9 @@ namespace Westwind.AI
                         if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
                         {
                             json = await message.Content.ReadAsStringAsync();
-                            LastResponseJson = json;
+                            if (CaptureRequestData)
+                                LastResponseJson = json;
+
                             var error = JsonConvert.DeserializeObject<dynamic>(json);
                             errorMessage = error.error?.message;
                         }

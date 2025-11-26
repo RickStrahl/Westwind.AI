@@ -35,6 +35,38 @@ namespace Westwind.AI.Chat
             return result;
         }
 
+        /// <summary>
+        /// A short string summarization routine that can be used to create summarized values
+        /// that can be used for title and file names etc.
+        /// </summary>
+        /// <param name="text">Full text of prompt or other text to summarize</param>
+        /// <param name="maxCharacters">Max number of characters to summarize to</param>
+        /// <returns></returns>
+        public async Task<string> SummarizePrompt(string text, int maxCharacters = 60)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            if (maxCharacters < 20)
+                maxCharacters = 20;
+            if (maxCharacters > 255) 
+                maxCharacters = 255;
+
+            if (text.Length <= maxCharacters)
+                return text;
+
+            string systemMessage = "You are a summarizing editor that creates concise content to create a title string. Return only the result and remove all punctuation.";
+            string query = $"Summarize the following text into a maximum of {maxCharacters} characters:\n\n{text}";
+
+            string result = await AiHttpClient.GetChatAiResponse(query, systemMessage);
+
+            if (result == null)
+            {
+                SetError(AiHttpClient.ErrorMessage);
+            }
+            return result;
+        }
+
 
         /// <summary>
         /// Translates text from one language to another.

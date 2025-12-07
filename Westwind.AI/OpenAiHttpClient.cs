@@ -236,7 +236,17 @@ namespace Westwind.AI
                                 LastResponseJson = json;
 
                             var error = JsonConvert.DeserializeObject<dynamic>(json);
-                            errorMessage = error.error?.message;
+                            try
+                            {
+                                errorMessage = error.error?.message;
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    errorMessage = error.error;
+                                }catch { }
+                            }                            
                         }
                         if (message.StatusCode == HttpStatusCode.Unauthorized)
                         {
@@ -322,6 +332,7 @@ namespace Westwind.AI
 
             if (Connection.ProviderMode == AiProviderModes.AzureOpenAi && Connection.EndpointTemplate.Contains("deployments"))
             {
+                // handle Azure when providing a full OpenAI style endpoint 
                 Connection.EndpointTemplate = "{0}/openai/v1/{1}";  // same as OpenAI template
                 if (Connection.Endpoint.Contains("/openai/v1"))
                     Connection.Endpoint = Connection.Endpoint.Replace("/openai/v1", string.Empty).TrimEnd('/');

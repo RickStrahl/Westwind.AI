@@ -289,29 +289,35 @@ namespace Westwind.AI.Configuration
         /// <returns></returns>
         public static OpenAiConnection Create(AiProviderModes providerMode, string name = null, bool isImageGeneration = false)
         {
-            if (name == null)
-                name = "OpenAI Connection " + DataUtils.GenerateUniqueId(5);
-
+        
             var mode = isImageGeneration ? AiOperationModes.ImageGeneration : AiOperationModes.Completions;
 
             switch (providerMode)
             {
                 case AiProviderModes.OpenAi:
-                    return new OpenAiConnection() { Name = name, ModelId = isImageGeneration ? "dall-e-3" : "gpt-4.1-nano", OperationMode = mode };
+                    return new OpenAiConnection() { Name = name ?? "Open AI " + DataUtils.GenerateUniqueId(5), ModelId = isImageGeneration ? "dall-e-3" : "gpt-4.1-nano", OperationMode = mode };
                 case AiProviderModes.AzureOpenAi:
-                    return new AzureOpenAiConnection() { Name = "Azure OpenAI Connection " + DataUtils.GenerateUniqueId(5), OperationMode = mode };
+                    return new AzureOpenAiConnection() { Name = name ?? "Azure OpenAI " + DataUtils.GenerateUniqueId(5), OperationMode = mode };
                 case AiProviderModes.Ollama:
-                    return new OllamaOpenAiConnection() { Name = "Ollama Connection " + DataUtils.GenerateUniqueId(5) };
+                    return new OllamaOpenAiConnection() { Name = name ?? "Ollama " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.OllamaCloud:
+                    return new OllamaCloudOpenAiConnection() { Name = name ??  "Ollama Cloud  " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.GitHubModels:
-                    return new GitHubModelsConnection() { Name = "GitHub " + DataUtils.GenerateUniqueId(5) };
+                    return new GitHubModelsConnection() { Name = name ?? "GitHub " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.OpenRouterAi:
-                    return new OpenRouterAiConnection() { Name = "OpenRouter " + DataUtils.GenerateUniqueId(5) };
+                    return new OpenRouterAiConnection() { Name = name ?? "OpenRouter " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.Gemini:
+                    return new GeminiAiConnection() { Name = name ?? "Gemini " + DataUtils.GenerateUniqueId(5) };
+                case AiProviderModes.Mistral:
+                    return new MistralAiConnection() {  Name = name ?? "Mistral " + DataUtils.GenerateUniqueId(5) };
+                    case AiProviderModes.Perplexity:
+                        return new PerplexityAiConnection()   {  Name = name ?? "Perplexity " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.Nvidia:
-                    return new NvidiaOpenAiConnection() { Name = "Nvidia Connection " + DataUtils.GenerateUniqueId(5) };
+                    return new NvidiaOpenAiConnection() { Name = name ?? "Nvidia " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.XOpenAi:
-                    return new XOpenAiConnection() { Name = "XConnection " + DataUtils.GenerateUniqueId(5) };
+                    return new XOpenAiConnection() { Name = name ??  "XConnection " + DataUtils.GenerateUniqueId(5) };
                 case AiProviderModes.DeepSeek:
-                    return new DeepSeekAiConnection() { Name = "DeepSeek Connection " + DataUtils.GenerateUniqueId(5) };
+                    return new DeepSeekAiConnection() { Name = "DeepSeek  " + DataUtils.GenerateUniqueId(5) };
                 default:
                     return new OpenAiConnection() { Name = name };
             }
@@ -379,6 +385,8 @@ namespace Westwind.AI.Configuration
 
     }
 
+
+
     /// <summary>
     /// Azure Open AI specific connection.
     /// 
@@ -418,6 +426,18 @@ namespace Westwind.AI.Configuration
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
             Endpoint = "http://127.0.0.1:11434/v1/";
             ModelId = "llama3";
+        }
+    }
+
+    public class OllamaCloudOpenAiConnection : OpenAiConnection
+    {
+        public OllamaCloudOpenAiConnection()
+        {
+            ProviderMode = AiProviderModes.OllamaCloud;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://ollama.com/v1/";
+            ModelId = "gpt-oss:20b-cloud";
         }
     }
 
@@ -468,17 +488,58 @@ namespace Westwind.AI.Configuration
         }
     }
 
+    public class GeminiAiConnection : OpenAiConnection
+    {
+        public GeminiAiConnection()
+        {
+            ProviderMode = AiProviderModes.Gemini;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/";
+            ModelId = "gemini-2.5-flash-lite";
+        }
+    }
+
+    public class MistralAiConnection : OpenAiConnection
+    {
+        public MistralAiConnection()
+        {
+            ProviderMode = AiProviderModes.Gemini;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://generativelanguage.googleapis.com/v1/";
+            ModelId = "mistral-small-2506";
+        }
+    }
+
+    public class PerplexityAiConnection : OpenAiConnection
+    {
+        public PerplexityAiConnection()
+        {
+            ProviderMode = AiProviderModes.Gemini;
+            OperationMode = AiOperationModes.Completions;
+            EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
+            Endpoint = "https://api.perplexity.ai/";
+            ModelId = "sonar";
+        }
+    }
+
     public enum AiProviderModes
     {
         OpenAi,
         AzureOpenAi,
         Ollama,
+        OllamaCloud,
         Nvidia,
         XOpenAi,
         Other,
         DeepSeek,
         GitHubModels,
-        OpenRouterAi
+        OpenRouterAi,
+        Gemini,
+        Mistral,
+        Perplexity
+
     }
 
     public enum AiOperationModes

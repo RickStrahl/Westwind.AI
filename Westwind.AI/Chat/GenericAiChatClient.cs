@@ -6,7 +6,6 @@ namespace Westwind.AI.Chat
 {
     public class GenericAiChatClient : AiBase
     {
-
         public GenericAiChatClient(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
         {
             AiHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
@@ -25,7 +24,7 @@ namespace Westwind.AI.Chat
         /// <param name="includeHistory">If true includes the accumulated history of requests</param>
         /// <returns></returns>
         public virtual async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
-        {         
+        {                     
             var result = await AiHttpClient.GetChatAiResponse(prompt, systemPrompt, includeHistory);
             if (result == null)
             {

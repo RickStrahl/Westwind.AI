@@ -23,6 +23,9 @@ namespace Westwind.AI.Configuration
         public decimal temperature { get; set; } = 1;
 
         public decimal top_p { get; set; } = 1;
+
+        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]       
+        //public string safety_identifier { get; set; } = null;
     }
 
     public class OpenAiChatMessages

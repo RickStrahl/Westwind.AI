@@ -73,6 +73,33 @@ namespace Westwind.AI
 
 
         /// <summary>
+        /// Optional Application Name that is sent to the LLM for identifying
+        /// the client commonly for activity logs/billing purposes.
+        /// 
+        /// In order for this to work two values have to be provided separated by a |
+        /// Name|Url
+        /// 
+        /// These values are translated into Http headers for each request that identify
+        /// the application.
+        /// </summary>
+        public string ApplicationName { get; set; } = null;
+
+
+        /// <summary>
+        /// Allows you to intercept the request before it is sent and
+        /// customize the JSON that is sent to the OpenAI endpoint.
+        /// 
+        /// Passed in:
+        /// * HttpClient instance you can modify        
+        /// * Request Json string
+        /// 
+        /// Return:
+        /// * Updated Json String
+        /// 
+        /// </summary>
+        public Func<HttpClient, string, string> OnBeforeRequestSent;
+
+        /// <summary>
         /// Retrieves a completion by text from the AI service.
         /// </summary>
         /// <param name="prompt">The query to run against the AI</param>
@@ -86,7 +113,7 @@ namespace Westwind.AI
         {
             var request = new OpenAiChatRequest()
             {
-                model = Connection.ModelId,
+                model = Connection.ModelId
             };
 
             var messages = new List<OpenAiChatMessage>();
@@ -127,7 +154,7 @@ namespace Westwind.AI
 
             var request = new OpenAiChatRequest()
             {
-                model = Connection.ModelId,
+                model = Connection.ModelId
             };
 
             // Add request to history            
@@ -166,6 +193,7 @@ namespace Westwind.AI
                 }                
             }
 
+                        
             var json = JsonSerializationUtils.Serialize(request, formatJsonOutput: true);
             var resultJson = await SendJsonHttpRequest(json, "chat/completions");
 
@@ -211,17 +239,20 @@ namespace Westwind.AI
             HttpResponseMessage message;
             using (var http = GetHttpClient())
             {
-                if (CaptureRequestData)                    
+                if (CaptureRequestData)
                     LastRequestJson = jsonPayload + "\n\n" +
                                       "---\n\n" +
-                                      endpointUrl + "\n" +
-                                      Connection.ModelId + " " + Connection.ApiKey?.GetMaxCharacters(5) + "...";
+                                      Connection.Name + "\n" +
+                                      Connection.ModelId + "  - " + endpointUrl;                                      
 
                 try
                 {
+                    if (OnBeforeRequestSent != null)
+                        jsonPayload = OnBeforeRequestSent?.Invoke(http, jsonPayload);
+
                     var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                     // explicitly clear content type - some AI Engines (nvidia) don't like charset (charset=utf-8 is default)
-                    jsonContent.Headers.ContentType.CharSet = "";
+                    jsonContent.Headers.ContentType.CharSet = "";                   
 
                     message = await http.PostAsync(endpointUrl, jsonContent);
 
@@ -300,6 +331,10 @@ namespace Westwind.AI
         /// <returns>JSON response or null</returns>
         public async Task<string> SendJsonHttpRequest(string jsonPayload, string operationSegment = "chat/completions")
         {
+
+
+
+                
             var message = await SendJsonHttpRequestToResponse(jsonPayload, operationSegment);
             if (message == null)
             {
@@ -308,7 +343,7 @@ namespace Westwind.AI
 
             var jsonContent = await message.Content.ReadAsStringAsync();
             LastResponseJson = jsonContent;
-            
+
             return jsonContent;            
         }
 
@@ -357,7 +392,17 @@ namespace Westwind.AI
             var client = new HttpClient(handler);
 
             client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Add("Accept", "application/json");            
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            if (!string.IsNullOrEmpty(ApplicationName))
+            {
+                var parts = ApplicationName.Split('|');
+                if (parts.Length == 2 && parts[1].Contains("https://") || parts[1].Contains("http://"))
+                {
+                    client.DefaultRequestHeaders.Add("X-Title", parts[0].Trim());
+                    client.DefaultRequestHeaders.Add("HTTP-Referer", parts[1].Trim());
+                }
+            }
+                
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.ApiKey);
 
             return client;

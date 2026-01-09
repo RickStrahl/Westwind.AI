@@ -9,24 +9,29 @@ namespace Westwind.AI.Chat
     /// Text Operations like summarizing
     /// </summary>
     public class AiTextOperations : GenericAiChatClient
-    {        
+    {
         public AiTextOperations(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) { }
-        
-        public AiTextOperations(IOpenAiConnection connection) : base(connection) { }       
+
+        public AiTextOperations(IOpenAiConnection connection) : base(connection) { }
 
         /// <summary>
         /// Summarize text to a specific number of sentences.
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="numberOfWords"></param>
+        /// <remarks>
+        /// System Prompt uses AiTextOperations.SummarizeSystemPrompt
+        /// </remarks>
+        /// <param name="text">Text to summarize</param>
+        /// <param name="numberOfSentences">Number of sentences to summarize text to</param>
+        /// <param name="systemPrompt">Optionally provide a custom system prompt</param>
         /// <returns></returns>
-        public async Task<string> Summarize(string text, int numberOfSentences = 5)
+        public async Task<string> Summarize(string text, int numberOfSentences = 5, string systemPrompt = null)
         {
+            if (string.IsNullOrWhiteSpace(systemPrompt))
+                systemPrompt = SummarizeSystemPrompt;
 
-            string systemMessage = "You are an editor writes summaries of text for end of document summaries. Return only the summarized text.";
             string query = $"Summarize the following text in {numberOfSentences} sentences:\n{text}";
 
-            string result = await AiHttpClient.GetChatAiResponse(query, systemMessage);
+            string result = await AiHttpClient.GetChatAiResponse(query, systemPrompt);
 
             if (result == null)
             {
@@ -39,26 +44,31 @@ namespace Westwind.AI.Chat
         /// A short string summarization routine that can be used to create summarized values
         /// that can be used for title and file names etc.
         /// </summary>
+        /// <remarks>
+        /// System Prompt uses AiTextOperations.SummarizePromptAsTitleSystemPrompt
+        /// </remarks>
         /// <param name="text">Full text of prompt or other text to summarize</param>
         /// <param name="maxCharacters">Max number of characters to summarize to</param>
+        /// <param name="systemPrompt">Optionally pass in a system prompt to replace default one</param>
         /// <returns></returns>
-        public async Task<string> SummarizePrompt(string text, int maxCharacters = 60)
+        public async Task<string> SummarizePrompt(string text, int maxCharacters = 60, string systemPrompt = null)
         {
             if (string.IsNullOrEmpty(text))
                 return text;
 
             if (maxCharacters < 20)
                 maxCharacters = 20;
-            if (maxCharacters > 255) 
+            if (maxCharacters > 255)
                 maxCharacters = 255;
 
             if (text.Length <= maxCharacters)
                 return text;
 
-            string systemMessage = "You are a summarizing editor that creates concise content to create a title string. Return only the result and remove all punctuation.";
-            string query = $"Summarize the following text into a maximum of {maxCharacters} characters:\n\n{text}";
+            if (string.IsNullOrEmpty(systemPrompt))
+                systemPrompt = SummarizePromptAsTitleSystemPrompt;
 
-            string result = await AiHttpClient.GetChatAiResponse(query, systemMessage);
+            string query = $"Summarize the following text into a maximum of {maxCharacters} characters:\n\n{text}";
+            string result = await AiHttpClient.GetChatAiResponse(query, systemPrompt);
 
             if (result == null)
             {
@@ -71,20 +81,23 @@ namespace Westwind.AI.Chat
         /// <summary>
         /// Translates text from one language to another.
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="sourceLang"></param>
-        /// <param name="targetLang"></param>
+        /// <remarks>
+        /// System Prompt uses AiTextOperations.TranslateSystemPrompt
+        /// </remarks>
+        /// <param name="text">Text to translate</param>
+        /// <param name="sourceLang">Source language</param>
+        /// <param name="targetLang">Target language</param>
+        /// <param name="systemPrompt">Optionally provide a custom system prompt</param>
+       /// 
         /// <returns></returns>
-        public async Task<string> TranslateText(string text, string sourceLang, string targetLang)
+        public async Task<string> TranslateText(string text, string sourceLang, string targetLang, string systemPrompt = null)
         {
-            string systemMessage = 
-                "You are a translator that translates from one language to another. " +
-                "Do not translate text or comments inside of code blocks. " +
-                "Be precise and return only the translated text in the result.";
+            if (string.IsNullOrEmpty(systemPrompt)) 
+                systemPrompt = TranslateSystemPrompt;            
 
             string query = $"Translate the following text from {sourceLang} to {targetLang}:\n{text}";
 
-            string result = await AiHttpClient.GetChatAiResponse(query, systemMessage);
+            string result = await AiHttpClient.GetChatAiResponse(query, systemPrompt);
 
             if (result == null)
             {
@@ -96,14 +109,20 @@ namespace Westwind.AI.Chat
         /// <summary>
         /// Checks grammar of the input text and returns adjusted text.
         /// </summary>
-        /// <param name="text">Text to check grammar on</param>        
+        /// <remarks>
+        /// System Prompt uses AiTextOperations.CheckGrammarSystemPrompt
+        /// </remarks>
+        /// <param name="text">Text to clean up</param>
+        /// <param name="systemPrompt">Optionally provide a custom system prompt</param>
         /// <returns></returns>
-        public async Task<string> CheckGrammar(string text)
+        public async Task<string> CheckGrammar(string text, string systemPrompt = null)
         {
-
             string message = text;
 
-            string result = await AiHttpClient.GetChatAiResponse(message, CheckGrammarSystemPrompt);
+            if (string.IsNullOrEmpty(systemPrompt))
+                systemPrompt = CheckGrammarSystemPrompt;
+
+            string result = await AiHttpClient.GetChatAiResponse(message, systemPrompt);
             if (result == null)
             {
                 SetError(AiHttpClient.ErrorMessage);
@@ -120,8 +139,8 @@ namespace Westwind.AI.Chat
         /// <returns></returns>
         public async Task<string> CheckGrammarAsDiff(string text)
         {
-           
-            
+
+
             string message = text;
 
             string result = await AiHttpClient.GetChatAiResponse(message, CheckGrammarSystemPrompt);
@@ -134,11 +153,103 @@ namespace Westwind.AI.Chat
         }
 
 
-        public const string CheckGrammarSystemPrompt =
-            "You are a grammar checker that corrects grammar on the input text. " +
-            "Don't check grammar in code blocks or text inside of comments. " +
-            "Return only the corrected text in the output.";
+        public static string CheckGrammarSystemPrompt =
+            """
+            Task:
+            Clean up and correct the input text.
+        
+            Instructions:
+        
+            Fix spelling, grammar, punctuation, and capitalization errors
+        
+            Improve clarity and readability without changing the meaning
+        
+            Preserve the original tone, voice, and intent
+        
+            Keep formatting (line breaks, lists, headings, code blocks) unchanged
+
+            Keep Markdown formatting if present
+        
+            Do not add new content or remove information
+        
+            Do not simplify technical terms or alter code, commands, file paths, URLs, or identifiers
+        
+            Normalize obvious inconsistencies (quotes, spacing, punctuation)
+        
+            Keep contractions, jargon, and informal phrasing if they appear intentional
+        
+            Output:
+            Return only the corrected version of the selected text, with no explanations or commentary.
+            """;
+
+
+        public static string TranslateSystemPrompt =
+            """
+            You are a translation engine that converts text from the source language to the target language.
+
+            Rules:
+
+            Translate only natural language content.
+
+            Do NOT translate text inside code blocks, inline code, or comments.
+
+            Preserve formatting, markdown formatting, line breaks, and punctuation.
+
+            Keep technical terms, identifiers, file paths, URLs, and proper nouns unchanged unless they are commonly translated.
+
+            Be precise and literal unless the target language requires minor grammatical adjustment.
+
+            Do not add explanations, notes, or extra text.
+
+            Output:
+            Return only the translated text.
+            """;
+
+        public static string SummarizeSystemPrompt =
+            """
+            You are an editorial summarization engine that produces end of document summaries.
+            
+            Rules:
+            
+            Summarize the key points and conclusions of the text.
+            
+            Be concise and clear while preserving the original meaning.
+            
+            Maintain a neutral informative tone.
+            
+            Do not introduce new information or opinions.
+            
+            Preserve important terminology.
+            
+            Do not include formatting markdown or headings.
+            
+            Output:
+            Return only the summarized text.
+            """;
+
+        public static string SummarizePromptAsTitleSystemPrompt =
+            """
+            You are a summarization engine that generates a short concise title from the provided text.
+            
+            Rules:
+            
+            Condense the content to its core idea.
+            
+            Use clear natural language suitable for a title.
+            
+            Remove all punctuation characters.
+            
+            Preserve important keywords.
+            
+            Do not add new concepts or interpretation.
+            
+            Do not include quotes, markdown or formatting.
+            
+            Output:
+            Return only the title text.
+            """;
     }
+
 }
 
 

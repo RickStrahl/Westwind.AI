@@ -207,7 +207,7 @@ namespace Westwind.AI.Chat
 
         public static string SummarizeSystemPrompt =
             """
-            You are an editorial summarization engine that produces end of document summaries.
+            You are a technical editor summarizing to produce a summary of the provided text.
             
             Rules:
             
@@ -215,13 +215,15 @@ namespace Westwind.AI.Chat
             
             Be concise and clear while preserving the original meaning.
             
-            Maintain a neutral informative tone.
+            Maintain a neutral informative tone
             
             Do not introduce new information or opinions.
             
-            Preserve important terminology.
-            
-            Do not include formatting markdown or headings.
+            Preserve important terminology.           
+
+            Keep any introduction if used to the same voice as the original text
+
+            Avoid using introductory statements like  "the text describes" or "the author states"
             
             Output:
             Return only the summarized text.

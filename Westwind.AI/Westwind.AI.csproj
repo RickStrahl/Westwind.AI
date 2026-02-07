@@ -37,7 +37,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Westwind.Utilities" Version="5.2.0" />
+		<PackageReference Include="Westwind.Utilities" Version="5.2.8.1" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

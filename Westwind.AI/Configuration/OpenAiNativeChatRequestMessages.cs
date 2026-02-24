@@ -1,4 +1,4 @@
-﻿
+
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Westwind.Utilities;
@@ -83,7 +83,20 @@ namespace Westwind.AI.Configuration
             set => content = value;
         }
 
-      
+        /// <summary>
+        /// Display text that can be optionally set to override
+        /// the text or content of the message.
+        /// 
+        /// Not used internally, but can be used for UI display
+        /// purposes to show a different text than actual content.
+        /// </summary>
+        [JsonIgnore]
+        public string DisplayText
+        {
+            get => field ?? Text;
+            set;
+        }
+
 
         [JsonIgnore]
         public string ImageUrl
@@ -123,7 +136,7 @@ namespace Westwind.AI.Configuration
 
         public override string ToString()
         {
-            return $"{Text ?? ImageUrl}";
+            return $"{DisplayText  ?? ImageUrl}";
         }
     }
 

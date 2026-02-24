@@ -6,13 +6,18 @@
 A self-contained library that talks directly to the OpenAI HTTP API without major dependencies with explicit support for:
 
 * OpenAI
-* AzureOpenAI
+* Azure OpenAI
 * GitHub Models
+* Gemini
+* Mistral
 * OpenRouter
 * Ollama (Local)
-* X-AI/Grok
+* Ollama Cloud
+* Perplexity
+* DeepSeek
+* xAI/Grok
 * Nvidia
-* Any generic OpenAI API
+* Any OpenAI-compatible API
 
 The purpose of this library is to provide a **minimal dependencies client for raw OpenAi Completions and Image Generation operations**. It also provides a simple connection configuration interface that facilitates managing multiple connections to different in applications via simple Json configuration.  
 
@@ -49,7 +54,7 @@ You can use manual configuration like this for connecting to the OpenAI API:
 var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "gpt-4o-mini",
-   // OperationMode = AiOperationModes.Completions;   // default
+   // OperationMode = AiOperationModes.Completions  // default
 };
 ```
 
@@ -59,11 +64,11 @@ For image generation:
 var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "dall-e-3",
-   OperationMode = AiOperationModes.ImageGeneration;
+   OperationMode = AiOperationModes.ImageGeneration
 };
 ```
 
-More info on the various different connection providers (OpenAi, Azure, Ollama and generic Open AI) and how to create multiple providers to choose from and store them [is discussed below](#openai-connections) in more detail.
+More info on the various different connection providers (OpenAI, Azure, Ollama, and other OpenAI-compatible providers) and how to create multiple providers to choose from and store them [is discussed below](#openai-connections) in more detail.
 
 ### Chat Completions
 This library provides basic Chat Completions that directly pass messages to the API and return the result. If you need more sophisticated functionality for adding custom processing or additional training data, use [Microsoft Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/). It provides all the features used here, but at a significantly bigger footprint.
@@ -79,11 +84,11 @@ This library is geared towards simple interactions that provide small and fast l
 var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "gpt-4o-mini",
-   OperationMode = AiOperationModes.Completions;
+   OperationMode = AiOperationModes.Completions
 };
 
 
-var completion = new GenericAiChatClient(Connection);
+var completion = new GenericAiChatClient(connection);
 completion.AiHttpClient.CaptureRequestData = true;
           
 string resultText = await completion.Complete(
@@ -91,7 +96,7 @@ string resultText = await completion.Complete(
     "You are a translator that translates between languages. Return only the translated text.");
 
 Assert.IsFalse(completion.HasError, completion.ErrorMessage);
-Assert.IsTrue(string.IsNullOrEmpty(resultText), 
+Assert.IsFalse(string.IsNullOrEmpty(resultText), 
               "No completion response was returned (null or empty).");
 Console.WriteLine(resultText);
 
@@ -103,7 +108,7 @@ Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
 Alternately you can pass a collection of prompts:
 
 ```cs
-var completion = new GenericAiChatClient(Connection);
+var completion = new GenericAiChatClient(connection);
 completion.AiHttpClient.CaptureRequestData = true;
 
 var prompts = new List<OpenAiChatMessage>
@@ -121,7 +126,7 @@ var prompts = new List<OpenAiChatMessage>
 var resultText = await completion.Complete(prompts);
 
 Assert.IsFalse(completion.HasError, completion.ErrorMessage);
-Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
 Console.WriteLine(resultText);
 
 // optionally captured request and response data
@@ -138,7 +143,7 @@ string currentDate = DateTime.Now.ToString("MMMM yyyy");
 
 Console.WriteLine("Born on: " + bornDate);
 
-var completion = new GenericAiChatClient(Connection)
+var completion = new GenericAiChatClient(connection)
 {
     AiHttpClient =  
     {
@@ -190,7 +195,7 @@ ImageGeneration works through an `ImagePrompt` class that acts as input and outp
 var connection = new OpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "dall-e-3",
-   OperationMode = AiOperationModes.ImageGeneration;
+   OperationMode = AiOperationModes.ImageGeneration
 };
 
 var generator = new OpenAiImageGeneration(connection);
@@ -280,7 +285,7 @@ There's a custom helper for summarizing input text.
 **Summarize from string**
 
 ```csharp
-var completion = new AiTextOperations(Connection);            
+var completion = new AiTextOperations(connection);            
 
 string result = await completion.Summarize(
     textToSummarize, 
@@ -293,10 +298,10 @@ Console.WriteLine(result);
 ### Translate
 
 ```csharp
-var translator = new AiTextOperations(Connection);
+var translator = new AiTextOperations(connection);
 translator.AiHttpClient.CaptureRequestData = true;
 
-Console.WriteLine("Using: " + Connection.Name);
+Console.WriteLine("Using: " + connection.Name);
 
 string result = await translator.TranslateText(
     "The sky is below, the ground is above", "en", "de");
@@ -309,7 +314,7 @@ Console.WriteLine(result);
 
 ```csharp
 var orig = "Long story short one of the use cases that usually made me grab for the Newtonsoft library was dynamic parsing, but I'm glad to see that at some time at least some minimal support for dynamic parsing was added to the `System.Text.Json.JsonSerializer` class";
-var checker = new AiTextOperations(Connection);
+var checker = new AiTextOperations(connection);
 var result = await checker.CheckGrammar(orig);
 
 Assert.IsNotNull(result, checker.ErrorMessage);
@@ -323,7 +328,7 @@ Console.WriteLine(result);
 ## Configuration and Authorization
 The library uses a single configuration mechanism via two classes:
 
-* **OpenAiConnection / AzureOpenAiConnection / OllamaOpenAiConnectio**  
+* **OpenAiConnection / AzureOpenAiConnection / OllamaOpenAiConnection**  
 A specific configuration for an AI connection that contains an endpoint, model Id and Api keys. You can create these individually to configure a connection or use the configuration class that holds multiple connections that can be stored to disk.
 
 * **OpenAiConnectionConfiguration**  
@@ -341,17 +346,17 @@ This class can be used as a container for multiple connections that you can easi
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "gpt-3.5-turbo",
       "ApiVersion": null,
-      "ConnectionMode": "OpenAi",
+      "ProviderMode": "OpenAi",
       "OperationMode": "Completions"
     },
     {
       "Name": "Azure OpenAi",
       "EncryptedApiKey": "01BA5CC...442@|-|@",
-      "Endpoint": "https://rasopenaisample.openai.azure.com/",
-      "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
+      "Endpoint": "https://rasopenaisample.openai.azure.com",
+      "EndpointTemplate": "{0}/openai/v1/{1}",
       "ModelId": "Gpt35",
-      "ApiVersion": "2024-02-15-preview",
-      "ConnectionMode": "AzureOpenAi",
+      "ApiVersion": null,
+      "ProviderMode": "AzureOpenAi",
       "OperationMode": "Completions"
     },
     {
@@ -361,7 +366,7 @@ This class can be used as a container for multiple connections that you can easi
      "EndpointTemplate": "{0}/{1}",
      "ModelId": "meta/llama-3.1-405b-instruct",
      "ApiVersion": null,
-     "ConnectionMode": "OpenAi",
+     "ProviderMode": "Nvidia",
      "OperationMode": "Completions"
     },
     {
@@ -371,7 +376,7 @@ This class can be used as a container for multiple connections that you can easi
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "llama3",
       "ApiVersion": null,
-      "ConnectionMode": "OpenAi",
+      "ProviderMode": "Ollama",
       "OperationMode": "Completions"
     },
     {
@@ -381,7 +386,7 @@ This class can be used as a container for multiple connections that you can easi
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "phi3",
       "ApiVersion": null,
-      "ConnectionMode": "OpenAi",
+      "ProviderMode": "Ollama",
       "OperationMode": "Completions"
     },
     {
@@ -391,17 +396,17 @@ This class can be used as a container for multiple connections that you can easi
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "dall-e-3",
       "ApiVersion": null,
-      "ConnectionMode": "OpenAi",
+      "ProviderMode": "OpenAi",
       "OperationMode": "ImageGeneration"
     },
     {
       "Name": "Azure OpenAi Dall-E",
       "EncryptedApiKey": "01B2C29E...E9EA@|-|@",
-      "Endpoint": "https://rasopenaisample.openai.azure.com/",
-      "EndpointTemplate": "{0}/openai/deployments/{2}/{1}?api-version={3}",
+      "Endpoint": "https://rasopenaisample.openai.azure.com",
+      "EndpointTemplate": "{0}/openai/v1/{1}",
       "ModelId": "ImageGenerations",
-      "ApiVersion": "2024-02-15-preview",
-      "ConnectionMode": "AzureOpenAi",
+      "ApiVersion": null,
+      "ProviderMode": "AzureOpenAi",
       "OperationMode": "ImageGeneration"
     }
   ]
@@ -413,9 +418,9 @@ This class can be used as a container for multiple connections that you can easi
 >
 > Stored JSON configuration however can accept an unencrypted API key in the `EncryptedApiKey` property to allow setting a key there, but the key will be encrypted the next time the configuration is saved.
 >
-> You can disable key encryption at the application level with the static `OpenAiConnection.UseApiKeyEncryption = false` property.
+> You can disable key encryption at the application level with the static `OpenAiConnectionConfiguration.UseApiKeyEncryption = false` property.
 
-The values used depend on whether you're accessing OpenAI or an openAI compatible API or Azure OpenAi. Azure uses a deployments to manage models and uses non-standard Api key referencing.
+The values used depend on whether you're accessing OpenAI or an OpenAI-compatible API or Azure OpenAI. Azure uses deployments to manage models and uses a different API key header.
 
 You can also create the connections directly in code if you prefer.
 
@@ -429,9 +434,9 @@ connection.ApiKey = apiKey;
 
 Assert.IsTrue(connection.ProviderMode == AiProviderModes.OpenAi,"Incorrect Provider Mode");
 Assert.IsTrue(connection.OperationMode == AiOperationModes.Completions,"Incorrect Operation Mode");
-Assert.IsTrue(connection.ModelId == "gpt-4o-mini","Incorrect Model"); // default 
-// Important - API key is encrypted for storage so use DecryptedApiKey
-Assert.AreEqual(connection.DecryptedApiKey, apiKey,"Incorrect ApiKey");
+Assert.IsTrue(connection.ModelId == "gpt-4.1-nano","Incorrect Model"); // default 
+// Important - API key is encrypted for storage but returned decrypted from ApiKey
+Assert.AreEqual(connection.ApiKey, apiKey,"Incorrect ApiKey");
 ```            
 
 Alternately you can use the name as a string (easier to use from UI):
@@ -445,6 +450,16 @@ The provider modes are:
 * OpenAi
 * AzureOpenAi
 * Ollama
+* OllamaCloud
+* Nvidia
+* XOpenAi
+* DeepSeek
+* GitHubModels
+* OpenRouterAi
+* Gemini
+* Mistral
+* Perplexity
+* Other
 
 Anything else defaults to unconfigured OpenAi.
 
@@ -455,7 +470,7 @@ You can of course also use manually create connections by specifying either the 
 #### OpenAI Connections
 This is the default connection that is used as the base configuration.
 
-This is the easiest configuration as you only need to set the **ApiKey** and **ModelId** and for images specify `OperationModes.ImageGeneration`:
+This is the easiest configuration as you only need to set the **ApiKey** and **ModelId** and for images specify `AiOperationModes.ImageGeneration`:
 
 **For Completions**
 
@@ -494,9 +509,9 @@ Azure uses a different logon mechanism and requires that you set up an Azure sit
 
 You need to specify the **Deployment Name** as the ModelId - Azure has a fixed model per deployment so the deployment is fixed to a model. 
 
-You need to specify the **EndPoint** which is the *Base Url for the Azure Site* (without any site relative paths).
+You need to specify the **Endpoint** which is the *Base Url for the Azure Site* (without any site relative paths).
 
-And you need an **ApiKey** to access the API.
+And you need an **ApiKey** to access the API. Api versions are optional when you use the `/openai/v1/` endpoint format.
 
 **For Completions or Images**
 
@@ -504,14 +519,14 @@ And you need an **ApiKey** to access the API.
 var config = new AzureOpenAiConnection() {
    ApiKey = myApiKey,
    ModelId = "Gtp4oMiniDeployment",   
-   EndPoint = "https://myAzureSite.openai.azure.com/"
+   Endpoint = "https://myAzureSite.openai.azure.com",
    OperationMode = AiOperationModes.Completions
 };
 ```
 
 
 #### Ollama Local
-You can also use any local SMLs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull <model>` the model desired. 
+You can also use any local LLMs that support OpenAI. If you use the popular Ollama AI Client locally you can host any of its models by running `ollama serve` after `ollama pull <model>` the model desired. 
 
 Using Ollama you only specify the **ModelId** which references any of the models that are installed in your local Ollama setup (`llama3`, `phi3.5`, `mistral` etc.)
 
@@ -542,6 +557,6 @@ Here's an example using NVIDIA's OpenAI API:
 var config = new OpenAiConnection() {
    ApiKey = nvidiaApiKey,
    ModelId = "meta/llama-3.1-405b-instruct",
-   Endpoind = "https://integrate.api.nvidia.com/v1/"
+   Endpoint = "https://integrate.api.nvidia.com/v1/"
 };
 ```

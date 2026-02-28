@@ -1,4 +1,4 @@
-﻿// Import packages
+// Import packages
 
 using System.Threading.Tasks;
 using Westwind.AI.Configuration;
@@ -175,6 +175,9 @@ namespace Westwind.AI.Chat
             Do not simplify technical terms or alter code, commands, file paths, URLs, or identifiers
         
             Normalize obvious inconsistencies (quotes, spacing, punctuation)
+
+            Do not change dashes into M-Dashes
+            Leave single spaces before and after dashes as is
         
             Keep contractions, jargon, and informal phrasing if they appear intentional
         

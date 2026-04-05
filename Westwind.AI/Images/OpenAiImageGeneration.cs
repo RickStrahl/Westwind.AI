@@ -40,7 +40,7 @@ namespace Westwind.AI.Images
         /// <returns></returns>
         public async Task<bool> Generate(ImagePrompt prompt,
             bool createImageFile = false,
-            ImageGenerationOutputFormats outputFormat = ImageGenerationOutputFormats.Url)
+            ImageGenerationOutputFormats outputFormat = ImageGenerationOutputFormats.None)
         {
             // structure for posting to the API
             var requiredImage = new ImageRequest()
@@ -53,20 +53,30 @@ namespace Westwind.AI.Images
                 quality = prompt.ImageQuality,
                 background = prompt.ImageBackground              
             };
-            switch(outputFormat)
+
+            if (prompt.Model.Contains("dall-e"))
             {
-                case ImageGenerationOutputFormats.Url:
-                    requiredImage.response_format = "url";
-                    break;
-                case ImageGenerationOutputFormats.Base64:
-                    requiredImage.response_format = "b64_json";
-                    break;
-                case ImageGenerationOutputFormats.None:
-                    requiredImage.response_format = null;
-                    break;
-                default:                    
-                    requiredImage.response_format = null;
-                    break;
+                switch (outputFormat)
+                {
+                    case ImageGenerationOutputFormats.Url:
+                        requiredImage.response_format = "url";
+                        break;
+                    case ImageGenerationOutputFormats.Base64:
+                        requiredImage.response_format = null;
+                        break;
+                    case ImageGenerationOutputFormats.None:
+                        requiredImage.response_format = null;
+                        break;
+                    default:
+                        requiredImage.response_format = null;
+                        break;
+                }              
+            }
+            else
+            {
+                requiredImage.response_format = null;
+                requiredImage.style = null;
+                requiredImage.moderation = "low";
             }
 
             var imageResults = new List<ImageResult>();
@@ -264,30 +274,66 @@ namespace Westwind.AI.Images
     /// </summary>
     internal class ImageRequest
     {
+        
         public string prompt { get; set; }
 
 
         /// <summary>
-        /// The name of the model to use. dall-e-3 or gpt-image-1. 
+        /// The name of the model to use. dall-e-3 or gpt-image-1, gpt-image-1.5 
         /// IMPORTANT: Azure uses the deployment name here so use Connection.ModelId 
         ///            if running from configuration.
         /// </summary>
-        public string model { get; set; } = "dall-e-3";
+        public string model { get; set; } = "gpt-image-1.5";
 
+
+        /// <summary>
+        /// Number of images to generate. Must be between 1 and 10. Dall-E-3 only supports 1 image at a time. gpt-image-1 supports up to 10.
+        /// </summary>
         public int n { get; set; } = 1;
 
+        /// <summary>
+        /// Image size: Dall-E supports 256x256, 512x512, and 1024x1024. 
+        /// gpt-image-1 supports 256x256, 512x512, 1024x1024, 1536x1024, 1792x1024, and 1024x1792.
+        /// </summary>        
         public string size { get; set; } = "1024x1024";
 
+        /// <summary>
+        /// Response format for Dall-E only
+        /// url or b64_json (base64-encoded JSON object with the image data).
+        /// All others use b64_json by default and the value is not allowed
+        /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string response_format { get; set; } = "url";  // b64_json
+        public string response_format { get; set; } = null;  
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string style { get; set; } = "vivid";  // natural
-        
-        public string quality { get; set; } = "auto";   // dall-e-3: hd/standard   gpt-image: high, medium, low
 
+        /// <summary>
+        /// Image style: Dall-E only: natural or vivid
+        /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string background { get; set; } = null;  // auto, transparent, opaque
+        public string style { get; set; } = null;  
+
+
+        /// <summary>
+        /// Image Quality
+        /// Dall-E: auto, standard, hd
+        /// Gpt-image: auto, high, medium, low
+        /// </summary>
+        public string quality { get; set; } = "auto";
+
+
+        /// <summary>        
+        /// Determines the amount of moderation applied to the generated image: low, auto
+        /// Not supported on Dall-E
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string moderation { get; set; } = null;  
+
+
+        /// <summary>
+        /// Background: transparent, opaque, auto
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string background { get; set; } = null;  
        
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string output_format { get; set; } = null; // png, jpg, webp   - gpt-image only

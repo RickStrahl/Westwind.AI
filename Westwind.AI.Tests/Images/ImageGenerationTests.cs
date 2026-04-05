@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,27 +31,28 @@ namespace Westwind.Ai.Test
         public OpenAiConnectionConfiguration Configurations { get; set; }
 
         [TestMethod]
-        public async Task ImageGenerationToUrlTest()
-        {       
+        public async Task DallEImageGenerationToUrlTest()
+        {
 
-            Console.WriteLine("Connection: " + Connection.Name);
+            var connection = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Dall-E");
+            Console.WriteLine("Connection: " + connection.Name);
 
-            var generator = new OpenAiImageGeneration(Connection);
+            var generator = new OpenAiImageGeneration(connection);
 
             // Capture raw request data for debugging
             generator.AiHttpClient.CaptureRequestData = true;
 
             var imagePrompt = new ImagePrompt()
             {
-                Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
+                Prompt = BEAR_PROMPT,
                 ImageSize = "1024x1024",
                 ImageQuality = "standard",
-                ImageStyle = "vivid",
-                Model = Connection.ModelId  // Important as Azure uses the deployment name!
+                ImageStyle = "vivid",                
+                Model = connection.ModelId  // Important as Azure uses the deployment name!
             };
-            bool result = await generator.Generate(imagePrompt);
+            bool result = await generator.Generate(imagePrompt, false, ImageGenerationOutputFormats.Url);
 
-            
+
             Console.WriteLine(generator.Connection + " - " + generator.Connection.Endpoint);
             Console.WriteLine(generator.AiHttpClient.LastRequestJson);
 
@@ -82,32 +83,32 @@ namespace Westwind.Ai.Test
         }
 
         [TestMethod]
-        public async Task ImageGenerationToBase64Test()
+        public async Task ImageGenerationActiveConnectionToBase64Test()
         {
-            Console.WriteLine("Connection: " + Connection.Name);
-
-            var generator = new OpenAiImageGeneration(Connection);        
+            Console.WriteLine("Connection: " + Connection.Name + " - " + Connection.ModelId);
+          
+            var generator = new OpenAiImageGeneration(Connection);
 
             var imagePrompt = new ImagePrompt()
             {
-                Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
+                Prompt = BEAR_PROMPT,
                 ImageSize = "1024x1024",
-                ImageQuality = "standard",
+                ImageQuality = "auto",
                 ImageStyle = "vivid",
                 Model = Connection.ModelId  // Important as Azure uses the deployment name!
             };
 
-            bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.Base64);
-        
+            bool result = await generator.Generate(imagePrompt);
+
             // Generate and set properties on `imagePrompt` instance
             Assert.IsTrue(result, generator.ErrorMessage);
 
             // prompt returns an array of images, but for Dall-e-3 it's always one
             // so FirstImage returns the first image.
-            byte[] bytes =  imagePrompt.GetBytesFromBase64();
+            byte[] bytes = imagePrompt.GetBytesFromBase64();
             Assert.IsNotNull(bytes);
 
-            string file = imagePrompt.SaveImageFromBase64();        
+            string file = imagePrompt.SaveImageFromBase64();
             Assert.IsTrue(File.Exists(file));
 
             // show image in OS viewer
@@ -119,18 +120,18 @@ namespace Westwind.Ai.Test
         public async Task ImageGenerationToBase64GtpImage1Test()
         {
             // Explicitly use OpenAI connection for gpt-image-1
-            var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Dall-E");           
-            Console.WriteLine("Connection: " + conn.Name);            
+            var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Image-Gpt-1.5");
+            Console.WriteLine("Connection: " + conn.Name + " - " + conn.ModelId);
             var generator = new OpenAiImageGeneration(conn);
 
             var imagePrompt = new ImagePrompt()
             {
-                Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
-                ImageSize = "1024x1024",            
-                Model = "gpt-image-1"  // 
+                Prompt = BEAR_PROMPT,
+                ImageSize = "1024x1024",
+                Model = conn.ModelId  // 
             };
 
-            bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.None);
+            bool result = await generator.Generate(imagePrompt);
 
             // Generate and set properties on `imagePrompt` instance
             Assert.IsTrue(result, generator.ErrorMessage);
@@ -157,15 +158,15 @@ namespace Westwind.Ai.Test
 
             var imagePrompt = new ImagePrompt()
             {
-                Prompt = "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",
+                Prompt = BEAR_PROMPT,
                 ImageSize = "1024x10241", // invalid dimensions
-                ImageQuality = "standard",
+                ImageQuality = "standard-bogus",  // invalid 
                 ImageStyle = "vivid",
-                Model = Connection.ModelId  // Important as Azure uses the deployment name!
+                Model = Connection.ModelId,  // Important as Azure uses the deployment name!               
             };
 
             // This should fail!
-            bool result = await generator.Generate(imagePrompt, outputFormat: ImageGenerationOutputFormats.Url);
+            bool result = await generator.Generate(imagePrompt);
 
             // Generate and set properties on `imagePrompt` instance
             Assert.IsFalse(result);
@@ -189,7 +190,7 @@ namespace Westwind.Ai.Test
         //    var sourceImage= Path.GetFullPath("Images/PreviouslyGeneratedImage.png");
 
         //    var generator = new OpenAiImageGeneration(Connection);
-        
+
         //    var imagePrompt = new ImagePrompt()
         //    {
         //        VariationImageFilePath = sourceImage,            
@@ -220,5 +221,15 @@ namespace Westwind.Ai.Test
         //}
 
 
+        string BEAR_PROMPT =
+            """
+            A bear holding on to a snowy mountain peak, waving a beer glass in the air. 
+
+            Render in poster style, on a black background in goldenrod and off-white colored line art.
+
+            Ensure the image is not cropped and holds the the entire bear, beer glass, and mountain in the image
+            along with some reasonable padding.
+            """;
     }
+
 }

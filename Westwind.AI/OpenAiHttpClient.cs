@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -52,6 +52,12 @@ namespace Westwind.AI
         public WebProxy Proxy { get; set; }
 
         /// <summary>
+        /// Request Timeout. Has to be set before Get
+        /// </summary>
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(2);
+
+
+        /// <summary>
         /// Determine whether you want to capture request data in LastRequest and Response Json props
         /// </summary>
         public bool CaptureRequestData { get; set; }
@@ -83,6 +89,12 @@ namespace Westwind.AI
         /// the application.
         /// </summary>
         public string ApplicationName { get; set; } = null;
+
+
+        /// <summary>
+        /// Time taken by the last request
+        /// </summary>
+        public TimeSpan TimeTaken { get; internal set; } = TimeSpan.Zero;
 
 
         /// <summary>
@@ -146,6 +158,8 @@ namespace Westwind.AI
         {
             SetError();
 
+            TimeTaken = TimeSpan.Zero;
+
             if (messages == null || !messages.Any())
             {
                 SetError("No messages provided for chat request.");
@@ -197,6 +211,8 @@ namespace Westwind.AI
             var json = JsonSerializationUtils.Serialize(request, formatJsonOutput: true);
             var resultJson = await SendJsonHttpRequest(json, "chat/completions");
 
+
+
             if (string.IsNullOrEmpty(resultJson))
                 return default;            
 
@@ -206,6 +222,7 @@ namespace Westwind.AI
                 SetError("Invalid response from AI service.");
                 return default;
             }
+
 
             LastChatResponse = chatResponse;
 
@@ -227,97 +244,101 @@ namespace Westwind.AI
         {
             SetError();
 
+            TimeTaken = TimeSpan.Zero;
+
             if (Connection == null || Connection.IsEmpty)
             {
                 SetError("No configuration provided.");
                 return null;
             }
 
+            var sw = Stopwatch.StartNew();
+
             var endpointUrl = GetEndpointUrl(operationSegment);
             string json;   // invalid json
 
             HttpResponseMessage message;
-            using (var http = GetHttpClient())
+
+            using var http = GetHttpClient();
+            if (CaptureRequestData)
+                LastRequestJson = jsonPayload + "\n\n" +
+                                  "---\n\n" +
+                                  Connection.Name + "\n" +
+                                  Connection.ModelId + "  - " + endpointUrl;                                      
+
+            try
             {
-                if (CaptureRequestData)
-                    LastRequestJson = jsonPayload + "\n\n" +
-                                      "---\n\n" +
-                                      Connection.Name + "\n" +
-                                      Connection.ModelId + "  - " + endpointUrl;                                      
+                
+                if (OnBeforeRequestSent != null)
+                    jsonPayload = OnBeforeRequestSent?.Invoke(http, jsonPayload);
 
-                try
+                var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                // explicitly clear content type - some AI Engines (nvidia) don't like charset (charset=utf-8 is default)
+                jsonContent.Headers.ContentType.CharSet = "";                   
+                message = await http.PostAsync(endpointUrl, jsonContent);
+
+                // should always fail
+                if (!message.IsSuccessStatusCode)                
                 {
-                    if (OnBeforeRequestSent != null)
-                        jsonPayload = OnBeforeRequestSent?.Invoke(http, jsonPayload);
-
-                    var jsonContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                    // explicitly clear content type - some AI Engines (nvidia) don't like charset (charset=utf-8 is default)
-                    jsonContent.Headers.ContentType.CharSet = "";                   
-
-                    message = await http.PostAsync(endpointUrl, jsonContent);
-
-                    // should always fail
-                    if (!message.IsSuccessStatusCode)
+                    string errorMessage = null;
+                    if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
                     {
-                        string errorMessage = null;
-                        if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
-                        {
-                            json = await message.Content.ReadAsStringAsync();
-                            if (CaptureRequestData)
-                                LastResponseJson = json;
+                        json = await message.Content.ReadAsStringAsync();                                                 
+                        if (CaptureRequestData)
+                            LastResponseJson = json;
 
-                            var error = JsonConvert.DeserializeObject<dynamic>(json);
+                        var error = JsonConvert.DeserializeObject<dynamic>(json);
+                        try
+                        {
+                            errorMessage = error.error?.message;
+                        }
+                        catch
+                        {
                             try
                             {
-                                errorMessage = error.error?.message;
+                                errorMessage = error.error;
                             }
-                            catch
-                            {
-                                try
-                                {
-                                    errorMessage = error.error;
-                                }catch { }
-                            }                            
+                            catch { }
                         }
-                        if (message.StatusCode == HttpStatusCode.Unauthorized)
-                        {
-                            SetError(
-                                $"Authentication failed. Invalid API Key or request not supported.\n{errorMessage}");
-                            return null;
-                        }
-                        if (message.StatusCode == HttpStatusCode.NotFound)
-                        {
-                            SetError($"AI request failed - invalid Url: {endpointUrl}\n{errorMessage}");
-                            return null;
-                        }
+                    }
+                    else if (message.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        SetError(
+                            $"Authentication failed. Invalid API Key or request not supported.\n{errorMessage}");                        
+                    }
+                    else if (message.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        SetError($"AI request failed - invalid Url: {endpointUrl}\n{errorMessage}");                        
+                    }
+                    else if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
+                    {
+                        json = await message.Content.ReadAsStringAsync();
+                        if (CaptureRequestData)
+                            LastResponseJson = json;
 
-                        if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
-                        {
-                            json = await message.Content.ReadAsStringAsync();
-                            var error = JsonConvert.DeserializeObject<dynamic>(json);
-                            string msg = error.error?.message;
+                        var error = JsonConvert.DeserializeObject<dynamic>(json);
+                        string msg = error.error?.message;
 
-                            SetError($"AI request failed: {msg}");
-                        }
-                        else
-                        {
-                            SetError("AI request failed: " + message.StatusCode.ToString());
-                        }
-
-                        return null;
+                        SetError($"AI request failed: {msg}");
+                    }
+                    else
+                    {
+                        SetError("AI request failed: " + message.StatusCode.ToString());
                     }
 
-
-                    return message;
-                }
-                catch (Exception ex)
-                {
-                    // request hard failed
-                    SetError("Http request failed: " + ex.Message);
+                    TimeTaken = sw.Elapsed;
                     return null;
                 }
 
-                
+                TimeTaken = sw.Elapsed;
+                return message;
+            }
+            catch (Exception ex)
+            {
+                // request hard failed
+                TimeTaken = sw.Elapsed;
+                SetError("Http request failed: " + ex.Message);
+                return null;
             }
         }
 
@@ -330,11 +351,7 @@ namespace Westwind.AI
         /// <param name="jsonPayload">Raw JSON to send to the server</param>         
         /// <returns>JSON response or null</returns>
         public async Task<string> SendJsonHttpRequest(string jsonPayload, string operationSegment = "chat/completions")
-        {
-
-
-
-                
+        { 
             var message = await SendJsonHttpRequestToResponse(jsonPayload, operationSegment);
             if (message == null)
             {
@@ -404,10 +421,12 @@ namespace Westwind.AI
             }
                 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.ApiKey);
+            client.Timeout = Timeout;
 
             return client;
         }
 
+    
         public override string ToString()
         {
             return $"{Connection.Name?.ToString() ?? "No Connection"}  {ErrorMessage}";

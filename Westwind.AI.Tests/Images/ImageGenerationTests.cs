@@ -88,6 +88,7 @@ namespace Westwind.Ai.Test
             Console.WriteLine("Connection: " + Connection.Name + " - " + Connection.ModelId);
           
             var generator = new OpenAiImageGeneration(Connection);
+            generator.AiHttpClient.Timeout = TimeSpan.FromMinutes(10);
 
             var imagePrompt = new ImagePrompt()
             {

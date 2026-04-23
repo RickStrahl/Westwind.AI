@@ -22,11 +22,13 @@ namespace Westwind.AI.Images
         public OpenAiImageGeneration(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig)
         {
             AiHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
+            AiHttpClient.Timeout = TimeSpan.FromMinutes(5);
         }
 
         public OpenAiImageGeneration(IOpenAiConnection connection) : base(connection)
         {
             AiHttpClient = new OpenAiHttpClient(connection);
+            AiHttpClient.Timeout = TimeSpan.FromMinutes(5);
         }
 
         #region Image Generation API Calls

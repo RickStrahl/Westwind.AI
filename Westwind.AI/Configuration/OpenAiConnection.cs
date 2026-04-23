@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -400,7 +400,7 @@ namespace Westwind.AI.Configuration
         public AzureOpenAiConnection()
         {
             ProviderMode = AiProviderModes.AzureOpenAi;
-            Endpoint = "https://<AZURE RESOURCE NAME>.openai.azure.com";
+            Endpoint = "https://<AZURE RESOURCE NAME>.cognitiveservices.azure.com/";
             EndpointTemplate = OpenAiEndPointTemplates.AzureOpenAi;
         }
     }
@@ -461,7 +461,7 @@ namespace Westwind.AI.Configuration
             OperationMode = AiOperationModes.Completions;
             EndpointTemplate = OpenAiEndPointTemplates.OpenAi;
             Endpoint = "https://integrate.api.nvidia.com/v1/";
-            ModelId = "meta/llama-3.1-405b-instruct";
+            ModelId = "moonshotai/kimi-k2-instruct";
         }
     }
 

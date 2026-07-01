@@ -16,6 +16,7 @@ namespace Westwind.AI.Chat
 
         /// <summary>
         /// Summarize text to a specific number of sentences.
+        /// Routes through transport abstraction for execution.
         /// </summary>
         /// <remarks>
         /// System Prompt uses AiTextOperations.SummarizeSystemPrompt
@@ -30,19 +31,13 @@ namespace Westwind.AI.Chat
                 systemPrompt = SummarizeSystemPrompt;
 
             string query = $"Summarize the following text in {numberOfSentences} sentences:\n{text}";
-
-            string result = await AiHttpClient.GetChatAiResponse(query, systemPrompt);
-
-            if (result == null)
-            {
-                SetError(AiHttpClient.ErrorMessage);
-            }
-            return result;
+            return await Complete(query, systemPrompt);
         }
 
         /// <summary>
         /// A short string summarization routine that can be used to create summarized values
         /// that can be used for title and file names etc.
+        /// Routes through transport abstraction for execution.
         /// </summary>
         /// <remarks>
         /// System Prompt uses AiTextOperations.SummarizePromptAsTitleSystemPrompt
@@ -68,18 +63,13 @@ namespace Westwind.AI.Chat
                 systemPrompt = SummarizePromptAsTitleSystemPrompt;
 
             string query = $"Summarize the following text into a maximum of {maxCharacters} characters:\n\n{text}";
-            string result = await AiHttpClient.GetChatAiResponse(query, systemPrompt);
-
-            if (result == null)
-            {
-                SetError(AiHttpClient.ErrorMessage);
-            }
-            return result;
+            return await Complete(query, systemPrompt);
         }
 
 
         /// <summary>
         /// Translates text from one language to another.
+        /// Routes through transport abstraction for execution.
         /// </summary>
         /// <remarks>
         /// System Prompt uses AiTextOperations.TranslateSystemPrompt
@@ -88,7 +78,6 @@ namespace Westwind.AI.Chat
         /// <param name="sourceLang">Source language</param>
         /// <param name="targetLang">Target language</param>
         /// <param name="systemPrompt">Optionally provide a custom system prompt</param>
-       /// 
         /// <returns></returns>
         public async Task<string> TranslateText(string text, string sourceLang, string targetLang, string systemPrompt = null)
         {
@@ -96,18 +85,12 @@ namespace Westwind.AI.Chat
                 systemPrompt = TranslateSystemPrompt;            
 
             string query = $"Translate the following text from {sourceLang} to {targetLang}:\n{text}";
-
-            string result = await AiHttpClient.GetChatAiResponse(query, systemPrompt);
-
-            if (result == null)
-            {
-                SetError(AiHttpClient.ErrorMessage);
-            }
-            return result;
+            return await Complete(query, systemPrompt);
         }
 
         /// <summary>
         /// Checks grammar of the input text and returns adjusted text.
+        /// Routes through transport abstraction for execution.
         /// </summary>
         /// <remarks>
         /// System Prompt uses AiTextOperations.CheckGrammarSystemPrompt
@@ -117,21 +100,15 @@ namespace Westwind.AI.Chat
         /// <returns></returns>
         public async Task<string> CheckGrammar(string text, string systemPrompt = null)
         {
-            string message = text;
-
             if (string.IsNullOrEmpty(systemPrompt))
                 systemPrompt = CheckGrammarSystemPrompt;
 
-            string result = await AiHttpClient.GetChatAiResponse(message, systemPrompt);
-            if (result == null)
-            {
-                SetError(AiHttpClient.ErrorMessage);
-            }
-            return result;
+            return await Complete(text, systemPrompt);
         }
 
         /// <summary>
         /// Checks grammar of the input text and returns adjusted text as a diff.
+        /// Routes through transport abstraction for execution.
         /// 
         /// NOTE: this is not working very well.
         /// </summary>
@@ -139,17 +116,7 @@ namespace Westwind.AI.Chat
         /// <returns></returns>
         public async Task<string> CheckGrammarAsDiff(string text)
         {
-
-
-            string message = text;
-
-            string result = await AiHttpClient.GetChatAiResponse(message, CheckGrammarSystemPrompt);
-
-            if (result == null)
-            {
-                SetError(AiHttpClient.ErrorMessage);
-            }
-            return result;
+            return await Complete(text, CheckGrammarSystemPrompt);
         }
 
 

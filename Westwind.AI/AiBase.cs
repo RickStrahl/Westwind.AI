@@ -1,4 +1,5 @@
 ﻿using System;
+using Westwind.AI.Chat.Transport;
 using Westwind.AI.Configuration;
 
 namespace Westwind.AI.Chat
@@ -9,12 +10,19 @@ namespace Westwind.AI.Chat
 
         public OpenAiHttpClient AiHttpClient { get; set; }
 
+        /// <summary>
+        /// Internal transport abstraction used by Phase 3+ for chat execution.
+        /// Routes through Microsoft.AI or HTTP fallback based on provider support.
+        /// </summary>
+        internal IWestwindAiChatTransport Transport { get; set; }
+
         public AiBase(OpenAiConnectionConfiguration openAiAuthConfig)
         {
             Connection = openAiAuthConfig.ActiveConnection;            
             if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
             AiHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
+            Transport = WestwindAiChatTransportFactory.Create(Connection);
         }
 
         public AiBase(IOpenAiConnection connection)
@@ -23,6 +31,7 @@ namespace Westwind.AI.Chat
             if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
             AiHttpClient = new OpenAiHttpClient(Connection);
+            Transport = WestwindAiChatTransportFactory.Create(Connection);
         }
 
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Westwind.AI.Chat;
@@ -268,12 +268,14 @@ namespace Westwind.AI.Tests.TextCompletions
             // We have to provide the start date, otherwise it uses the AI training date 🤣
             string result = await completion.Complete(msgs);
 
-       
-            Console.WriteLine("---\n" + completion.AiHttpClient.LastRequestJson);
-            Console.WriteLine("---\n" + completion.AiHttpClient.LastResponseJson);
 
             Assert.IsNotNull(result, completion.ErrorMessage);
             Console.WriteLine(result);
+
+
+            Console.WriteLine("---\n" + completion.AiHttpClient.LastRequestJson);
+            Console.WriteLine("---\n" + completion.AiHttpClient.LastResponseJson);
+
         }
 
 

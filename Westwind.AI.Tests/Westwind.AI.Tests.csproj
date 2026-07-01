@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
 	<LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>    
   </PropertyGroup>
@@ -20,11 +20,6 @@
     <ProjectReference Include="..\Westwind.AI\Westwind.AI.csproj" />
   </ItemGroup>
 
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-		<Reference Include="System.Net.Http" />
-		<Reference Include="Microsoft.CSharp" />
-	</ItemGroup>
 
 
 	<ItemGroup>

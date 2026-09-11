@@ -441,7 +441,7 @@ namespace Westwind.AI.Images
             byte[] data = null;
             try
             {
-                data = await HttpUtils.HttpRequestBytesAsync(FirstImageUrl);
+                data = await HttpClientUtils.DownloadBytesAsync(FirstImageUrl);                
             }
             catch
             {
@@ -663,7 +663,7 @@ namespace Westwind.AI.Images
             if (string.IsNullOrEmpty(Url)) return default;
             try
             {
-                return await HttpUtils.HttpRequestBytesAsync(Url);
+                return await HttpClientUtils.DownloadBytesAsync(Url);
             }
             catch
             {
@@ -676,7 +676,7 @@ namespace Westwind.AI.Images
             if (string.IsNullOrEmpty(Url)) return false;
             try
             {
-                string filename = await HttpUtils.DownloadImageToFileAsync(Url, targetFilename);
+                string filename = await HttpClientUtils.DownloadImageToFileAsync(Url, targetFilename);
                 if (string.IsNullOrEmpty(filename))
                     return false;
                 return true;

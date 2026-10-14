@@ -4,6 +4,9 @@ using Westwind.AI.Configuration;
 using Westwind.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
+using Westwind.AI;
+using Westwind.AI.Chat;
 
 namespace Westwind.AI.Tests
 {
@@ -89,6 +92,93 @@ namespace Westwind.AI.Tests
             Assert.IsTrue(connection.OperationMode == AiOperationModes.Completions,"Incorrect Operation Mode");
             Assert.IsTrue(connection.ModelId == "gpt-4o-mini","Incorrect Model");
             
+        }
+
+        [TestMethod]
+        public void DefaultApiKeyHeaderTest()
+        {
+            var connection = new OpenAiConnection
+            {
+                ApiKey = "test-key"
+            };
+
+            using var client = new OpenAiHttpClient(connection).GetHttpClient();
+
+            Assert.AreEqual("Bearer", client.DefaultRequestHeaders.Authorization?.Scheme);
+            Assert.AreEqual("test-key", client.DefaultRequestHeaders.Authorization?.Parameter);
+        }
+
+        [TestMethod]
+        public void CustomApiKeyHeaderTest()
+        {
+            var connection = new OpenAiConnection
+            {
+                ApiKey = "google-test-key",
+                ApiKeyHeaderName = "x-goog-api-key",
+                ApiKeyHeaderScheme = null
+            };
+
+            using var client = new OpenAiHttpClient(connection).GetHttpClient();
+
+            Assert.IsNull(client.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual(
+                "google-test-key",
+                client.DefaultRequestHeaders.GetValues("x-goog-api-key").Single());
+        }
+
+        [TestMethod]
+        public void AzureEndpointEnvironmentVariableTest()
+        {
+            const string variableName = "WESTWIND_AI_TEST_SITE";
+            var previousValue = Environment.GetEnvironmentVariable(variableName);
+
+            try
+            {
+                Environment.SetEnvironmentVariable(variableName, "https://test-resource.cognitiveservices.azure.com");
+                var connection = new AzureOpenAiConnection
+                {
+                    Endpoint = $"%{variableName}%"
+                };
+
+                var endpoint = new OpenAiHttpClient(connection).GetEndpointUrl("chat/completions");
+                Assert.AreEqual(
+                    "https://test-resource.cognitiveservices.azure.com/openai/v1/chat/completions",
+                    endpoint);
+
+                // Construction exercises the Microsoft.Extensions.AI transport path.
+                var client = new GenericAiChatClient(connection);
+                Assert.IsNotNull(client);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(variableName, previousValue);
+            }
+        }
+
+        [TestMethod]
+        public void ApiKeyEnvironmentVariableExpandsWhenEncryptionIsDisabledTest()
+        {
+            const string variableName = "WESTWIND_AI_TEST_API_KEY";
+            var previousValue = Environment.GetEnvironmentVariable(variableName);
+            var previousEncryptionSetting = OpenAiConnectionConfiguration.UseApiKeyEncryption;
+
+            try
+            {
+                Environment.SetEnvironmentVariable(variableName, "expanded-test-key");
+                OpenAiConnectionConfiguration.UseApiKeyEncryption = false;
+
+                var connection = new OpenAiConnection
+                {
+                    ApiKey = $"%{variableName}%"
+                };
+
+                Assert.AreEqual("expanded-test-key", connection.ApiKey);
+            }
+            finally
+            {
+                OpenAiConnectionConfiguration.UseApiKeyEncryption = previousEncryptionSetting;
+                Environment.SetEnvironmentVariable(variableName, previousValue);
+            }
         }
     }
 }

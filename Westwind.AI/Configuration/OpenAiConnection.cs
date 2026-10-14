@@ -28,6 +28,16 @@ namespace Westwind.AI.Configuration
         string ApiKey { get; set; }
 
         /// <summary>
+        /// HTTP header used to send the API key.
+        /// </summary>
+        string ApiKeyHeaderName => "Authorization";
+
+        /// <summary>
+        /// Optional authentication scheme prepended to the API key.
+        /// </summary>
+        string ApiKeyHeaderScheme => "Bearer";
+
+        /// <summary>
         /// The Endpoint for the service
         /// </summary>
         string Endpoint { get; set; }
@@ -117,6 +127,29 @@ namespace Westwind.AI.Configuration
         }
         [NonSerialized]
         private string _apiKey;
+
+        /// <summary>
+        /// HTTP header used to send the API key. Defaults to Authorization.
+        /// Set this to a provider-specific header such as x-goog-api-key.
+        /// </summary>
+        public string ApiKeyHeaderName
+        {
+            get => _apiKeyHeaderName;
+            set => SetField(ref _apiKeyHeaderName, value);
+        }
+        private string _apiKeyHeaderName = "Authorization";
+
+        /// <summary>
+        /// Optional authentication scheme prepended to the API key.
+        /// Defaults to Bearer. Set to null or empty when the provider expects
+        /// the raw API key as the complete header value.
+        /// </summary>
+        public string ApiKeyHeaderScheme
+        {
+            get => _apiKeyHeaderScheme;
+            set => SetField(ref _apiKeyHeaderScheme, value);
+        }
+        private string _apiKeyHeaderScheme = "Bearer";
 
         /// <summary>
         /// The Encrypted API Key for the connection
@@ -295,7 +328,7 @@ namespace Westwind.AI.Configuration
             switch (providerMode)
             {
                 case AiProviderModes.OpenAi:
-                    return new OpenAiConnection() { Name = name ?? "Open AI " + DataUtils.GenerateUniqueId(5), ModelId = isImageGeneration ? "dall-e-3" : "gpt-4.1-nano", OperationMode = mode };
+                    return new OpenAiConnection() { Name = name ?? "Open AI " + DataUtils.GenerateUniqueId(5), ModelId = isImageGeneration ? "gpt-image-2" : "gpt-4.1-nano", OperationMode = mode };
                 case AiProviderModes.AzureOpenAi:
                     return new AzureOpenAiConnection() { Name = name ?? "Azure OpenAI " + DataUtils.GenerateUniqueId(5), OperationMode = mode };
                 case AiProviderModes.Ollama:
@@ -363,15 +396,16 @@ namespace Westwind.AI.Configuration
             if (string.IsNullOrEmpty(key))
                 key = _apiKey;
 
-            if (string.IsNullOrEmpty(key) || !OpenAiConnectionConfiguration.UseApiKeyEncryption)
-                return key ?? string.Empty;
+            if (string.IsNullOrEmpty(key))
+                return string.Empty;
 
-            if (key.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
+            if (OpenAiConnectionConfiguration.UseApiKeyEncryption &&
+                key.EndsWith(OpenAiConnectionConfiguration.EncryptionPostFix))
             {
                 var encrypted = key.Replace(OpenAiConnectionConfiguration.EncryptionPostFix, string.Empty);
                 key = Encryption.DecryptString(encrypted, OpenAiConnectionConfiguration.EncryptionKey, useBinHex: true);
             }
-            else
+            else if (OpenAiConnectionConfiguration.UseApiKeyEncryption)
             {
                 // force encrypt the Api Key for storage direct access
                 _apiKey = EncryptApiKey(key);

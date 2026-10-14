@@ -1,16 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net10.0;net8.0</TargetFrameworks>
-		<Version>0.3.8.1</Version>
+		<TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+		<Version>0.5</Version>
 		<LangVersion>latest</LangVersion>
 		<Authors>Rick Strahl, West Wind Technologies</Authors>
 		<Company>West Wind Technologies</Company>
 		<Copyright>Rick Strahl, West Wind Technologies, 2023-2025</Copyright>
 		<Description>
-			A small very lightweight OpenAI API Client for .NET that provides access to
+			A small OpenAI API Client for .NET that provides access to
 			OpenAi Completion and ImageGeneration APIs. Supports OpenAi, Azure OpenAi
-			and generic OpenAi endpoints including explicit SLM support for Ollama
-			with local models.
+			and generic OpenAi endpoints including explicit SLM support for Ollama and other
+			local OpenAi based aggregators with local models.
+			
+			A key feature is a unified configuration model that allows you to configure
+			many different providers and easily switch between them.
 		</Description>
 		<PackageTags>Westwind OpenAi Ai</PackageTags>
 		<PackageReleaseNotes></PackageReleaseNotes>
@@ -37,9 +40,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.AI" Version="10.6.0" />
-		<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.6.0" />
-		<PackageReference Include="Westwind.Utilities" Version="5.3.1" />
+		<PackageReference Include="Microsoft.Extensions.AI" Version="10.10.0" />
+		<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.0" />
+		<PackageReference Include="Westwind.Utilities" Version="5.3.5" />
 	</ItemGroup>
 
 

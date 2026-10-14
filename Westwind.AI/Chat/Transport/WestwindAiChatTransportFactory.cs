@@ -36,6 +36,10 @@ namespace Westwind.AI.Chat.Transport
             if (connection.OperationMode != AiOperationModes.Completions)
                 return false;
 
+            if (!string.Equals(connection.ApiKeyHeaderName, "Authorization", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(connection.ApiKeyHeaderScheme, "Bearer", StringComparison.OrdinalIgnoreCase))
+                return false;
+
             return connection.ProviderMode == AiProviderModes.OpenAi ||
                    connection.ProviderMode == AiProviderModes.AzureOpenAi ||
                    connection.ProviderMode == AiProviderModes.GitHubModels ||

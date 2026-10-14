@@ -342,6 +342,8 @@ This class can be used as a container for multiple connections that you can easi
     {
       "Name": "OpenAI",
       "EncryptedApiKey": "18064FE1...12E@|-|@",
+      "ApiKeyHeaderName": "Authorization",
+      "ApiKeyHeaderScheme": "Bearer",
       "Endpoint": "https://api.openai.com/v1/",
       "EndpointTemplate": "{0}/{1}",
       "ModelId": "gpt-3.5-turbo",
@@ -420,7 +422,21 @@ This class can be used as a container for multiple connections that you can easi
 >
 > You can disable key encryption at the application level with the static `OpenAiConnectionConfiguration.UseApiKeyEncryption = false` property.
 
-The values used depend on whether you're accessing OpenAI or an OpenAI-compatible API or Azure OpenAI. Azure uses deployments to manage models and uses a different API key header.
+The values used depend on whether you're accessing OpenAI or an OpenAI-compatible API or Azure OpenAI. The API key remains encrypted in configuration while `ApiKeyHeaderName` and `ApiKeyHeaderScheme` control how it is sent. Most providers use the defaults, `Authorization: Bearer <key>`. For a provider that requires the raw key in a custom header:
+
+```cs
+var connection = new OpenAiConnection
+{
+    Endpoint = "https://provider.example/v1/",
+    ModelId = "provider-image-model",
+    ApiKey = myApiKey,
+    ApiKeyHeaderName = "x-goog-api-key",
+    ApiKeyHeaderScheme = null,
+    OperationMode = AiOperationModes.ImageGeneration
+};
+```
+
+This configuration applies to image, voice, and direct HTTP chat requests. Chat connections with custom authentication automatically use the HTTP transport because the OpenAI SDK transport only supports bearer authentication.
 
 You can also create the connections directly in code if you prefer.
 

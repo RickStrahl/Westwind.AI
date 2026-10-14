@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -281,7 +280,9 @@ namespace Westwind.AI
                 if (!message.IsSuccessStatusCode)                
                 {
                     string errorMessage = null;
-                    if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
+                    if (message.Content.Headers.ContentLength > 0 &&
+                        message.Content.Headers.ContentType != null &&
+                        message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
                     {
                         json = await message.Content.ReadAsStringAsync();                                                 
                         if (CaptureRequestData)
@@ -310,7 +311,7 @@ namespace Westwind.AI
                     {
                         SetError($"AI request failed - invalid Url: {endpointUrl}\n{errorMessage}");                        
                     }
-                    else if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
+                    else if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType != null && message.Content.Headers.ContentType.ToString().StartsWith("application/json"))
                     {
                         json = await message.Content.ReadAsStringAsync();
                         if (CaptureRequestData)
@@ -420,7 +421,18 @@ namespace Westwind.AI
                 }
             }
                 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Connection.ApiKey);
+            var apiKey = Connection.ApiKey;
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                if (string.IsNullOrWhiteSpace(Connection.ApiKeyHeaderName))
+                    throw new InvalidOperationException("Connection.ApiKeyHeaderName is required when an API key is configured.");
+
+                var headerValue = string.IsNullOrWhiteSpace(Connection.ApiKeyHeaderScheme)
+                    ? apiKey
+                    : Connection.ApiKeyHeaderScheme.Trim() + " " + apiKey;
+
+                client.DefaultRequestHeaders.Add(Connection.ApiKeyHeaderName.Trim(), headerValue);
+            }
             client.Timeout = Timeout;
 
             return client;

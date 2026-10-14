@@ -44,7 +44,7 @@ namespace Westwind.AI.Chat.Transport
         /// </summary>
         private static Uri BuildBaseUri(IOpenAiConnection connection)
         {
-            var raw = connection.Endpoint ?? string.Empty;
+            var raw = Environment.ExpandEnvironmentVariables(connection.Endpoint ?? string.Empty).Trim();
 
             if (connection.ProviderMode == AiProviderModes.AzureOpenAi)
             {

@@ -71,7 +71,7 @@ namespace Westwind.Ai.Test
         public async Task ImageGenerationToBase64GptImage1Test()
         {
             // Explicitly use OpenAI connection for gpt-image-1
-            var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Image-Gpt-1.5");
+            var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Image-Gpt-2");
             Console.WriteLine("Connection: " + conn.Name + " - " + conn.ModelId);
             var generator = new OpenAiImageGeneration(conn);
 
@@ -161,9 +161,7 @@ namespace Westwind.Ai.Test
             var imagePrompt = new ImagePrompt()
             {
                 Prompt = BEAR_PROMPT,
-                ImageSize = "1024x10241", // invalid dimensions
-                ImageQuality = "standard-bogus",  // invalid 
-                ImageStyle = "vivid",
+                ImageSize = "1024x10241", // invalid dimensions                               
                 Model = Connection.ModelId,  // Important as Azure uses the deployment name!               
             };
 

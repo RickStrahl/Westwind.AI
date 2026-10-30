@@ -63,7 +63,7 @@ namespace Westwind.AI.Images
         /// String data can be:
         /// * Image file name
         /// * Http Url
-        /// * Binary data in Html Base64 format (data:image/png;base64,....)        
+        /// * data Url -  Binary base64 data  (data:image/png;base64,b64_data)        
         /// </summary>
         public List<string> BaseImages
         {

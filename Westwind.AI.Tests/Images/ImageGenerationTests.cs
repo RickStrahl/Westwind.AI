@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,57 +31,6 @@ namespace Westwind.Ai.Test
         public OpenAiConnection Connection { get; set; }
         public OpenAiConnectionConfiguration Configurations { get; set; }
 
-        [TestMethod]
-        public async Task DallEImageGenerationToUrlTest()
-        {
-
-            var connection = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Dall-E");
-            Console.WriteLine("Connection: " + connection.Name);
-
-            var generator = new OpenAiImageGeneration(connection);
-
-            // Capture raw request data for debugging
-            generator.AiHttpClient.CaptureRequestData = true;
-
-            var imagePrompt = new ImagePrompt()
-            {
-                Prompt = BEAR_PROMPT,
-                ImageSize = "1024x1024",
-                ImageQuality = "standard",
-                ImageStyle = "vivid",                
-                Model = connection.ModelId  // Important as Azure uses the deployment name!
-            };
-            bool result = await generator.Generate(imagePrompt, false, ImageGenerationOutputFormats.Url);
-
-
-            Console.WriteLine(generator.Connection + " - " + generator.Connection.Endpoint);
-            Console.WriteLine(generator.AiHttpClient.LastRequestJson);
-
-            // Generate and set properties on `imagePrompt` instance
-            Assert.IsTrue(result, generator.ErrorMessage);
-
-
-            // prompt returns an array of images, but for Dall-e-3 it's always one
-            // so FirstImage returns the first image and FirstImageUrl returns the url.
-            var imageUrl = imagePrompt.FirstImageUrl;
-            Console.WriteLine(imageUrl);
-
-            // Display the image as a Url
-            ShellUtils.OpenUrl(imageUrl);
-
-            // Typically the AI **fixes up the prompt**
-            Console.WriteLine(imagePrompt.RevisedPrompt);
-
-            // You can download the image from the captured URL to a local file
-            // Default folder is %temp%\openai-images\images or specify `ImageFolderPath`
-            // imagePrompt.ImageFolderPath = "c:\\temp\\openai-images\\"; 
-            Assert.IsTrue(await imagePrompt.DownloadImageToFile(), "Image saving failed: " + generator.ErrorMessage);
-
-            string imageFile = imagePrompt.ImageFilePath;
-            Console.WriteLine(imageFile);
-
-            Console.WriteLine(JsonSerializationUtils.Serialize(imagePrompt, formatJsonOutput: true));
-        }
 
         [TestMethod]
         public async Task ImageGenerationActiveConnectionToBase64Test()
@@ -118,7 +68,7 @@ namespace Westwind.Ai.Test
         }
 
         [TestMethod]
-        public async Task ImageGenerationToBase64GtpImage1Test()
+        public async Task ImageGenerationToBase64GptImage1Test()
         {
             // Explicitly use OpenAI connection for gpt-image-1
             var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Image-Gpt-1.5");
@@ -146,6 +96,57 @@ namespace Westwind.Ai.Test
             Assert.IsTrue(File.Exists(file));
 
             // show image in OS viewer
+            Console.WriteLine("File generated: " + file);
+            ShellUtils.GoUrl(file);
+        }
+
+
+        [TestMethod]
+        public async Task ImageGenerationWithBaseReferenceImageToBase64GptImageTest()
+        {
+            string prompt = """
+                Combine the first image with an abstract overlay of the second image, on an all black background. 
+                Essentially super impose the wave and windsurfer on top of the sunset using a silhouetted display with some small definition.  
+                
+                Remove the palm tree from the first image, make the rider have short spikey hair. Make the backloop a little higher and more vertical.                
+                
+                Leave the Arlington sign.
+                """;
+            List<string> imageFiles =
+            [
+                Path.Combine(AppContext.BaseDirectory, "Images", "ArlingtonBackLoop.png"),
+                Path.Combine(AppContext.BaseDirectory, "Images", "StylizedSun.png")
+            ];
+
+            foreach (string imageFile in imageFiles)
+                Assert.IsTrue(File.Exists(imageFile), "Missing reference image: " + imageFile);
+
+            var conn = Configurations.Connections.FirstOrDefault(c => c.Name == "OpenAI Image-Gpt-2");
+            Assert.IsNotNull(conn, "Configure the OpenAI Image-Gpt-2 connection.");
+            Console.WriteLine("Connection: " + conn.Name + " - " + conn.ModelId);
+
+            var generator = new OpenAiImageGeneration(conn);
+            generator.AiHttpClient.Timeout = TimeSpan.FromMinutes(10);
+
+            var imagePrompt = new ImagePrompt()
+            {
+                Prompt = prompt,
+                BaseImages = imageFiles,
+                ImageSize = "1024x1024",
+                Model = conn.ModelId
+            };
+
+            bool result = await generator.Generate(imagePrompt);
+            Assert.IsTrue(result, generator.ErrorMessage);
+            Assert.AreEqual(1, imagePrompt.ImageUrls.Length);
+
+            byte[] bytes = imagePrompt.GetBytesFromBase64();
+            Assert.IsNotNull(bytes);
+            Assert.IsTrue(bytes.Length > 0);
+
+            string file = imagePrompt.SaveImageFromBase64();
+            Assert.IsTrue(File.Exists(file));
+
             Console.WriteLine("File generated: " + file);
             ShellUtils.GoUrl(file);
         }

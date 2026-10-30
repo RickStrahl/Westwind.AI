@@ -54,6 +54,24 @@ namespace Westwind.AI.Images
         }
 
         /// <summary>
+        /// Allows adding base reference images to an image prompt using image files, Http Urls or binary data: urls
+        /// 
+        /// This allows providing base images that can be referenced in the image prompt
+        /// Supported formats are PNG, JPEG, and WebP. Requires a model that supports image editing
+        /// (gpt-image-1.5 or later).
+        /// 
+        /// String data can be:
+        /// * Image file name
+        /// * Http Url
+        /// * Binary data in Html Base64 format (data:image/png;base64,....)        
+        /// </summary>
+        public List<string> BaseImages
+        {
+            get => _baseImages;
+            set => SetField(ref _baseImages, value);
+        }
+
+        /// <summary>
         /// Values dall-e-3 (default) 
         /// * 1024x1024  (default)
         /// * 1792x1024
@@ -490,6 +508,16 @@ namespace Westwind.AI.Images
             return shortFilename;
         }
 
+        /// <summary>
+        /// Writes binary data to an image file in the image file folder
+        /// </summary>
+        /// <param name="data">binary data to write</param>
+        /// <returns>returns the file name only (no path)</returns>
+        public string WriteDataToImageFile(string base64Data)
+        {
+            return WriteDataToImageFile(Convert.FromBase64String(base64Data));      
+        }
+
         public ImagePrompt CopyFrom(ImagePrompt existing = null, bool noImageData = false)
         {
             if (existing == null)
@@ -595,6 +623,7 @@ namespace Westwind.AI.Images
         private string _model = "dall-e-3";
         private string _imageQuality = "auto";
         private string _variationImageFile;
+        private List<string> _baseImages = new List<string>();
         private string _imageFolderPath = ImagePrompt.DefaultImageStoragePath;
 
         #endregion

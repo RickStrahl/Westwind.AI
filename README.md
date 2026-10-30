@@ -272,6 +272,37 @@ Console.WriteLine("File generated: " + file);
 ShellUtils.GoUrl(file);
 ```
 
+### Generate from multiple reference images
+
+Set `BaseImageFiles` to combine reference images with written instructions.
+`Generate` automatically uses the image editing API when reference images are supplied;
+without them, it continues to use the text-to-image generation API.
+Both requests use JSON; reference files are embedded as base64 data URLs in the
+editing request's `images` array.
+Use a GPT image model that supports editing, such as `gpt-image-1.5`.
+Reference files can be PNG, JPEG, or WebP.
+
+```csharp
+var generator = new OpenAiImageGeneration(connection);
+var imagePrompt = new ImagePrompt
+{
+    Model = connection.ModelId,
+    Prompt = "Use the first image as the landscape. Place the stylized sun from " +
+             "the second image in its sky, harmonizing the colors into one cohesive scene.",
+    BaseImageFiles = new[]
+    {
+        Path.GetFullPath(@"Images\ArlingtonBackLoop.png"),
+        Path.GetFullPath(@"Images\StylizedSun.png")
+    },
+    ImageSize = "1024x1024"
+};
+
+if (!await generator.Generate(imagePrompt))
+    throw new InvalidOperationException(generator.ErrorMessage);
+
+string file = imagePrompt.SaveImageFromBase64();
+```
+
 ## Specialized AI Completions
 This library has a few common operations that you can use for:
 

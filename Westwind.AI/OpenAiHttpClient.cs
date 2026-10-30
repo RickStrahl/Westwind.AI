@@ -301,6 +301,7 @@ namespace Westwind.AI
                             }
                             catch { }
                         }
+                        SetError($"AI request failed: {errorMessage}");
                     }
                     else if (message.StatusCode == HttpStatusCode.Unauthorized)
                     {

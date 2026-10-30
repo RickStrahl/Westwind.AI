@@ -10,6 +10,8 @@ using System;
 using Westwind.AI.Chat;
 using Westwind.AI.Configuration;
 using Westwind.AI;
+using System.Linq;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Images
 {
@@ -34,7 +36,7 @@ namespace Westwind.AI.Images
         #region Image Generation API Calls
 
         /// <summary>
-        /// Generate an image from the provided prompt
+        /// Generate an image from the provided prompt, optionally using BaseImageFiles as references.
         /// </summary>
         /// <param name="prompt">Prompt text for image to create</param>
         /// <param name="createImageFile">if true creates an image file and saves it into the OpanAiAddin\Images folder</param>
@@ -44,6 +46,9 @@ namespace Westwind.AI.Images
             bool createImageFile = false,
             ImageGenerationOutputFormats outputFormat = ImageGenerationOutputFormats.None)
         {
+            SetError();
+            bool hasBaseImages = prompt.BaseImages?.Count > 0;               
+
             // structure for posting to the API
             var requiredImage = new ImageRequest()
             {
@@ -78,21 +83,111 @@ namespace Westwind.AI.Images
             {
                 requiredImage.response_format = null;
                 requiredImage.style = null;
-                requiredImage.moderation = "low";
+                requiredImage.moderation = hasBaseImages ? null : "low";
+            }
+
+            if (hasBaseImages)
+            {
+                requiredImage.images = new List<ImageRequestImage>();
+                foreach (string imageFile in prompt.BaseImages)
+                {
+                    if (string.IsNullOrWhiteSpace(imageFile))
+                    {
+                        SetError("Missing image file in BaseImageFiles.");  
+                        return false;
+                    }
+
+                    if (imageFile.StartsWith("http://") || imageFile.StartsWith("https://"))
+                    {
+                        var httpSettings = new HttpClientRequestSettings()                        
+                        {
+                            Url = imageFile
+                        };
+
+                        try
+                        {
+                            var bytes = await HttpClientUtils.DownloadBytesAsync(httpSettings);
+                            var mimeType = httpSettings.ResponseContentType;
+                            requiredImage.images.Add(new ImageRequestImage
+                            {
+                                image_url = HtmlUtils.BinaryToEmbeddedBase64(bytes, mimeType)
+                            });
+                            continue;
+                        }
+                        catch
+                        {
+                            SetError("Image generation failed: Unable to download reference image from URL: " + imageFile);
+                            return false;
+                        }                        
+                    }   
+                    if (imageFile.StartsWith("data:"))
+                    {
+                        requiredImage.images.Add(new ImageRequestImage
+                        {
+                            image_url = imageFile 
+                        });
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(imageFile) || !File.Exists(imageFile))
+                    {
+                        SetError("Image generation failed: Reference image file not found: " + imageFile);
+                        return false;
+                    }
+
+                    string mediaType;
+                    switch (Path.GetExtension(imageFile).ToLowerInvariant())
+                    {
+                        case ".png":
+                            mediaType = "image/png";
+                            break;
+                        case ".jpg":
+                        case ".jpeg":
+                            mediaType = "image/jpeg";
+                            break;
+                        case ".webp":
+                            mediaType = "image/webp";
+                            break;
+                        default:
+                            SetError("Image generation failed: Unsupported reference image format: " + imageFile);
+                            return false;
+                    }
+
+                    try
+                    {
+                        byte[] bytes = await File.ReadAllBytesAsync(imageFile);
+                        requiredImage.images.Add(new ImageRequestImage
+                        {
+                            image_url = HtmlUtils.BinaryToEmbeddedBase64(bytes, mediaType)
+                        });
+                    }
+                    catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        SetError("Image generation failed: " + ex.Message);
+                        return false;
+                    }
+                }
             }
 
             var imageResults = new List<ImageResult>();
             ImageResults response;
 
             var json = JsonConvert.SerializeObject(requiredImage, Formatting.Indented);
-            var result = await AiHttpClient.SendJsonHttpRequest(json, "images/generations");
+            var result = await AiHttpClient.SendJsonHttpRequest(json,
+                hasBaseImages ? "images/edits" : "images/generations");
 
-            if (!string.IsNullOrEmpty(result))
+            if (!string.IsNullOrWhiteSpace(result))
             {
                 if (AiHttpClient.CaptureRequestData)
                     AiHttpClient.LastResponseJson = result;
 
                 response = JsonConvert.DeserializeObject<ImageResults>(result);
+
+                if (response?.data == null || response.data.Count == 0)
+                {
+                    SetError("Image generation failed: No images returned.");
+                    return false;
+                }
 
                 foreach (var url in response.data)
                 {
@@ -110,7 +205,11 @@ namespace Westwind.AI.Images
                 {
                     try
                     {
-                        await prompt.DownloadImageToFile();
+                        if (!string.IsNullOrEmpty(imageResults.First().Url))
+                            await prompt.DownloadImageToFile();
+                        else
+                            prompt.WriteDataToImageFile(imageResults.First().Base64Data);
+                        
                     }
                     catch (Exception ex)
                     {
@@ -122,8 +221,8 @@ namespace Westwind.AI.Images
             }
 
             // error
-            string msg = AiHttpClient.ErrorMessage;
-            SetError($"Image generation failed: {msg}");
+            SetError("Image generation failed: " +
+                     (result != null ? "Empty response from image API." : AiHttpClient.ErrorMessage));
 
             return false;
         }
@@ -188,6 +287,12 @@ namespace Westwind.AI.Images
         
         public string prompt { get; set; }
 
+        /// <summary>
+        /// Reference images as data URLs. Only sent to images/edits.
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<ImageRequestImage> images { get; set; }
+
 
         /// <summary>
         /// The name of the model to use. dall-e-3 or gpt-image-1, gpt-image-1.5 
@@ -248,6 +353,11 @@ namespace Westwind.AI.Images
        
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string output_format { get; set; } = null; // png, jpg, webp   - gpt-image only
+    }
+
+    internal class ImageRequestImage
+    {
+        public string image_url { get; set; }
     }
 
     internal class ImageUrlItem

@@ -61,9 +61,7 @@ namespace Westwind.Ai.Test
                     string resultBase64 = response.data[0].b64_json;
                     var resultData = Convert.FromBase64String(resultBase64.ToString());
 
-                    var tempFile = System.IO.Path.GetFullPath("./ImageGenerationTest-Generated.png");
-                    System.IO.File.WriteAllBytes(tempFile, resultData);
-                    ShellUtils.ShellExecute(tempFile);
+                    ShellUtils.ShowBinary(resultData, "png");                    
                 }
                 else
                 {

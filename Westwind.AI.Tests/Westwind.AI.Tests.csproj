@@ -23,7 +23,13 @@
 
 
 	<ItemGroup>
+    <None Update="Images\ArlingtonBackLoop.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Images\PreviouslyGeneratedImage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\StylizedSun.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 

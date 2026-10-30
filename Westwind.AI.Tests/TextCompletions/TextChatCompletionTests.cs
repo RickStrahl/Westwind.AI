@@ -104,6 +104,7 @@ namespace Westwind.AI.Tests.TextCompletions
             {
                 new OpenAiChatMessage
                 {
+                    // Windsurf backloop on the Columbia River at Arlington
                     ImageData =  await File.ReadAllBytesAsync("images/ArlingtonBackLoop.png")
                 },
                 new OpenAiChatMessage
@@ -113,6 +114,48 @@ namespace Westwind.AI.Tests.TextCompletions
                 }
             };
             
+            var resultText = await completion.Complete(prompts);
+
+            Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+            Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Console.WriteLine(resultText);
+
+            // optionally captured request and response data
+            Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+            Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+        }
+
+
+        /// <summary>
+        /// Demonstrates using image data in a prompt
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task ImageUrlAnalysisPromptTest()
+        {
+
+            ConnectionMessage();
+
+
+
+            Connection.ReasoningEffort = ReasoningEffortLevels.None;
+
+
+            var completion = new GenericAiChatClient(Connection);            
+            
+            var prompts = new List<OpenAiChatMessage>
+            {
+                new OpenAiChatMessage
+                {
+                    ImageUrl = "https://markdownmonster.west-wind.com/Images/MarkdownMonsterLogo.jpg",
+                },
+                new OpenAiChatMessage
+                {
+                    content = "Describe the attached image and its content",
+                    role = "user"
+                }
+            };
+
             var resultText = await completion.Complete(prompts);
 
             Assert.IsFalse(completion.HasError, completion.ErrorMessage);

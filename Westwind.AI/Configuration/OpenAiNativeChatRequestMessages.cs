@@ -24,6 +24,13 @@ namespace Westwind.AI.Configuration
 
         public decimal top_p { get; set; } = 1;
 
+        /// <summary>
+        /// Optional reasoning effort for reasoning models: minimal, low, medium, high, xhigh.
+        /// Omitted from the request when null.
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string reasoning_effort { get; set; } = null;
+
         //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]       
         //public string safety_identifier { get; set; } = null;
     }

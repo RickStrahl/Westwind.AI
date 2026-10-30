@@ -469,6 +469,20 @@ var connection = new OpenAiConnection
 
 This configuration applies to image, voice, and direct HTTP chat requests. Chat connections with custom authentication automatically use the HTTP transport because the OpenAI SDK transport only supports bearer authentication.
 
+#### Reasoning Effort
+For reasoning models you can set the reasoning level per connection with `ReasoningEffort`. The value is sent as `reasoning_effort` with each chat request; when it's empty (the default) nothing is sent and the model default applies:
+
+```cs
+var connection = new OpenAiConnection
+{
+    ModelId = "gpt-5-mini",
+    ApiKey = myApiKey,
+    ReasoningEffort = ReasoningEffortLevels.Low   // "minimal", "low", "medium", "high", "xhigh"
+};
+```
+
+The value is stored in the configuration file as `"ReasoningEffort": "low"`. Not every model supports every level - check the provider's model documentation.
+
 You can also create the connections directly in code if you prefer.
 
 ### OpenAiConnection.Create()

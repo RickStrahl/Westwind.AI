@@ -14,10 +14,10 @@ namespace Westwind.AI.Chat.Transport
 
         public IOpenAiConnection Connection { get; }
 
-        public OpenAiHttpFallbackTransport(IOpenAiConnection connection)
+        public OpenAiHttpFallbackTransport(IOpenAiConnection connection, OpenAiHttpClient httpClient = null)
         {
             Connection = connection;
-            _httpClient = new OpenAiHttpClient(connection);
+            _httpClient = httpClient ?? new OpenAiHttpClient(connection);
         }
 
         public async Task<ChatTransportResponse> CompleteAsync(string prompt, string systemPrompt = null, bool includeHistory = false, CancellationToken cancellationToken = default)
@@ -27,7 +27,9 @@ namespace Westwind.AI.Chat.Transport
             {
                 Text = result,
                 ErrorMessage = result == null ? _httpClient.ErrorMessage : null,
-                NativeResponse = _httpClient.LastChatResponse
+                NativeResponse = _httpClient.LastChatResponse,
+                RequestJson = _httpClient.CaptureRequestData ? _httpClient.LastRequestJson : null,
+                ResponseJson = _httpClient.CaptureRequestData ? _httpClient.LastResponseJson : null
             };
         }
 
@@ -38,7 +40,9 @@ namespace Westwind.AI.Chat.Transport
             {
                 Text = result,
                 ErrorMessage = result == null ? _httpClient.ErrorMessage : null,
-                NativeResponse = _httpClient.LastChatResponse
+                NativeResponse = _httpClient.LastChatResponse,
+                RequestJson = _httpClient.CaptureRequestData ? _httpClient.LastRequestJson : null,
+                ResponseJson = _httpClient.CaptureRequestData ? _httpClient.LastResponseJson : null
             };
         }
     }

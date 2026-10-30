@@ -12,15 +12,15 @@ namespace Westwind.AI.Chat.Transport
     /// </summary>
     internal static class WestwindAiChatTransportFactory
     {
-        public static IWestwindAiChatTransport Create(IOpenAiConnection connection, bool preferMicrosoftTransport = true)
+        public static IWestwindAiChatTransport Create(IOpenAiConnection connection, bool preferMicrosoftTransport = true, OpenAiHttpClient httpClient = null)
         {
             if (connection == null)
                 throw new ArgumentNullException(nameof(connection));
 
             if (preferMicrosoftTransport && SupportsMicrosoftTransport(connection))
-                return new MicrosoftAiChatTransport(connection);
+                return new MicrosoftAiChatTransport(connection, diagnostics: httpClient);
 
-            return new OpenAiHttpFallbackTransport(connection);
+            return new OpenAiHttpFallbackTransport(connection, httpClient);
         }
 
         /// <summary>

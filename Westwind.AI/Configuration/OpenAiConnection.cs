@@ -67,6 +67,13 @@ namespace Westwind.AI.Configuration
         /// </summary>
         AiProviderModes ProviderMode { get; set; }
 
+        /// <summary>
+        /// Optional reasoning effort level sent with chat requests for
+        /// reasoning models (`none`, `minimal`, `low`, `medium`, `high`, `xhigh`).
+        /// Null or empty sends no reasoning setting and uses the model default.
+        /// </summary>
+        string ReasoningEffort { get; set; } 
+
         bool IsEmpty { get; }
     }
 
@@ -150,6 +157,19 @@ namespace Westwind.AI.Configuration
             set => SetField(ref _apiKeyHeaderScheme, value);
         }
         private string _apiKeyHeaderScheme = "Bearer";
+
+        /// <summary>
+        /// Optional reasoning effort level that is sent as `reasoning_effort` with
+        /// chat requests for reasoning models. Use the <see cref="ReasoningEffortLevels"/>
+        /// constants (`minimal`, `low`, `medium`, `high`, `xhigh`) or a provider specific value.
+        /// Leave null or empty (default) to omit the setting and use the model's default.
+        /// </summary>
+        public string ReasoningEffort
+        {
+            get => _reasoningEffort;
+            set => SetField(ref _reasoningEffort, value);
+        }
+        private string _reasoningEffort;
 
         /// <summary>
         /// The Encrypted API Key for the connection
@@ -556,6 +576,20 @@ namespace Westwind.AI.Configuration
             Endpoint = "https://api.perplexity.ai/";
             ModelId = "sonar";
         }
+    }
+
+    /// <summary>
+    /// Common reasoning effort levels for <see cref="IOpenAiConnection.ReasoningEffort"/>.
+    /// Not every model supports every level.
+    /// </summary>
+    public static class ReasoningEffortLevels
+    {
+        public const string None = "none";
+        public const string Minimal = "minimal";
+        public const string Low = "low";
+        public const string Medium = "medium";
+        public const string High = "high";
+        public const string XHigh = "xhigh";
     }
 
     public enum AiProviderModes

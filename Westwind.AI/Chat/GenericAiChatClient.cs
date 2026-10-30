@@ -7,6 +7,19 @@ namespace Westwind.AI.Chat
 {
     public class GenericAiChatClient : AiBase
     {
+        /// <summary>Opt in to capturing the request and response JSON for each completion.</summary>
+        public bool CaptureRequestData
+        {
+            get => AiHttpClient.CaptureRequestData;
+            set => AiHttpClient.CaptureRequestData = value;
+        }
+
+        /// <summary>Request body from the last completion, or null when capture is off.</summary>
+        public string LastRequestJson => AiHttpClient.LastRequestJson;
+
+        /// <summary>Response body from the last completion, or null when capture is off.</summary>
+        public string LastResponseJson => AiHttpClient.LastResponseJson;
+
         public GenericAiChatClient(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
         {
         }
@@ -24,7 +37,8 @@ namespace Westwind.AI.Chat
         /// <param name="includeHistory">If true includes the accumulated history of requests</param>
         /// <returns></returns>
         public virtual async Task<string> Complete(string prompt, string systemPrompt = null, bool includeHistory = false)
-        {                     
+        {
+            ClearCapture();
             var response = await Transport.CompleteAsync(prompt, systemPrompt, includeHistory);
             MapTransportResponseToDiagnostics(response);
             return response.Text;
@@ -39,6 +53,7 @@ namespace Westwind.AI.Chat
         /// <returns></returns>
         public virtual async Task<string> Complete(IEnumerable<OpenAiChatMessage> prompts, bool includeHistory = false)
         {
+            ClearCapture();
             var response = await Transport.CompleteAsync(prompts, includeHistory);
             MapTransportResponseToDiagnostics(response);
             return response.Text;
@@ -47,6 +62,12 @@ namespace Westwind.AI.Chat
         /// <summary>
         /// Maps transport response diagnostics to AiHttpClient fields for backwards compatibility.
         /// </summary>
+        private void ClearCapture()
+        {
+            AiHttpClient.LastRequestJson = null;
+            AiHttpClient.LastResponseJson = null;
+        }
+
         private void MapTransportResponseToDiagnostics(ChatTransportResponse response)
         {
             if (response == null)
@@ -60,6 +81,12 @@ namespace Westwind.AI.Chat
 
             // Map timing
             AiHttpClient.TimeTaken = response.TimeTaken;
+
+            if (CaptureRequestData)
+            {
+                AiHttpClient.LastRequestJson = response.RequestJson;
+                AiHttpClient.LastResponseJson = response.ResponseJson;
+            }
 
             // Map native response for diagnostics
             if (response.NativeResponse is OpenAiChatMessages openAiResponse)

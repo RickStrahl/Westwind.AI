@@ -22,7 +22,7 @@ namespace Westwind.AI.Chat
             if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
             AiHttpClient = new OpenAiHttpClient(openAiAuthConfig.ActiveConnection);
-            Transport = WestwindAiChatTransportFactory.Create(Connection);
+            Transport = WestwindAiChatTransportFactory.Create(Connection, httpClient: AiHttpClient);
         }
 
         public AiBase(IOpenAiConnection connection)
@@ -31,7 +31,7 @@ namespace Westwind.AI.Chat
             if (Connection == null)
                 throw new InvalidOperationException("No active credentials available.");
             AiHttpClient = new OpenAiHttpClient(Connection);
-            Transport = WestwindAiChatTransportFactory.Create(Connection);
+            Transport = WestwindAiChatTransportFactory.Create(Connection, httpClient: AiHttpClient);
         }
 
 

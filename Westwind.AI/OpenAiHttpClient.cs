@@ -169,6 +169,8 @@ namespace Westwind.AI
             {
                 model = Connection.ModelId
             };
+            if (!string.IsNullOrWhiteSpace(Connection.ReasoningEffort))
+                request.reasoning_effort = Connection.ReasoningEffort.Trim();
 
             // Add request to history            
 

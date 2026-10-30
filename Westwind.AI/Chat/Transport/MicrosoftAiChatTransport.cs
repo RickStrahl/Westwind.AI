@@ -17,14 +17,19 @@ namespace Westwind.AI.Chat.Transport
     internal class MicrosoftAiChatTransport : IWestwindAiChatTransport
     {
         private readonly IChatClient _chatClient;
+        private readonly OpenAiHttpClient _diagnostics;
+        private readonly ChatRequestCapturePolicy _capturePolicy;
         private readonly List<ChatMessage> _chatHistory = new List<ChatMessage>();
 
         public IOpenAiConnection Connection { get; }
 
-        public MicrosoftAiChatTransport(IOpenAiConnection connection, IChatClient chatClient = null)
+        public MicrosoftAiChatTransport(IOpenAiConnection connection, IChatClient chatClient = null, OpenAiHttpClient diagnostics = null)
         {
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            _chatClient = chatClient ?? OpenAiConnectionToChatClientFactory.Create(connection);
+            _diagnostics = diagnostics;
+            if (chatClient == null)
+                _capturePolicy = new ChatRequestCapturePolicy();
+            _chatClient = chatClient ?? OpenAiConnectionToChatClientFactory.Create(connection, _capturePolicy);
         }
 
         // ------------------------------------------------------------------
@@ -72,12 +77,27 @@ namespace Westwind.AI.Chat.Transport
                 return new ChatTransportResponse { ErrorMessage = "No messages provided for chat request." };
 
             var sw = Stopwatch.StartNew();
+            using var capture = _diagnostics?.CaptureRequestData == true ? _capturePolicy?.BeginCapture() : null;
 
             try
             {
                 var sendMessages = BuildSendList(incomingMessages, includeHistory);
 
                 var options = new ChatOptions { ModelId = Connection.ModelId };
+
+                var reasoningEffort = Connection.ReasoningEffort?.Trim();
+                if (!string.IsNullOrEmpty(reasoningEffort))
+                {
+                    // Microsoft.Extensions.AI has no reasoning option - pass it through
+                    // to the OpenAI SDK's native request options.
+#pragma warning disable OPENAI001 // ReasoningEffortLevel is marked experimental in the OpenAI SDK
+                    options.RawRepresentationFactory = _ => new OpenAI.Chat.ChatCompletionOptions
+                    {
+                        ReasoningEffortLevel = new OpenAI.Chat.ChatReasoningEffortLevel(reasoningEffort)
+                    };
+#pragma warning restore OPENAI001
+                }
+
                 var completion = await _chatClient.GetResponseAsync(sendMessages, options, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -96,7 +116,9 @@ namespace Westwind.AI.Chat.Transport
                 {
                     Text         = responseText,
                     TimeTaken    = sw.Elapsed,
-                    NativeResponse = completion
+                    NativeResponse = completion,
+                    RequestJson = capture?.RequestJson,
+                    ResponseJson = capture?.ResponseJson
                 };
             }
             catch (Exception ex)
@@ -105,7 +127,9 @@ namespace Westwind.AI.Chat.Transport
                 return new ChatTransportResponse
                 {
                     ErrorMessage = ex.Message,
-                    TimeTaken    = sw.Elapsed
+                    TimeTaken    = sw.Elapsed,
+                    RequestJson = capture?.RequestJson,
+                    ResponseJson = capture?.ResponseJson
                 };
             }
         }

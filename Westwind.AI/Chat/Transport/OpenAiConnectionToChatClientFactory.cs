@@ -1,5 +1,6 @@
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using Microsoft.Extensions.AI;
 using OpenAI;
 using Westwind.AI.Configuration;
@@ -17,7 +18,7 @@ namespace Westwind.AI.Chat.Transport
         /// <summary>
         /// Creates a configured <see cref="IChatClient"/> from the supplied connection.
         /// </summary>
-        public static IChatClient Create(IOpenAiConnection connection)
+        public static IChatClient Create(IOpenAiConnection connection, ChatRequestCapturePolicy capturePolicy = null)
         {
             if (connection == null)
                 throw new ArgumentNullException(nameof(connection));
@@ -31,6 +32,8 @@ namespace Westwind.AI.Chat.Transport
             var credential = new ApiKeyCredential(string.IsNullOrEmpty(apiKey) ? "nokey" : apiKey);
 
             var options = new OpenAIClientOptions { Endpoint = endpoint };
+            if (capturePolicy != null)
+                options.AddPolicy(capturePolicy, PipelinePosition.BeforeTransport);
             return new OpenAIClient(credential, options).GetChatClient(modelId).AsIChatClient();
         }
 

@@ -11,6 +11,10 @@ namespace Westwind.AI.Chat.Transport
 
         public string ErrorMessage { get; set; }
 
+        /// <summary>Optional request and response JSON captured at the wire.</summary>
+        public string RequestJson { get; set; }
+        public string ResponseJson { get; set; }
+
         /// <summary>
         /// Provider-specific native response object (e.g. <c>ChatCompletion</c> from
         /// Microsoft.Extensions.AI or <c>OpenAiChatMessages</c> from the HTTP fallback).

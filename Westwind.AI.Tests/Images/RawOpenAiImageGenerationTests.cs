@@ -9,6 +9,7 @@ using Westwind.AI.Configuration;
 using System.Net;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Westwind.Utilities;
 
 namespace Westwind.Ai.Test
 {
@@ -33,13 +34,13 @@ namespace Westwind.Ai.Test
 
             var json = """
 {
-    "prompt": "A bear holding on to a snowy mountain peak, waving a beer glass in the air. Poster style, with a black background in goldenrod line art",                       
+    "prompt": "A bear Holding on to a snowy mountain peak, waving a properly poured pilsner beer glass in the air. Poster style, with a black background in goldenrod line art with white highlights.",                       
     "size": "1024x1024",
-    "model": "dall-e-3"
+    "model": "gpt-image-2"
 }
 """;
 
-            dynamic response;
+            dynamic response;  // JObject we can dynamically access result props on
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Clear();
@@ -57,8 +58,12 @@ namespace Westwind.Ai.Test
                     var content = await message.Content.ReadAsStringAsync();
                     response = JsonConvert.DeserializeObject<JObject>(content);
 
-                    var resultUrl = response.data[0].url;
-                    Console.WriteLine(resultUrl);
+                    string resultBase64 = response.data[0].b64_json;
+                    var resultData = Convert.FromBase64String(resultBase64.ToString());
+
+                    var tempFile = System.IO.Path.GetFullPath("./ImageGenerationTest-Generated.png");
+                    System.IO.File.WriteAllBytes(tempFile, resultData);
+                    ShellUtils.ShellExecute(tempFile);
                 }
                 else
                 {

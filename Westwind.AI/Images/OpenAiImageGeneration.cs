@@ -127,113 +127,22 @@ namespace Westwind.AI.Images
 
             return false;
         }
-           
-            //	curl https://api.openai.com/v1/images/generations \
-            //  -H "Content-Type: application/json" \
-            //  -H "Authorization: Bearer $OPENAI_API_KEY" \
-            //  -d '{
-            //	  "model": "dall-e-3",
-            //    "prompt": "a white siamese cat",
-            //    "n": 1,
-            //    "size": "1024x1024",
-            //    "model": "dall-e-3",
-            //    "style": "vivid",
-            //    "quality": "standard"       
-            //  }
 
-       // }
+        //	curl https://api.openai.com/v1/images/generations \
+        //  -H "Content-Type: application/json" \
+        //  -H "Authorization: Bearer $OPENAI_API_KEY" \
+        //  -d '{
+        //	  "model": "dall-e-3",
+        //    "prompt": "a white siamese cat",
+        //    "n": 1,
+        //    "size": "1024x1024",
+        //    "model": "dall-e-3",
+        //    "style": "vivid",
+        //    "quality": "standard"       
+        //  }
 
+        // }
 
-
-        /// <summary>
-        /// Currently doesn't work with Dall-E-3 - only Dall-e-2 - Not supported on Azure
-        /// Currently pretty much worthless - don't use
-        /// </summary>
-        /// <param name="prompt"></param>
-        /// <param name="createImageFile"></param>
-        /// <returns></returns>
-        public async Task<bool> CreateVariation(ImagePrompt prompt,
-            bool createImageFile = false,
-            ImageGenerationOutputFormats outputFormat = ImageGenerationOutputFormats.Url)
-        {
-            var imageFile = prompt.VariationImageFilePath;
-            if (string.IsNullOrEmpty(imageFile) || !File.Exists(imageFile))
-            {
-                SetError("Input image file not found for variation.");
-                return false;
-            }
-
-            var imglink = new List<ImageResult>();
-
-            var ext = Path.GetExtension(imageFile).ToLower();
-            var filename = Path.GetFileName(imageFile);
-
-            using (var client = AiHttpClient.GetHttpClient())
-            {
-                var formContent = new MultipartFormDataContent();
-                HttpResponseMessage message;
-                using (var stream = File.OpenRead(imageFile))
-                {
-                    var fileContent = new StreamContent(stream);
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-                    //fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-                    formContent.Add(fileContent, "image", filename);
-
-                    //formContent.Add(new StringContent(prompt.Model), "model");
-                    formContent.Add(new StringContent(prompt.ImageSize), "size");
-
-                    formContent.Add(new StringContent(outputFormat == ImageGenerationOutputFormats.Url ? "url" : "b64_json"), "response_format");
-
-                    var endPointUrl = AiHttpClient.GetEndpointUrl("images/variations");
-                    message = await client.PostAsync(endPointUrl, formContent);
-                }
-
-                if (message.IsSuccessStatusCode)
-                {
-                    var content = await message.Content.ReadAsStringAsync();
-                    var response = JsonConvert.DeserializeObject<ImageResults>(content);
-
-                    foreach (var url in response.data)
-                    {
-                        var result = new ImageResult()
-                        {
-                            Url = url.url,
-                            Base64Data = url.b64_json,
-                            RevisedPrompt = url.revised_prompt
-                        };
-                        imglink.Add(result);
-                    }
-                    prompt.ImageUrls = imglink.ToArray();
-
-                    if (createImageFile)
-                    {
-                        try
-                        {
-                            await prompt.DownloadImageToFile();
-                        }
-                        catch (Exception ex)
-                        {
-                            SetError("Download failed: " + ex.Message);
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-
-                if (message.Content.Headers.ContentLength > 0 && message.Content.Headers.ContentType?.ToString() == "application/json")
-                {
-                    var json = await message.Content.ReadAsStringAsync();
-                    var error = JsonConvert.DeserializeObject<dynamic>(json);
-                    string msg = error.error?.message;
-                    //string code = error.error?.code;
-
-                    SetError($"Image generation failed: {msg}");
-                }
-
-                return false;
-            }
-
-        }
 
         // ReSharper disable once ArrangeModifiersOrder
         public async Task<bool> ValidateApiKey(string openAiKey)

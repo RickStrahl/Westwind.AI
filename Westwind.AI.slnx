@@ -3,7 +3,6 @@
     <File Path=".gitignore" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="../../Westwind.Utilities/Westwind.Utilities/Westwind.Utilities.csproj" />
   <Project Path="Westwind.AI.Tests/Westwind.AI.Tests.csproj" />
   <Project Path="Westwind.AI/Westwind.AI.csproj" />
 </Solution>

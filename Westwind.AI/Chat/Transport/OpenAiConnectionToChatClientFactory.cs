@@ -3,6 +3,7 @@ using System.ClientModel;
 using Microsoft.Extensions.AI;
 using OpenAI;
 using Westwind.AI.Configuration;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Chat.Transport
 {
@@ -35,21 +36,24 @@ namespace Westwind.AI.Chat.Transport
 
         /// <summary>
         /// Derives the base URI expected by the OpenAI SDK from the connection's
-        /// <see cref="IOpenAiConnection.Endpoint"/> and <see cref="IOpenAiConnection.ProviderMode"/>.
+        /// <see cref="IOpenAiConnection.Endpoint"/>, <see cref="IOpenAiConnection.ProviderMode"/>
+        /// and <see cref="IOpenAiConnection.EndpointTemplate"/>.
         ///
         /// Azure connections store only the resource base URL
         /// (e.g. <c>https://resource.cognitiveservices.azure.com/</c>), so we append
-        /// <c>/openai/v1</c> to match the OpenAI-compatible inference path.  All other
-        /// providers already include the API base path in their endpoint property.
+        /// <c>/openai/v1</c> to match the OpenAI-compatible inference path. Older
+        /// configurations may identify this path only in EndpointTemplate, since
+        /// their ConnectionMode property does not populate ProviderMode.
         /// </summary>
         private static Uri BuildBaseUri(IOpenAiConnection connection)
-        {
-            var raw = Environment.ExpandEnvironmentVariables(connection.Endpoint ?? string.Empty).Trim();
+        {            
+            var endpoint = Environment.ExpandEnvironmentVariables(connection.Endpoint ?? string.Empty).Trim();
 
-            if (connection.ProviderMode == AiProviderModes.AzureOpenAi)
+            if (connection.ProviderMode == AiProviderModes.AzureOpenAi ||
+                connection.EndpointTemplate?.Contains("/openai/v1/", StringComparison.OrdinalIgnoreCase) == true)
             {
                 // Normalise: strip any trailing slash/segment already containing openai/v1
-                var normalised = raw.TrimEnd('/');
+                var normalised = endpoint.TrimEnd('/');
                 const string suffix = "/openai/v1";
                 if (!normalised.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
                     normalised += suffix;
@@ -57,7 +61,7 @@ namespace Westwind.AI.Chat.Transport
             }
 
             // All other providers: endpoint already points at the API base (e.g. /v1)
-            return new Uri(raw.TrimEnd('/'));
+            return new Uri(endpoint.TrimEnd('/'));
         }
     }
 }

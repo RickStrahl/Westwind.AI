@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Westwind.AI.Chat;
 using Westwind.AI.Configuration;
@@ -54,6 +55,7 @@ namespace Westwind.AI.Tests.TextCompletions
             Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
         }
 
+        [TestMethod]
         public async Task GenericCompletionPromptTest()
         {
             ConnectionMessage();
@@ -72,13 +74,49 @@ namespace Westwind.AI.Tests.TextCompletions
                     role = "user" 
                 },
             };
-
-
-            
+                        
             var resultText = await completion.Complete(prompts);
             
             Assert.IsFalse(completion.HasError, completion.ErrorMessage);
-            Assert.IsTrue(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Console.WriteLine(resultText);
+
+            // optionally captured request and response data
+            Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+            Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+        }
+
+
+        /// <summary>
+        /// Demonstrates using image data in a prompt
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task ImageAnalysisPromptTest()
+        {
+
+            ConnectionMessage();
+
+            var completion = new GenericAiChatClient(Connection);
+            completion.AiHttpClient.CaptureRequestData = true;
+
+            var prompts = new List<OpenAiChatMessage>
+            {
+                new OpenAiChatMessage
+                {
+                    ImageData =  await File.ReadAllBytesAsync("images/ArlingtonBackLoop.png")
+                },
+                new OpenAiChatMessage
+                {
+                    content = "Describe the attached image and its content",
+                    role = "user"
+                }
+            };
+            
+            var resultText = await completion.Complete(prompts);
+
+            Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+            Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
             Console.WriteLine(resultText);
 
             // optionally captured request and response data

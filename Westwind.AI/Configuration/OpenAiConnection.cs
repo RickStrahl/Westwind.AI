@@ -84,7 +84,7 @@ namespace Westwind.AI.Configuration
     {
         public OpenAiConnection()
         {
-            ModelId = "gpt-4.1-nano";
+            ModelId = "gpt-6-Luna";
             Endpoint = "https://api.openai.com/v1/";
             ProviderMode = AiProviderModes.OpenAi;
             OperationMode = AiOperationModes.Completions;

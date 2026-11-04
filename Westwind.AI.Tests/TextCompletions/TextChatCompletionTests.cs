@@ -37,22 +37,59 @@ namespace Westwind.AI.Tests.TextCompletions
             ConnectionMessage();
 
             var completion = new GenericAiChatClient(Connection);
-            completion.AiHttpClient.CaptureRequestData = true;
-                      
+
             string resultText = await completion.Complete(
                 "Translate the following from English to German:\nThe sky is below, the ground is above",
                 "You are a translator that translates between languages. Return only the translated text.");
 
 
             Console.WriteLine(completion.AiHttpClient.LastRequestJson);
+
+            Assert.IsFalse(completion.HasError, completion.ErrorMessage);
+            Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
+            Console.WriteLine(resultText);
+        }
             
+
+        [TestMethod]
+        public async Task GenericCompletionWithDetailsTest()
+        {
+            ConnectionMessage();
+
+            Connection.ReasoningEffort = ReasoningEffortLevels.None;
+
+            var completion = new GenericAiChatClient(Connection);
+            completion.CaptureRequestData = true;
+
+
+
+            var prompt = new OpenAiChatMessage
+            {
+                content = "Translate the following from English to German:\n" +
+                          "The sky is below, the ground is above\n" +
+                         "You are a translator that translates between languages. Return only the translated text."
+                
+            };
+
+            string resultText = await completion.Complete([prompt]);                
+
             Assert.IsFalse(completion.HasError, completion.ErrorMessage);
             Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
             Console.WriteLine(resultText);
 
+
+            Console.WriteLine("Usage:\n---\n" +
+                              $"Response time: {completion.LastResponseTime/1000:n0} seconds\n" +
+                              $"Tokens used: {completion.LastUsage.total_tokens}  Prompt: {completion.LastUsage.prompt_tokens}  " +
+                              $"Completion: {completion.LastUsage.completion_tokens}  Reasoning: {completion.LastUsage.reasoning_tokens}" +
+                              $"\n{completion.LastUsage.completion_tokens_details}\n\n");
+
+
             // optionally captured request and response data
-            Console.WriteLine(completion.AiHttpClient.LastRequestJson);
-            Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+            Console.WriteLine("Request Json:\n---\n");
+            Console.WriteLine(completion.LastRequestJson);            
+            Console.WriteLine("Response Json:\n---\n" +completion.LastResponseJson);
+
         }
 
         [TestMethod]
@@ -141,7 +178,8 @@ namespace Westwind.AI.Tests.TextCompletions
             Connection.ReasoningEffort = ReasoningEffortLevels.None;
 
 
-            var completion = new GenericAiChatClient(Connection);            
+            var completion = new GenericAiChatClient(Connection);
+            completion.CaptureRequestData = true;
             
             var prompts = new List<OpenAiChatMessage>
             {
@@ -161,6 +199,10 @@ namespace Westwind.AI.Tests.TextCompletions
             Assert.IsFalse(completion.HasError, completion.ErrorMessage);
             Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was returned (null or empty).");
             Console.WriteLine(resultText);
+
+            
+            Console.WriteLine(completion.LastRequestJson);
+            Console.WriteLine(completion.LastResponseJson);
 
             // optionally captured request and response data
             Console.WriteLine(completion.AiHttpClient.LastRequestJson);

@@ -89,7 +89,7 @@ var connection = new OpenAiConnection() {
 
 
 var completion = new GenericAiChatClient(connection);
-completion.AiHttpClient.CaptureRequestData = true;
+completion.CaptureRequestData = true;
           
 string resultText = await completion.Complete(
     "Translate the following from English to German:\nThe sky is below, the ground is above",
@@ -101,15 +101,15 @@ Assert.IsFalse(string.IsNullOrEmpty(resultText),
 Console.WriteLine(resultText);
 
 // optionally captured request and response data
-Console.WriteLine(completion.AiHttpClient.LastRequestJson);
-Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+Console.WriteLine(completion.LastRequestJson);
+Console.WriteLine("\n\n" + completion.LastResponseJson);
 ```
 
 Alternately you can pass a collection of prompts:
 
 ```cs
 var completion = new GenericAiChatClient(connection);
-completion.AiHttpClient.CaptureRequestData = true;
+completion.CaptureRequestData = true;
 
 var prompts = new List<OpenAiChatMessage>
 {
@@ -130,8 +130,8 @@ Assert.IsFalse(string.IsNullOrEmpty(resultText), "No completion response was ret
 Console.WriteLine(resultText);
 
 // optionally captured request and response data
-Console.WriteLine(completion.AiHttpClient.LastRequestJson);
-Console.WriteLine("\n\n" + completion.AiHttpClient.LastResponseJson);
+Console.WriteLine(completion.LastRequestJson);
+Console.WriteLine("\n\n" + completion.LastResponseJson);
 ```
 
 ### Keep track of Chat History
@@ -145,10 +145,7 @@ Console.WriteLine("Born on: " + bornDate);
 
 var completion = new GenericAiChatClient(connection)
 {
-    AiHttpClient =  
-    {
-        CaptureRequestData = true
-    }
+    CaptureRequestData = true
 };
 
 // We have to provide the start date, otherwise it uses the AI training date 🤣
@@ -173,8 +170,8 @@ result = await completion.Complete("Tell me about my birth city.",
 Assert.IsNotNull(result, completion.ErrorMessage);
 Console.WriteLine(result);
 
-Console.WriteLine("---\n" +completion.AiHttpClient.LastRequestJson);
-Console.WriteLine("---\n" + completion.AiHttpClient.LastResponseJson);
+Console.WriteLine("---\n" +completion.LastRequestJson);
+Console.WriteLine("---\n" + completion.LastResponseJson);
 ```
 
 
@@ -482,6 +479,24 @@ var connection = new OpenAiConnection
 ```
 
 The value is stored in the configuration file as `"ReasoningEffort": "low"`. Not every model supports every level - check the provider's model documentation.
+
+#### Inspecting Chat Requests
+To debug a chat request, enable capture on the chat client before calling `Complete`:
+
+```cs
+var chat = connection.GetChatClient();
+chat.CaptureRequestData = true;
+var reply = await chat.Complete("Hello");
+Console.WriteLine(chat.LastRequestJson);
+Console.WriteLine(chat.LastResponseJson);
+Console.WriteLine(chat.ErrorMessage);
+Console.WriteLine(chat.LastUsage?.total_tokens); // available even without JSON capture
+Console.WriteLine(chat.LastResponseTime); // milliseconds, available even on errors
+```
+
+This works for both SDK-backed and HTTP fallback chat connections. The request and response JSON are available on the chat client even for HTTP error responses. Capture is disabled by default, and the JSON values are cleared for each call (and are null when disabled). `LastUsage` is populated from the SDK or HTTP response on successful calls even when JSON capture is off; it exposes `prompt_tokens`, `completion_tokens`, `total_tokens`, and `reasoning_tokens` (zero if not reported). `LastResponseTime` is the elapsed milliseconds (`double`) for the latest attempt, including failures, and does not require JSON capture.
+
+Request/response bodies may contain private prompt or provider data; treat them as sensitive. Direct `OpenAiHttpClient` requests retain their own diagnostics; for `GenericAiChatClient.Complete` read `LastRequestJson`, `LastResponseJson`, and `LastUsage` from the chat client.
 
 You can also create the connections directly in code if you prefer.
 

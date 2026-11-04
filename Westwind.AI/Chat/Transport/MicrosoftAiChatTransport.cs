@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Westwind.AI.Configuration;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Chat.Transport
 {
@@ -117,8 +118,8 @@ namespace Westwind.AI.Chat.Transport
                     Text         = responseText,
                     TimeTaken    = sw.Elapsed,
                     NativeResponse = completion,
-                    RequestJson = capture?.RequestJson,
-                    ResponseJson = capture?.ResponseJson
+                    RequestJson = capture?.RequestJson != null ? JsonSerializationUtils.FormatJsonString(capture?.RequestJson) : null,
+                    ResponseJson = capture?.ResponseJson != null ? JsonSerializationUtils.FormatJsonString(capture?.ResponseJson) : null
                 };
             }
             catch (Exception ex)
@@ -127,9 +128,9 @@ namespace Westwind.AI.Chat.Transport
                 return new ChatTransportResponse
                 {
                     ErrorMessage = ex.Message,
-                    TimeTaken    = sw.Elapsed,
-                    RequestJson = capture?.RequestJson,
-                    ResponseJson = capture?.ResponseJson
+                    TimeTaken = sw.Elapsed,
+                    RequestJson = capture?.RequestJson != null ? JsonSerializationUtils.FormatJsonString(capture?.RequestJson) : null,
+                    ResponseJson = capture?.ResponseJson != null ? JsonSerializationUtils.FormatJsonString(capture?.ResponseJson) : null
                 };
             }
         }

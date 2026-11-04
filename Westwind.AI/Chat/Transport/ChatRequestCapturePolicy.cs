@@ -28,7 +28,10 @@ namespace Westwind.AI.Chat.Transport
         {
             var capture = _current.Value;
             if (capture != null)
+            {
+                capture.RequestUri = message.Request.Uri;
                 capture.RequestJson = ReadRequest(message);
+            }
 
             ProcessNext(message, pipeline, index);
 
@@ -40,7 +43,10 @@ namespace Westwind.AI.Chat.Transport
         {
             var capture = _current.Value;
             if (capture != null)
+            {
+                capture.RequestUri = message.Request.Uri;
                 capture.RequestJson = await ReadRequestAsync(message).ConfigureAwait(false);
+            }
 
             await ProcessNextAsync(message, pipeline, index).ConfigureAwait(false);
 
@@ -85,6 +91,7 @@ namespace Westwind.AI.Chat.Transport
 
             public string RequestJson { get; set; }
             public string ResponseJson { get; set; }
+            public Uri RequestUri { get; set; }
 
             internal Capture(ChatRequestCapturePolicy owner, Capture previous)
             {

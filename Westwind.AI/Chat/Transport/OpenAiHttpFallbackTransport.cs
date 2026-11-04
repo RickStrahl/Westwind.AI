@@ -27,6 +27,7 @@ namespace Westwind.AI.Chat.Transport
             {
                 Text = result,
                 ErrorMessage = result == null ? _httpClient.ErrorMessage : null,
+                TimeTaken = _httpClient.TimeTaken,
                 NativeResponse = _httpClient.LastChatResponse,
                 RequestJson = _httpClient.CaptureRequestData ? _httpClient.LastRequestJson : null,
                 ResponseJson = _httpClient.CaptureRequestData ? _httpClient.LastResponseJson : null
@@ -40,6 +41,7 @@ namespace Westwind.AI.Chat.Transport
             {
                 Text = result,
                 ErrorMessage = result == null ? _httpClient.ErrorMessage : null,
+                TimeTaken = _httpClient.TimeTaken,
                 NativeResponse = _httpClient.LastChatResponse,
                 RequestJson = _httpClient.CaptureRequestData ? _httpClient.LastRequestJson : null,
                 ResponseJson = _httpClient.CaptureRequestData ? _httpClient.LastResponseJson : null

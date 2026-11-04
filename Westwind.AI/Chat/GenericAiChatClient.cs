@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Westwind.AI.Chat.Transport;
 using Westwind.AI.Configuration;
+using Westwind.Utilities;
 
 namespace Westwind.AI.Chat
 {
@@ -15,10 +17,16 @@ namespace Westwind.AI.Chat
         }
 
         /// <summary>Request body from the last completion, or null when capture is off.</summary>
-        public string LastRequestJson => AiHttpClient.LastRequestJson;
+        public string LastRequestJson { get; private set; }
 
         /// <summary>Response body from the last completion, or null when capture is off.</summary>
-        public string LastResponseJson => AiHttpClient.LastResponseJson;
+        public string LastResponseJson { get; private set; }
+
+        /// <summary>Token usage of the last successful completion, whether or not JSON capture is enabled.</summary>
+        public OpenAiResponseUsage LastUsage { get; private set; }
+
+        /// <summary>Elapsed milliseconds of the last completion attempt, including failed requests.</summary>
+        public double LastResponseTime { get; private set; }
 
         public GenericAiChatClient(OpenAiConnectionConfiguration openAiAuthConfig) : base(openAiAuthConfig) 
         {
@@ -59,15 +67,17 @@ namespace Westwind.AI.Chat
             return response.Text;
         }
 
-        /// <summary>
-        /// Maps transport response diagnostics to AiHttpClient fields for backwards compatibility.
-        /// </summary>
         private void ClearCapture()
         {
-            AiHttpClient.LastRequestJson = null;
-            AiHttpClient.LastResponseJson = null;
+            LastRequestJson = null;
+            LastResponseJson = null;
+            LastUsage = null;
+            LastResponseTime = 0;
         }
 
+        /// <summary>
+        /// Maps transport response diagnostics onto the chat client.
+        /// </summary>
         private void MapTransportResponseToDiagnostics(ChatTransportResponse response)
         {
             if (response == null)
@@ -79,18 +89,38 @@ namespace Westwind.AI.Chat
             else
                 SetError(null);
 
-            // Map timing
-            AiHttpClient.TimeTaken = response.TimeTaken;
+            LastResponseTime = response.TimeTaken.TotalMilliseconds;
 
             if (CaptureRequestData)
             {
-                AiHttpClient.LastRequestJson = response.RequestJson;
-                AiHttpClient.LastResponseJson = response.ResponseJson;
+                LastRequestJson = response.RequestJson;
+                LastResponseJson = JsonSerializationUtils.FormatJsonString(response.ResponseJson);
             }
 
-            // Map native response for diagnostics
-            if (response.NativeResponse is OpenAiChatMessages openAiResponse)
-                AiHttpClient.LastChatResponse = openAiResponse;
+            if (!string.IsNullOrEmpty(response.ErrorMessage))
+                return;
+
+            if (response.NativeResponse is ChatResponse chatResponse && chatResponse.Usage != null)
+            {
+                LastUsage = new OpenAiResponseUsage
+                {
+                    prompt_tokens = (int)(chatResponse.Usage.InputTokenCount ?? 0),
+                    completion_tokens = (int)(chatResponse.Usage.OutputTokenCount ?? 0),
+                    total_tokens = (int)(chatResponse.Usage.TotalTokenCount ?? 0),
+                    reasoning_tokens = (int)(chatResponse.Usage.ReasoningTokenCount ?? 0)
+                };
+            }
+            else if (response.NativeResponse is OpenAiChatMessages openAiResponse && openAiResponse.usage != null)
+            {
+                var usage = openAiResponse.usage;
+                LastUsage = new OpenAiResponseUsage
+                {
+                    prompt_tokens = usage.prompt_tokens,
+                    completion_tokens = usage.completion_tokens,
+                    total_tokens = usage.total_tokens,
+                    reasoning_tokens = usage.completion_tokens_details?.reasoning_tokens ?? usage.reasoning_tokens
+                };
+            }
         }
 
         public override string ToString()

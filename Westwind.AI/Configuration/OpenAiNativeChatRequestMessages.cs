@@ -57,8 +57,18 @@ namespace Westwind.AI.Configuration
     public class OpenAiResponseUsage
     {
         public int prompt_tokens { get; set; }
+
+        public int reasoning_tokens { get; set; }
+
+        public OpenAiCompletionTokenDetails completion_tokens_details { get; set; }
+
         public int completion_tokens { get; set; }
         public int total_tokens { get; set; }
+    }
+
+    public class OpenAiCompletionTokenDetails
+    {
+        public int reasoning_tokens { get; set; }
     }
 
     public class OpenAiResponseChoice

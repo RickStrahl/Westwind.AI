@@ -79,8 +79,86 @@ namespace Westwind.AI.Tests.TextCompletions
                 Assert.AreEqual(reasoningEffort, (string)body["reasoning_effort"]);
         }
 
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task CaptureIncludesWireBodiesAndClearsBetweenRequestsTest(bool useHttpTransport)
+        {
+            using var portReservation = new TcpListener(IPAddress.Loopback, 0);
+            portReservation.Start();
+            int port = ((IPEndPoint)portReservation.LocalEndpoint).Port;
+            portReservation.Stop();
+
+            string endpoint = $"http://localhost:{port}/";
+            using var listener = new HttpListener();
+            listener.Prefixes.Add(endpoint);
+            listener.Start();
+
+            var connection = new OpenAiConnection
+            {
+                Endpoint = endpoint,
+                ModelId = "test-model",
+                ApiKey = "test-key"
+            };
+            if (useHttpTransport)
+            {
+                connection.ApiKeyHeaderName = "x-test-key";
+                connection.ApiKeyHeaderScheme = null;
+            }
+
+            var client = new GenericAiChatClient(connection) { CaptureRequestData = true };
+            client.AiHttpClient.Timeout = TimeSpan.FromSeconds(10);
+            Assert.AreEqual(0d, client.LastResponseTime);
+
+            const string responseJson = """
+                {"id":"chatcmpl-1","object":"chat.completion","created":1,"model":"test-model",
+                 "choices":[{"index":0,"message":{"role":"assistant","content":"first reply"},"finish_reason":"stop"}],
+                 "usage":{"prompt_tokens":12,"completion_tokens":8,"total_tokens":20,
+                          "completion_tokens_details":{"reasoning_tokens":3}}}
+                """;
+            var firstRequest = RespondAsync(listener, responseJson);
+            Assert.AreEqual("first reply", await client.Complete("first prompt"));
+            var first = await firstRequest.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(client.LastRequestJson.Split("\n\n---")[0]), JObject.Parse(first.Body)));
+            StringAssert.Contains(client.LastRequestJson, "first prompt");
+            if (useHttpTransport)
+                StringAssert.Contains(client.LastRequestJson, endpoint.TrimEnd('/') + "/chat/completions");
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(responseJson), JObject.Parse(client.LastResponseJson)));
+            Assert.IsNotNull(client.LastUsage);
+            Assert.AreEqual(12, client.LastUsage.prompt_tokens);
+            Assert.AreEqual(8, client.LastUsage.completion_tokens);
+            Assert.AreEqual(20, client.LastUsage.total_tokens);
+            Assert.AreEqual(3, client.LastUsage.reasoning_tokens);
+            Assert.IsTrue(client.LastResponseTime > 0);
+
+            const string errorJson = """{"error":{"message":"request rejected"}}""";
+            var errorRequest = RespondAsync(listener, errorJson, 400);
+            Assert.IsNull(await client.Complete("second prompt"));
+            var second = await errorRequest.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.IsTrue(client.HasError);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(client.LastRequestJson.Split("\n\n---")[0]), JObject.Parse(second.Body)));
+            StringAssert.Contains(client.LastRequestJson, "second prompt");
+            Assert.IsFalse(client.LastRequestJson.Contains("first prompt"));
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(errorJson), JObject.Parse(client.LastResponseJson)));
+            Assert.IsNull(client.LastUsage);
+            Assert.IsTrue(client.LastResponseTime > 0, "Failed requests should retain elapsed time");
+
+            client.CaptureRequestData = false;
+            var thirdRequest = RespondAsync(listener, responseJson);
+            Assert.AreEqual("first reply", await client.Complete("third prompt"));
+            await thirdRequest.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.IsNull(client.LastRequestJson);
+            Assert.IsNull(client.LastResponseJson);
+            Assert.IsNotNull(client.LastUsage, "Usage should be available without JSON capture");
+            Assert.AreEqual(12, client.LastUsage.prompt_tokens);
+            Assert.AreEqual(8, client.LastUsage.completion_tokens);
+            Assert.AreEqual(20, client.LastUsage.total_tokens);
+            Assert.AreEqual(3, client.LastUsage.reasoning_tokens);
+            Assert.IsTrue(client.LastResponseTime > 0, "Timing should not require JSON capture");
+        }
+
         private static async Task<(string Method, string Path, string Body)>
-            RespondAsync(HttpListener listener, string json)
+            RespondAsync(HttpListener listener, string json, int statusCode = 200)
         {
             var context = await listener.GetContextAsync();
             using var body = new MemoryStream();
@@ -89,7 +167,7 @@ namespace Westwind.AI.Tests.TextCompletions
                 Encoding.UTF8.GetString(body.ToArray()));
 
             byte[] bytes = Encoding.UTF8.GetBytes(json);
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
             context.Response.ContentLength64 = bytes.Length;
             await context.Response.OutputStream.WriteAsync(bytes);
